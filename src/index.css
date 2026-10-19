@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: Nunito, system-ui, sans-serif;
+}
+
+.app-shell {
+  @apply mx-auto min-h-dvh max-w-[430px] bg-primary text-white shadow-2xl;
+}
+
+.card-surface {
+  @apply rounded-3xl bg-white text-gray-900 shadow-lg;
+}
+
+.btn-cta {
+  @apply flex w-full items-center justify-center gap-2 rounded-2xl bg-cta py-3 font-bold text-white;
+}
+
+.menu-circle {
+  @apply mx-auto flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white;
+}
+
+.quran-ayah {
+  font-family: "Amiri Quran", "Scheherazade New", "Traditional Arabic", serif;
+  text-align: right;
+  color: #1a1a2e;
+  word-spacing: 0.15em;
+  font-feature-settings: "liga" 1;
+}
+
+.card-surface .quran-ayah {
+  padding: 0.25rem 0;
+}
+
+/* Warna hukum tajwid (Quran.com) — bantu makhraj / aturan baca */
+.quran-ayah--tajweed .tjw {
+  font-family: inherit;
+}
+.quran-ayah--tajweed .tjw-ghunnah {
+  color: #15803d;
+}
+.quran-ayah--tajweed .tjw-idgham,
+.quran-ayah--tajweed .tjw-idgham_wo_ghunnah,
+.quran-ayah--tajweed .tjw-idgham_shafawi {
+  color: #1d4ed8;
+}
+.quran-ayah--tajweed .tjw-ikhfa,
+.quran-ayah--tajweed .tjw-ikhfa_shafawi {
+  color: #7c3aed;
+}
+.quran-ayah--tajweed .tjw-qalqalah {
+  color: #b45309;
+}
+.quran-ayah--tajweed .tjw-madda_normal,
+.quran-ayah--tajweed .tjw-madda_permissible,
+.quran-ayah--tajweed .tjw-madda_necessary,
+.quran-ayah--tajweed .tjw-madda_obligatory {
+  color: #c2410c;
+}
+.quran-ayah--tajweed .tjw-laam_shamsiyah {
+  color: #374151;
+}
+.quran-ayah--tajweed .tjw-ham_wasl,
+.quran-ayah--tajweed .tjw-slnt {
+  color: #6b7280;
+}
+.quran-ayah--tajweed .tjw-meem_shafawi {
+  color: #0f766e;
+}
