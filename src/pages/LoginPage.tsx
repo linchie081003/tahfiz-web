@@ -1,15 +1,30 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ChildFamilyCodeInput } from "../components/game/ChildFamilyCodeInput";
+import { GameButton } from "../components/game/GameButton";
+import { GameCard } from "../components/game/GameCard";
+import { GameInput } from "../components/game/GameInput";
+import { GameScene } from "../components/game/GameScene";
+import { GameTabs } from "../components/game/GameTabs";
+import { Mascot } from "../components/game/Mascot";
+import { NumericPinPad } from "../components/game/NumericPinPad";
+import { useGameToast } from "../components/game/GameToast";
 import { api, setToken } from "../lib/api";
+import { familyCodeReady, formatFamilyCodeDisplay, normalizeFamilyCode } from "../lib/familyCode";
 
 const FAMILY_CODE_KEY = "hafiz_family_code";
+const FAMILY_NAME_KEY = "hafiz_family_name";
+const LAST_CHILD_KEY = "hafiz_last_child_id";
 
+type Tab = "parent" | "child" | "register";
+type ParentStep = "login" | "forgot";
 type PublicChild = { id: string; name: string; color: string; has_pin: boolean };
 type PublicFamily = { family_name: string; children: PublicChild[] };
 
 export function LoginPage() {
   const nav = useNavigate();
-  const [mode, setMode] = useState<"parent" | "register" | "child">("parent");
+  const toast = useGameToast();
+  const [tab, setTab] = useState<Tab>("parent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [familyName, setFamilyName] = useState("");
@@ -19,16 +34,48 @@ export function LoginPage() {
   const [selectedChild, setSelectedChild] = useState<PublicChild | null>(null);
   const [pin, setPin] = useState("");
   const [childStep, setChildStep] = useState<"code" | "pick" | "pin">("code");
+  const [parentStep, setParentStep] = useState<ParentStep>("login");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [restoringFamily, setRestoringFamily] = useState(false);
+  const autoRestoreDone = useRef(false);
 
   useEffect(() => {
-    if (mode !== "child") {
+    if (tab !== "child") {
       setChildStep("code");
       setFamilyPreview(null);
       setSelectedChild(null);
       setPin("");
+      autoRestoreDone.current = false;
     }
-  }, [mode]);
+    if (tab !== "parent") setParentStep("login");
+  }, [tab]);
+
+  const loadFamilyChildren = useCallback(async (codeOverride?: string) => {
+    const code = normalizeFamilyCode(codeOverride ?? accessCode);
+    if (!familyCodeReady(code)) throw new Error("Kode keluarga belum lengkap");
+    const data = await api<PublicFamily>(`/auth/family-children?access_code=${encodeURIComponent(code)}`);
+    setAccessCode(code);
+    setFamilyPreview(data);
+    localStorage.setItem(FAMILY_CODE_KEY, code);
+    localStorage.setItem(FAMILY_NAME_KEY, data.family_name);
+    setChildStep("pick");
+    return data;
+  }, [accessCode]);
+
+  useEffect(() => {
+    if (tab !== "child" || autoRestoreDone.current) return;
+    const saved = localStorage.getItem(FAMILY_CODE_KEY);
+    if (!saved || !familyCodeReady(saved)) return;
+    autoRestoreDone.current = true;
+    setRestoringFamily(true);
+    void loadFamilyChildren(saved)
+      .catch(() => {
+        setChildStep("code");
+      })
+      .finally(() => setRestoringFamily(false));
+  }, [tab, loadFamilyChildren]);
 
   const parentLogin = async () => {
     const t = await api<{ access_token: string }>("/auth/login", {
@@ -36,7 +83,7 @@ export function LoginPage() {
       body: JSON.stringify({ email, password }),
     });
     setToken(t.access_token);
-    nav("/pilih-profil", { replace: true });
+    nav("/", { replace: true });
   };
 
   const registerFamily = async () => {
@@ -51,209 +98,257 @@ export function LoginPage() {
     });
     setToken(t.access_token);
     localStorage.setItem(FAMILY_CODE_KEY, t.family_access_code);
-    nav("/pilih-profil", { replace: true });
-  };
-
-  const loadFamilyChildren = async () => {
-    const code = accessCode.trim().toUpperCase();
-    if (!code) return;
-    const data = await api<PublicFamily>(`/auth/family-children?access_code=${encodeURIComponent(code)}`);
-    setFamilyPreview(data);
-    localStorage.setItem(FAMILY_CODE_KEY, code);
-    setChildStep("pick");
-  };
-
-  const startChildPin = (child: PublicChild) => {
-    setSelectedChild(child);
-    if (child.has_pin) {
-      setPin("");
-      setChildStep("pin");
-    } else {
-      void childLogin(child, "");
-    }
+    nav("/", { replace: true });
   };
 
   const childLogin = async (child: PublicChild, childPin: string) => {
     const t = await api<{ access_token: string }>("/auth/child-login", {
       method: "POST",
       body: JSON.stringify({
-        access_code: accessCode.trim().toUpperCase(),
+        access_code: normalizeFamilyCode(accessCode),
         child_id: child.id,
         pin: childPin,
       }),
     });
     setToken(t.access_token);
+    localStorage.setItem(LAST_CHILD_KEY, child.id);
     nav("/", { replace: true });
   };
 
-  const submit = async () => {
+  const submitParent = async () => {
     setBusy(true);
     try {
-      if (mode === "register") await registerFamily();
-      else if (mode === "parent") await parentLogin();
+      if (tab === "register") await registerFamily();
+      else await parentLogin();
     } catch (e) {
-      alert(String(e));
+      toast(String(e));
     } finally {
       setBusy(false);
     }
   };
 
-  const submitChildPin = async () => {
-    if (!selectedChild) return;
+  const submitForgotPassword = async () => {
     setBusy(true);
     try {
-      await childLogin(selectedChild, pin);
+      await api("/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          access_code: normalizeFamilyCode(resetCode),
+          new_password: newPassword,
+        }),
+      });
+      toast("Kata sandi berhasil diubah. Silakan masuk.");
+      setPassword(newPassword);
+      setNewPassword("");
+      setResetCode("");
+      setParentStep("login");
     } catch (e) {
-      alert(String(e));
+      toast(String(e));
     } finally {
       setBusy(false);
     }
   };
+
+  const tryLoadCode = () => {
+    setBusy(true);
+    void loadFamilyChildren()
+      .catch((e) => toast(String(e)))
+      .finally(() => setBusy(false));
+  };
+
+  const savedFamilyName = localStorage.getItem(FAMILY_NAME_KEY);
+  const lastChildId = localStorage.getItem(LAST_CHILD_KEY);
 
   return (
-    <div className="app-shell flex min-h-dvh flex-col justify-center p-6">
-      <h1 className="mb-2 text-center text-3xl font-extrabold">Hafiz</h1>
-      <p className="mb-6 text-center text-sm text-white/90">Misi hafalan Qur&apos;an keluarga</p>
-      <div className="card-surface space-y-3 p-4">
-        <div className="flex gap-2 text-xs sm:text-sm">
-          {(
-            [
-              ["parent", "Orang tua"],
-              ["child", "Anak"],
-              ["register", "Daftar baru"],
-            ] as const
-          ).map(([m, label]) => (
-            <button
-              key={m}
-              type="button"
-              className={`flex-1 rounded-lg py-2 font-semibold ${mode === m ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800"}`}
-              onClick={() => setMode(m)}
-            >
-              {label}
-            </button>
-          ))}
+    <div className="app-shell">
+      <GameScene className="flex min-h-dvh flex-col px-4 pb-8 pt-6">
+        <div className="flex flex-col items-center">
+          <h1 className="game-text-stroke text-4xl font-extrabold">Hafiz</h1>
+          <Mascot mood="happy" size={100} className="mt-2" />
         </div>
 
-        {mode === "register" && (
-          <>
-            <input
-              className="w-full rounded-xl border p-2"
-              placeholder="Nama keluarga"
-              value={familyName}
-              onChange={(e) => setFamilyName(e.target.value)}
-            />
-            <input
-              className="w-full rounded-xl border p-2"
-              placeholder="Nama Anda (orang tua)"
-              value={adminName}
-              onChange={(e) => setAdminName(e.target.value)}
-            />
-          </>
-        )}
+        <GameCard className="mt-4 space-y-4">
+          <GameTabs
+            tabs={[
+              { id: "parent" as const, label: "Orang Tua" },
+              { id: "child" as const, label: "Anak" },
+              { id: "register" as const, label: "Daftar" },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
 
-        {(mode === "parent" || mode === "register") && (
-          <>
-            <input
-              className="w-full rounded-xl border p-2"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-              className="w-full rounded-xl border p-2"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button type="button" className="btn-cta" disabled={busy} onClick={() => void submit()}>
-              {mode === "register" ? "Buat akun keluarga" : "Masuk sebagai orang tua"}
-            </button>
-            {mode === "parent" && (
-              <p className="text-xs text-gray-600">Setelah masuk, pilih profil anak yang sudah terdaftar.</p>
-            )}
-          </>
-        )}
-
-        {mode === "child" && childStep === "code" && (
-          <>
-            <p className="text-sm text-gray-700">Masukkan kode keluarga dari orang tua (8 huruf/angka).</p>
-            <input
-              className="w-full rounded-xl border p-2 font-mono uppercase tracking-widest"
-              placeholder="Kode keluarga"
-              value={accessCode}
-              onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
-            />
-            <button
-              type="button"
-              className="btn-cta"
-              disabled={busy || !accessCode.trim()}
-              onClick={() => {
-                setBusy(true);
-                void loadFamilyChildren()
-                  .catch((e) => alert(String(e)))
-                  .finally(() => setBusy(false));
-              }}
-            >
-              Lihat profil anak
-            </button>
-          </>
-        )}
-
-        {mode === "child" && childStep === "pick" && familyPreview && (
-          <>
-            <p className="text-sm font-semibold text-gray-800">Keluarga {familyPreview.family_name}</p>
-            <p className="text-xs text-gray-600">Pilih nama Anda:</p>
-            <div className="space-y-2">
-              {familyPreview.children.length === 0 && (
-                <p className="text-sm text-gray-600">Belum ada profil. Minta orang tua buat profil dulu.</p>
+          {(tab === "parent" || tab === "register") && (
+            <>
+              {tab === "register" && (
+                <>
+                  <GameInput placeholder="Nama keluarga" value={familyName} onChange={(e) => setFamilyName(e.target.value)} leftIcon="none" />
+                  <GameInput placeholder="Nama Anda" value={adminName} onChange={(e) => setAdminName(e.target.value)} leftIcon="none" />
+                </>
               )}
-              {familyPreview.children.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-xl border p-3 text-left"
-                  onClick={() => startChildPin(c)}
-                >
-                  <span
-                    className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-white"
-                    style={{ backgroundColor: c.color }}
+              {tab === "parent" && parentStep === "forgot" ? (
+                <>
+                  <p className="text-sm font-semibold text-outline">
+                    Reset kata sandi dengan <strong>email orang tua</strong> dan <strong>6 angka kode keluarga</strong> (sama
+                    seperti yang dipakai anak login).
+                  </p>
+                  <GameInput placeholder="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <GameInput
+                    placeholder="Kode keluarga (6 angka)"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    leftIcon="none"
+                  />
+                  <GameInput
+                    placeholder="Kata sandi baru (min. 8 karakter)"
+                    type="password"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  <GameButton
+                    disabled={busy || !email || resetCode.length < 6 || newPassword.length < 8}
+                    onClick={() => void submitForgotPassword()}
                   >
-                    {c.name.charAt(0)}
-                  </span>
-                  <span className="font-bold text-gray-900">{c.name}</span>
-                  {c.has_pin && <span className="ml-auto text-xs text-gray-500">PIN</span>}
-                </button>
-              ))}
-            </div>
-            <button type="button" className="text-sm text-purple-700 underline" onClick={() => setChildStep("code")}>
-              Ganti kode keluarga
-            </button>
-          </>
-        )}
+                    Simpan kata sandi baru
+                  </GameButton>
+                  <button
+                    type="button"
+                    className="text-sm font-bold text-brand underline"
+                    onClick={() => setParentStep("login")}
+                  >
+                    ← Kembali ke masuk
+                  </button>
+                </>
+              ) : (
+                <>
+                  <GameInput placeholder="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <GameInput placeholder="Kata sandi" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  {tab === "parent" && (
+                    <button
+                      type="button"
+                      className="text-left text-xs font-semibold text-brand underline"
+                      onClick={() => setParentStep("forgot")}
+                    >
+                      Lupa kata sandi?
+                    </button>
+                  )}
+                  <GameButton disabled={busy} onClick={() => void submitParent()}>
+                    {tab === "register" ? "Daftar" : "Masuk"}
+                  </GameButton>
+                </>
+              )}
+            </>
+          )}
 
-        {mode === "child" && childStep === "pin" && selectedChild && (
-          <>
-            <p className="text-sm text-gray-700">
-              PIN untuk <strong>{selectedChild.name}</strong>
-            </p>
-            <input
-              className="w-full rounded-xl border p-2"
-              type="password"
-              inputMode="numeric"
-              placeholder="PIN"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-            />
-            <button type="button" className="btn-cta" disabled={busy} onClick={() => void submitChildPin()}>
-              Masuk
-            </button>
-            <button type="button" className="text-sm text-purple-700 underline" onClick={() => setChildStep("pick")}>
-              ← Pilih profil lain
-            </button>
-          </>
-        )}
-      </div>
+          {tab === "child" && childStep === "code" && (
+            <>
+              {restoringFamily ? (
+                <p className="text-center text-sm font-semibold text-outline">Membuka keluarga tersimpan…</p>
+              ) : (
+                <>
+                  {savedFamilyName && accessCode && (
+                    <p className="rounded-card border-2 border-brand/30 bg-brand-light/50 p-3 text-center text-sm font-semibold text-outline">
+                      Perangkat ini mengenali keluarga <strong>{savedFamilyName}</strong>
+                      <br />
+                      <span className="font-mono text-lg tracking-widest">{formatFamilyCodeDisplay(accessCode)}</span>
+                    </p>
+                  )}
+                  <p className="text-sm font-semibold text-outline">
+                    Minta orang tua tunjukkan <strong>6 angka</strong> kode keluarga (tempel di kulkas / meja belajar).
+                  </p>
+                  <ChildFamilyCodeInput
+                    value={accessCode}
+                    onChange={setAccessCode}
+                    onComplete={() => {
+                      if (!busy) tryLoadCode();
+                    }}
+                  />
+                  <GameButton disabled={busy || !familyCodeReady(accessCode)} onClick={tryLoadCode}>
+                    Lanjut
+                  </GameButton>
+                </>
+              )}
+            </>
+          )}
+
+          {tab === "child" && childStep === "pick" && familyPreview && (
+            <>
+              <p className="font-bold text-outline">Keluarga {familyPreview.family_name}</p>
+              <p className="text-sm text-outline/80">Pilih namamu:</p>
+              <div className="space-y-2">
+                {[...familyPreview.children]
+                  .sort((a, b) => {
+                    if (a.id === lastChildId) return -1;
+                    if (b.id === lastChildId) return 1;
+                    return 0;
+                  })
+                  .map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`flex w-full items-center gap-3 rounded-card border-[3px] border-outline bg-white p-3 shadow-game-sm active:translate-y-0.5 ${
+                        c.id === lastChildId ? "ring-2 ring-brand" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedChild(c);
+                        if (c.has_pin) {
+                          setPin("");
+                          setChildStep("pin");
+                        } else void childLogin(c, "").catch((e) => toast(String(e)));
+                      }}
+                    >
+                      <span
+                        className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-outline font-bold text-white"
+                        style={{ backgroundColor: c.color }}
+                      >
+                        {c.name.charAt(0)}
+                      </span>
+                      <span className="font-extrabold text-outline">
+                        {c.name}
+                        {c.id === lastChildId ? " · terakhir" : ""}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+              <button
+                type="button"
+                className="text-sm font-bold text-brand underline"
+                onClick={() => {
+                  setFamilyPreview(null);
+                  setChildStep("code");
+                }}
+              >
+                Bukan keluarga ini?
+              </button>
+            </>
+          )}
+
+          {tab === "child" && childStep === "pin" && selectedChild && (
+            <>
+              <p className="text-center text-sm font-bold text-outline">PIN untuk {selectedChild.name}</p>
+              <NumericPinPad value={pin} onChange={setPin} maxLength={6} mask slotLabel="PIN" />
+              <GameButton
+                disabled={busy || pin.length < 4}
+                onClick={() => {
+                  setBusy(true);
+                  void childLogin(selectedChild, pin)
+                    .catch((e) => toast(String(e)))
+                    .finally(() => setBusy(false));
+                }}
+              >
+                Masuk
+              </GameButton>
+              <button type="button" className="text-sm font-bold text-brand underline" onClick={() => setChildStep("pick")}>
+                Pilih profil lain
+              </button>
+            </>
+          )}
+        </GameCard>
+      </GameScene>
     </div>
   );
 }

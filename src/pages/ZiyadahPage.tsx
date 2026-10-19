@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { QuranAyahBlock } from "../components/QuranAyahBlock";
+import { AppPage, PageTitleRow } from "../components/layout/AppPage";
 import { TajweedLegend } from "../components/TajweedLegend";
 import { api } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
@@ -30,11 +31,13 @@ export function ZiyadahPage() {
     ayah_end: String(first?.ayah_number ?? 1),
   });
   return (
-    <div className="space-y-4 p-4">
+    <AppPage>
       <Link to="/" className="text-white underline">
         ← Home
       </Link>
-      <h1 className="text-2xl font-extrabold">Ziyadah</h1>
+      <PageTitleRow>
+        <h1 className="text-2xl font-extrabold">Ziyadah</h1>
+      </PageTitleRow>
       <TajweedLegend tone="dark" />
       {first && (
         <>
@@ -44,6 +47,6 @@ export function ZiyadahPage() {
           </Link>
         </>
       )}
-    </div>
+    </AppPage>
   );
 }

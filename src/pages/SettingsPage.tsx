@@ -2,9 +2,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { useAgeMode, setAgeMode, type AgeMode } from "../context/AgeModeContext";
+import { AgeModeSelect } from "../components/AgeModeSelect";
+import { ageModeLabel } from "../lib/ageModeOptions";
+import { syncReciterToAgeMode } from "../lib/reciterPolicy";
+import { filterRecitersForAge } from "../lib/reciterPolicy";
 import { FALLBACK_RECITERS, filterRecitersForGender, type ReciterOption } from "../lib/reciters";
-import { LogoutButton } from "../components/LogoutButton";
 import { TajweedLegend } from "../components/TajweedLegend";
+import { AppPage, PageTitleRow } from "../components/layout/AppPage";
 import { loadQuranPrefs, saveQuranPrefs, type QuranPrefs } from "../lib/quranPrefs";
 
 type Settings = {
@@ -18,15 +23,38 @@ type Settings = {
 
 export function SettingsPage() {
   const qc = useQueryClient();
+  const { mode: ageMode } = useAgeMode();
+  const session = useQuery({
+    queryKey: ["session"],
+    queryFn: () =>
+      api<{ role: string; member_id?: string | null; member_name?: string | null; age_mode?: string | null }>(
+        "/auth/session",
+      ),
+  });
+  const isParent = session.data?.role === "parent";
+  const isChild = session.data?.role === "child";
+  const activeMemberId = session.data?.member_id ?? null;
+  const [ageBusy, setAgeBusy] = useState(false);
+  const [missionBusy, setMissionBusy] = useState(false);
   const [prefs, setPrefs] = useState<QuranPrefs>(() => loadQuranPrefs());
   const { data: settings } = useQuery({
     queryKey: ["settings"],
     queryFn: () => api<Settings>("/settings/family"),
     retry: false,
+    enabled: isParent,
   });
+  const [ziyadahTarget, setZiyadahTarget] = useState(3);
+  const [murojaahCap, setMurojaahCap] = useState(5);
+
+  useEffect(() => {
+    if (settings) {
+      setZiyadahTarget(settings.daily_ziyadah_ayahs);
+      setMurojaahCap(settings.daily_murojaah_cap);
+    }
+  }, [settings?.daily_ziyadah_ayahs, settings?.daily_murojaah_cap]);
   const { data: allReciters, isError, isLoading } = useQuery({
-    queryKey: ["reciters", "all"],
-    queryFn: () => api<ReciterOption[]>("/quran/reciters"),
+    queryKey: ["reciters", "all", ageMode],
+    queryFn: () => api<ReciterOption[]>(`/quran/reciters?age_mode=${ageMode}`),
     staleTime: 60_000,
   });
 
@@ -36,10 +64,10 @@ export function SettingsPage() {
     return [];
   }, [allReciters, isError]);
 
-  const displayReciters = useMemo(
-    () => filterRecitersForGender(reciterCatalog, prefs.voiceGender),
-    [reciterCatalog, prefs.voiceGender],
-  );
+  const displayReciters = useMemo(() => {
+    const byAge = filterRecitersForAge(reciterCatalog, ageMode);
+    return filterRecitersForGender(byAge, prefs.voiceGender);
+  }, [reciterCatalog, prefs.voiceGender, ageMode]);
 
   const noFemaleReciters =
     prefs.voiceGender === "female" && reciterCatalog.length > 0 && !reciterCatalog.some((r) => r.gender === "female");
@@ -82,15 +110,105 @@ export function SettingsPage() {
 
   const selectedReciter = displayReciters.find((r) => r.id === prefs.reciterId);
 
+  const sessionAge =
+    session.data?.age_mode === "paud" ||
+    session.data?.age_mode === "sd" ||
+    session.data?.age_mode === "teen" ||
+    session.data?.age_mode === "adult"
+      ? (session.data.age_mode as AgeMode)
+      : ageMode;
+
+  const saveMissionTargets = async (daily_ziyadah_ayahs: number, daily_murojaah_cap: number) => {
+    if (!isParent) return;
+    setMissionBusy(true);
+    try {
+      await api("/settings/family", {
+        method: "PATCH",
+        body: JSON.stringify({ daily_ziyadah_ayahs, daily_murojaah_cap }),
+      });
+      await qc.invalidateQueries({ queryKey: ["settings"] });
+      await qc.invalidateQueries({ queryKey: ["home"] });
+      await qc.invalidateQueries({ queryKey: ["murojaah"] });
+    } catch (e) {
+      alert(String(e));
+    } finally {
+      setMissionBusy(false);
+    }
+  };
+
+  const applyAgeMode = async (next: AgeMode) => {
+    setAgeBusy(true);
+    try {
+      if (isChild && activeMemberId) {
+        await api(`/members/${activeMemberId}`, { method: "PATCH", body: JSON.stringify({ age_mode: next }) });
+      } else if (isParent && activeMemberId) {
+        await api(`/members/${activeMemberId}`, { method: "PATCH", body: JSON.stringify({ age_mode: next }) });
+      } else {
+        setAgeMode(next);
+        syncReciterToAgeMode(next);
+      }
+      setAgeMode(next);
+      syncReciterToAgeMode(next);
+      await qc.invalidateQueries({ queryKey: ["session"] });
+      await qc.invalidateQueries({ queryKey: ["reciters"] });
+      await qc.invalidateQueries({ queryKey: ["home"] });
+    } catch (e) {
+      alert(String(e));
+    } finally {
+      setAgeBusy(false);
+    }
+  };
+
   return (
-    <div className="space-y-4 p-4">
+    <AppPage>
       <Link to="/" className="text-white underline">
         ← Home
       </Link>
-      <h1 className="text-2xl font-bold">Pengaturan</h1>
+      <PageTitleRow>
+        <h1 className="text-2xl font-bold">Pengaturan</h1>
+      </PageTitleRow>
+      <p className="text-sm text-white/90">
+        Qari, tajwid, dan tampilan Arab berlaku untuk profil yang sedang aktif. Orang tua bisa memakai Tahsin, Ziyadah,
+        Murojaah, dan Alquran seperti anak setelah memilih profil.
+      </p>
 
       <div className="card-surface space-y-4 p-4 text-gray-800">
+        <h2 className="font-bold text-purple-800">Mode usia</h2>
+        {isChild && (
+          <p className="text-xs text-gray-600">
+            Mode saat ini: <strong>{ageModeLabel(sessionAge)}</strong>. Ubah di bawah (qari &amp; tampilan mengikuti mode).
+          </p>
+        )}
+        {isParent && !activeMemberId && (
+          <p className="text-xs text-gray-600">
+            Anda belajar sebagai orang tua tanpa profil anak. Mode ini hanya untuk tampilan &amp; qari di perangkat ini.
+            Untuk mengubah mode anak, buka <Link to="/pilih-profil" className="font-bold text-brand underline">Kelola profil</Link>.
+          </p>
+        )}
+        {isParent && activeMemberId && session.data?.member_name && (
+          <p className="text-xs text-gray-600">
+            Mengatur mode untuk profil <strong>{session.data.member_name}</strong> (sedang aktif).
+          </p>
+        )}
+        <label className="block text-sm font-semibold" htmlFor="age-mode">
+          Tingkat / mode belajar
+        </label>
+        <AgeModeSelect
+          id="age-mode"
+          value={sessionAge}
+          disabled={ageBusy}
+          onChange={(next) => void applyAgeMode(next)}
+        />
+        <p className="text-xs text-gray-600">
+          PAUD/SD: qari Muallim (Husary) disarankan; remaja/dewasa: murattal. Mujawwad hanya hadiah setelah lulus setoran.
+        </p>
+
+        <hr />
+
         <h2 className="font-bold text-purple-800">Suara (Qari)</h2>
+        <p className="text-xs text-gray-600">
+          Mode usia aktif: <strong>{ageModeLabel(ageMode)}</strong>
+        </p>
         <label className="block text-sm font-semibold">Jenis suara</label>
         <select
           className="w-full rounded-xl border p-2"
@@ -121,7 +239,8 @@ export function SettingsPage() {
           {isLoading && !displayReciters.length && <option value="">Memuat daftar qori…</option>}
           {displayReciters.map((r) => (
             <option key={r.id} value={r.id}>
-              {r.label} ({r.gender === "female" ? "Perempuan" : "Laki-laki"})
+              {r.label}
+              {r.default_for_age ? " · disarankan" : ""} ({r.gender === "female" ? "Perempuan" : "Laki-laki"})
             </option>
           ))}
         </select>
@@ -167,15 +286,61 @@ export function SettingsPage() {
           terpotong atau tanpa warna.
         </p>
 
-        <hr />
-        <p>Target ziyadah harian: {settings?.daily_ziyadah_ayahs ?? 3} ayat</p>
-        <p>Batas murojaah: {settings?.daily_murojaah_cap ?? 5}</p>
+        {isParent && (
+          <>
+            <hr />
+            <h2 className="font-bold text-purple-800">Target belajar harian (keluarga)</h2>
+            <p className="text-xs text-gray-600">
+              Berlaku untuk semua profil anak. Misi di Home dan daftar murojaah mengikuti angka ini.
+            </p>
+            <label className="block text-sm font-semibold" htmlFor="ziyadah-target">
+              Target ziyadah harian (ayat)
+            </label>
+            <input
+              id="ziyadah-target"
+              type="number"
+              min={1}
+              max={30}
+              disabled={missionBusy}
+              className="w-full rounded-game border-2 border-outline/30 p-2 font-semibold"
+              value={ziyadahTarget}
+              onChange={(e) => setZiyadahTarget(Number(e.target.value))}
+              onBlur={() => {
+                const z = Math.min(30, Math.max(1, ziyadahTarget || 3));
+                const m = Math.min(30, Math.max(1, murojaahCap || 5));
+                setZiyadahTarget(z);
+                setMurojaahCap(m);
+                if (z !== settings?.daily_ziyadah_ayahs || m !== settings?.daily_murojaah_cap) {
+                  void saveMissionTargets(z, m);
+                }
+              }}
+            />
+            <label className="block text-sm font-semibold" htmlFor="murojaah-cap">
+              Batas murojaah per hari (item)
+            </label>
+            <input
+              id="murojaah-cap"
+              type="number"
+              min={1}
+              max={30}
+              disabled={missionBusy}
+              className="w-full rounded-game border-2 border-outline/30 p-2 font-semibold"
+              value={murojaahCap}
+              onChange={(e) => setMurojaahCap(Number(e.target.value))}
+              onBlur={() => {
+                const z = Math.min(30, Math.max(1, ziyadahTarget || 3));
+                const m = Math.min(30, Math.max(1, murojaahCap || 5));
+                setZiyadahTarget(z);
+                setMurojaahCap(m);
+                if (z !== settings?.daily_ziyadah_ayahs || m !== settings?.daily_murojaah_cap) {
+                  void saveMissionTargets(z, m);
+                }
+              }}
+            />
+          </>
+        )}
 
-        <hr />
-        <h2 className="font-bold text-purple-800">Akun</h2>
-        <p className="text-sm text-gray-600">Keluar dari perangkat ini. Login lagi dengan email/kode anak.</p>
-        <LogoutButton className="w-full rounded-2xl border-2 border-red-200 bg-red-50 py-3 font-bold text-red-700" />
       </div>
-    </div>
+    </AppPage>
   );
 }

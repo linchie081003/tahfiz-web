@@ -1,26 +1,25 @@
+@import "./styles/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
   margin: 0;
-  font-family: Nunito, system-ui, sans-serif;
+  font-family: Switzer, "Hanken Grotesk", system-ui, sans-serif;
+  background: var(--game-sky-mid);
 }
 
 .app-shell {
-  @apply mx-auto min-h-dvh max-w-[430px] bg-primary text-white shadow-2xl;
+  @apply mx-auto min-h-dvh max-w-game;
 }
 
 .card-surface {
-  @apply rounded-3xl bg-white text-gray-900 shadow-lg;
+  @apply game-card rounded-card border-[3px] border-outline bg-white text-gray-900 shadow-game;
 }
 
 .btn-cta {
-  @apply flex w-full items-center justify-center gap-2 rounded-2xl bg-cta py-3 font-bold text-white;
-}
-
-.menu-circle {
-  @apply mx-auto flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white;
+  @apply flex w-full min-h-[44px] items-center justify-center gap-2 rounded-pill border-[3px] border-outline bg-gradient-to-b from-game-green-start to-game-green-end py-3 font-extrabold uppercase text-white shadow-game active:translate-y-0.5 active:shadow-game-press;
 }
 
 .quran-ayah {
@@ -35,7 +34,6 @@ body {
   padding: 0.25rem 0;
 }
 
-/* Warna hukum tajwid (Quran.com) — bantu makhraj / aturan baca */
 .quran-ayah--tajweed .tjw {
   font-family: inherit;
 }
@@ -69,4 +67,24 @@ body {
 }
 .quran-ayah--tajweed .tjw-meem_shafawi {
   color: #0f766e;
+}
+
+@keyframes peta-node-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-peta-bounce {
+  animation: peta-node-bounce 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-peta-bounce {
+    animation: none;
+  }
 }

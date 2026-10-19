@@ -2,7 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArabicAyahText } from "../components/ArabicAyahText";
 import { QuranAudioPlayer } from "../components/QuranAudioPlayer";
+import { AppPage, PageTitleRow } from "../components/layout/AppPage";
 import { TajweedLegend } from "../components/TajweedLegend";
+import { StatusCard } from "../components/game/StatusBadge";
 import { api } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
 
@@ -22,7 +24,7 @@ export function TahsinPage() {
     queryFn: () =>
       api<TahsinReference>(`/tahsin/reference?reciter_id=${encodeURIComponent(prefs.reciterId)}`),
   });
-  if (!data) return <div className="p-4">Memuat…</div>;
+  if (!data) return <div className="p-4 pr-14">Memuat…</div>;
   const q = new URLSearchParams({
     context: "tahsin",
     text: data.reference_text,
@@ -31,13 +33,14 @@ export function TahsinPage() {
     ayah_end: "2",
   });
   return (
-    <div className="space-y-4 p-4">
+    <AppPage>
       <Link to="/" className="text-white underline">
         ← Home
       </Link>
-      <h1 className="text-2xl font-extrabold">Tahsin</h1>
-      <p className="text-sm opacity-90">Status: {data.status}</p>
-      <p className="text-sm">{data.hint}</p>
+      <PageTitleRow>
+        <h1 className="text-2xl font-extrabold">Tahsin</h1>
+      </PageTitleRow>
+      <StatusCard kind="tahsin" code={data.status} hint={data.hint} />
       <TajweedLegend tone="dark" />
       <div className="card-surface p-4">
         <ArabicAyahText textUthmani={data.reference_text} textTajweed={data.text_tajweed} />
@@ -48,6 +51,6 @@ export function TahsinPage() {
       <Link to={`/setor?${q}`} className="btn-cta block text-center">
         Rekam & setor tahsin
       </Link>
-    </div>
+    </AppPage>
   );
 }

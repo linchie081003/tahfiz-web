@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { AppPage, PageTitleRow } from "../components/layout/AppPage";
 import { api } from "../lib/api";
 
 type Item = { id: string; surah_name: string; due_date: string };
@@ -13,11 +14,13 @@ export function MurojaahPage() {
     qc.invalidateQueries({ queryKey: ["home"] });
   };
   return (
-    <div className="space-y-4 p-4">
+    <AppPage>
       <Link to="/" className="text-white underline">
         ← Home
       </Link>
-      <h1 className="text-2xl font-extrabold">Murojaah</h1>
+      <PageTitleRow>
+        <h1 className="text-2xl font-extrabold">Murojaah</h1>
+      </PageTitleRow>
       {!data?.length && <p className="text-white/90">Tidak ada jadwal hari ini.</p>}
       {data?.map((it) => (
         <div key={it.id} className="card-surface p-4">
@@ -32,6 +35,6 @@ export function MurojaahPage() {
           </div>
         </div>
       ))}
-    </div>
+    </AppPage>
   );
 }

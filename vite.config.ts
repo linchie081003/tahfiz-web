@@ -10,11 +10,30 @@ export default defineConfig({
       manifest: {
         name: "Hafiz — Misi Hafalan Qur'an",
         short_name: "Hafiz",
-        theme_color: "#4A27B0",
-        background_color: "#4A27B0",
+        theme_color: "#4DB8FF",
+        background_color: "#9EDFFF",
         display: "standalone",
         start_url: "/",
-        icons: [],
+        icons: [
+          {
+            src: "/icons/mascot-pwa.svg",
+            sizes: "192x192",
+            type: "image/svg+xml",
+            purpose: "any",
+          },
+          {
+            src: "/icons/mascot-pwa.svg",
+            sizes: "512x512",
+            type: "image/svg+xml",
+            purpose: "any",
+          },
+          {
+            src: "/icons/mascot-pwa.svg",
+            sizes: "512x512",
+            type: "image/svg+xml",
+            purpose: "maskable",
+          },
+        ],
       },
     }),
   ],

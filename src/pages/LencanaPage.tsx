@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { AppPage, PageTitleRow } from "../components/layout/AppPage";
 import { api } from "../lib/api";
 
 export function LencanaPage() {
@@ -8,12 +9,14 @@ export function LencanaPage() {
     queryFn: () => api<{ badges: { id: string; title: string; description: string; earned: boolean }[] }>("/gamify"),
   });
   return (
-    <div className="p-4">
+    <AppPage>
       <Link to="/" className="text-white underline">
         ← Home
       </Link>
-      <h1 className="mt-2 text-2xl font-bold">Lencana</h1>
-      <div className="mt-4 space-y-2">
+      <PageTitleRow>
+        <h1 className="text-2xl font-bold">Lencana</h1>
+      </PageTitleRow>
+      <div className="space-y-2">
         {data?.badges.map((b) => (
           <div key={b.id} className={`card-surface p-3 ${b.earned ? "" : "opacity-50"}`}>
             <p className="font-bold">{b.title}</p>
@@ -21,6 +24,6 @@ export function LencanaPage() {
           </div>
         ))}
       </div>
-    </div>
+    </AppPage>
   );
 }

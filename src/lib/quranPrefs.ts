@@ -12,7 +12,7 @@ const KEY = "hafiz_quran_prefs";
 export const QURAN_PREFS_EVENT = "hafiz_quran_prefs_changed";
 
 export const defaultPrefs: QuranPrefs = {
-  reciterId: "alafasy",
+  reciterId: "husary_muallim",
   playbackSpeed: 1,
   arabicFontSize: "large",
   showTajweed: true,

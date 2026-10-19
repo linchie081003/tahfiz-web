@@ -37,6 +37,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export type HomeData = {
   greeting_name: string;
+  age_mode?: "paud" | "sd" | "teen" | "adult" | null;
   streak_days: number;
   xp: number;
   level: number;
@@ -49,6 +50,15 @@ export type HomeData = {
   tahsin_status: string;
   menu_locks: Record<string, string>;
   level_progress: number;
+  parent_preview?: boolean;
+  beauty_reward?: {
+    submission_id: string;
+    surah_id: number;
+    ayah_start: number;
+    ayah_end: number;
+    audio_urls: string[];
+    label: string;
+  } | null;
 };
 
 export type PetaData = {

@@ -1,68 +1,97 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { LogoutButton } from "../components/LogoutButton";
-import { MissionCard } from "../components/MissionCard";
+import { useEffect } from "react";
+import { setAgeMode, useAgeMode, type AgeMode } from "../context/AgeModeContext";
+import { HomePlayerHeader } from "../components/home/HomePlayerHeader";
+import { HomeParentHeader } from "../components/home/HomeParentHeader";
+import { BeautyRewardCard } from "../components/BeautyRewardCard";
 import { MenuGrid9 } from "../components/MenuGrid9";
 import { api, type HomeData } from "../lib/api";
+import { useParentDashboardOpen } from "../context/ParentDashboardOpenContext";
 
 export function HomePage() {
   const session = useQuery({
     queryKey: ["session"],
-    queryFn: () => api<{ role: string }>("/auth/session"),
+    queryFn: () =>
+      api<{ role: string; age_mode?: string | null; member_name?: string | null; member_id?: string | null }>(
+        "/auth/session",
+      ),
+  });
+  const { mode: ageMode } = useAgeMode();
+  const isParent = session.data?.role === "parent";
+  const { open: dashOpen, setOpen: setDashOpen } = useParentDashboardOpen();
+  const parentDash = useQuery({
+    queryKey: ["parent-dashboard"],
+    queryFn: () => api<{ queue_total: number }>("/parent/dashboard"),
+    enabled: isParent,
+    retry: false,
+    staleTime: 30_000,
   });
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["home"],
     queryFn: () => api<HomeData>("/home"),
   });
+
+  useEffect(() => {
+    const m = session.data?.age_mode ?? data?.age_mode;
+    if (m === "paud" || m === "sd" || m === "teen" || m === "adult") {
+      setAgeMode(m as AgeMode);
+    }
+  }, [session.data?.age_mode, data?.age_mode]);
+
+  const effectiveAge: AgeMode =
+    session.data?.age_mode === "paud" ||
+    session.data?.age_mode === "sd" ||
+    session.data?.age_mode === "teen" ||
+    session.data?.age_mode === "adult"
+      ? session.data.age_mode
+      : data?.age_mode === "paud" ||
+          data?.age_mode === "sd" ||
+          data?.age_mode === "teen" ||
+          data?.age_mode === "adult"
+        ? data.age_mode
+        : ageMode;
+
   if (isError) {
     return (
-      <div className="space-y-2 p-8 text-center text-white">
-        <p className="font-bold">Tidak bisa memuat Home</p>
-        <p className="text-sm opacity-90">{error instanceof Error ? error.message : String(error)}</p>
+      <div className="space-y-2 p-8 text-center">
+        <p className="game-text-stroke font-bold">Tidak bisa memuat Home</p>
+        <p className="text-sm font-semibold text-outline">{error instanceof Error ? error.message : String(error)}</p>
       </div>
     );
   }
-  if (isLoading || !data) return <div className="p-8 text-center text-white">Memuat…</div>;
+  if (isLoading || !data) return <div className="p-8 text-center font-bold text-outline">Memuat…</div>;
+
+  const queueTotal = parentDash.data?.queue_total ?? 0;
 
   return (
-    <div className="pb-6 pt-6">
-      <div className="mb-4 flex items-start justify-between px-4">
-        <h1 className="text-2xl font-extrabold">Halo, {data.greeting_name}</h1>
-        <div className="flex gap-2 text-sm font-bold">
-          <span className="rounded-xl bg-white/20 px-2 py-1">📅 {data.streak_days}</span>
-          <span className="rounded-xl bg-white/20 px-2 py-1">⭐ {data.xp}</span>
-        </div>
-      </div>
-      <MissionCard home={data} />
-      <div className="mx-4 mt-4 text-white">
-        <p className="font-bold">
-          Level {data.level} · {data.rank_title}
-        </p>
-        <div className="mt-1 h-3 overflow-hidden rounded-full bg-white/30">
-          <div className="h-full rounded-full bg-cta" style={{ width: `${data.level_progress * 100}%` }} />
-        </div>
-        <p className="mt-1 text-sm opacity-90">
-          {data.xp} / {data.xp_next_level} XP
-        </p>
-      </div>
-      <MenuGrid9 home={data} />
-      <div className="space-y-2 px-4 text-center text-sm">
-        <Link to="/parent/queue" className="block underline opacity-90">
-          Mode orang tua: antrean penilaian
-        </Link>
-        {session.data?.role === "parent" && (
-          <Link to="/pilih-profil" className="block underline opacity-80">
-            Ganti profil anak
-          </Link>
-        )}
-        <Link to="/settings" className="block underline opacity-80">
-          Pengaturan
-        </Link>
-        <LogoutButton
-          label="Keluar"
-          className="mx-auto block text-sm underline opacity-80"
+    <div className="px-4 pb-6 pt-1">
+      {!isParent ? (
+        <HomePlayerHeader
+          name={data.greeting_name}
+          rankTitle={data.rank_title}
+          level={data.level}
+          streakDays={data.streak_days}
+          xp={data.xp}
+          xpNext={data.xp_next_level}
+          levelProgress={data.level_progress}
+          ageMode={effectiveAge}
+          home={data}
         />
-      </div>
+      ) : (
+        <HomeParentHeader
+          name={data.greeting_name}
+          memberId={session.data?.member_id}
+          memberName={session.data?.member_name}
+          dashOpen={dashOpen}
+          onOpenDash={() => setDashOpen(true)}
+          onCloseDash={() => setDashOpen(false)}
+          queueTotal={queueTotal}
+        />
+      )}
+
+      {data.beauty_reward && !isParent && <BeautyRewardCard reward={data.beauty_reward} />}
+
+      <MenuGrid9 home={data} />
     </div>
   );
 }

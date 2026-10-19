@@ -3,16 +3,34 @@ export type ReciterOption = {
   label: string;
   gender: string;
   description: string;
+  style?: string;
+  default_for_age?: boolean;
 };
 
 /** Cadangan jika API qori tidak terjangkau */
 export const FALLBACK_RECITERS: ReciterOption[] = [
-  { id: "alafasy", label: "Misyari Al-Afasy", gender: "male", description: "Jelas, cocok anak & pemula" },
-  { id: "saad", label: "Saad Al-Ghamdi", gender: "male", description: "Tenang, tempo sedang" },
-  { id: "sudais", label: "Abdurrahman As-Sudais", gender: "male", description: "Imam Masjidil Haram" },
-  { id: "yasser", label: "Yasser Al-Dosari", gender: "male", description: "Murattal jelas" },
-  { id: "salah_budair", label: "Salah Al-Budair", gender: "male", description: "Murattal jelas" },
-  { id: "ayyoub", label: "Muhammad Ayyoub", gender: "male", description: "Pelafalan tajwid rapi" },
+  {
+    id: "husary_muallim",
+    label: "Mahmud Khalil Al-Husary (Muallim)",
+    gender: "male",
+    description: "Pelan, per ayat — utama PAUD & SD",
+    style: "muallim",
+  },
+  {
+    id: "husary",
+    label: "Mahmud Khalil Al-Husary (Murattal)",
+    gender: "male",
+    description: "Murattal — remaja/dewasa & pilihan kedua anak",
+    style: "murattal",
+  },
+  {
+    id: "minshawi",
+    label: "Muhammad Siddiq Al-Minshawi (Murattal)",
+    gender: "male",
+    description: "Murattal jelas — remaja & dewasa",
+    style: "murattal",
+  },
+  { id: "alafasy", label: "Misyari Al-Afasy", gender: "male", description: "Murattal alternatif", style: "murattal" },
 ];
 
 export function filterRecitersForGender(all: ReciterOption[], gender: "all" | "male" | "female"): ReciterOption[] {

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { AppPage, PageTitleRow } from "../components/layout/AppPage";
 import { TajweedLegend } from "../components/TajweedLegend";
 import { api } from "../lib/api";
 
@@ -33,19 +34,14 @@ export function QuranPage() {
   }, [surahs.data, q]);
 
   return (
-    <div className="space-y-4 p-4 pb-8">
+    <AppPage>
       <Link to="/" className="text-white underline">
         ← Home
       </Link>
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-extrabold">Al-Qur&apos;an</h1>
-          <p className="text-sm text-white/90">114 surat · tajwid &amp; audio qori dari Pengaturan</p>
-        </div>
-        <Link to="/settings" className="rounded-xl bg-white/20 px-3 py-1 text-sm font-bold">
-          ⚙️
-        </Link>
-      </div>
+      <PageTitleRow>
+        <h1 className="text-2xl font-extrabold">Alquran</h1>
+      </PageTitleRow>
+      <p className="text-sm text-white/90">114 surat · audio qori lewat ikon pengaturan kanan atas</p>
 
       <TajweedLegend tone="dark" />
 
@@ -109,6 +105,6 @@ export function QuranPage() {
       {!surahs.isLoading && filtered.length === 0 && (
         <p className="text-center text-sm text-white/90">Tidak ada surat yang cocok.</p>
       )}
-    </div>
+    </AppPage>
   );
 }

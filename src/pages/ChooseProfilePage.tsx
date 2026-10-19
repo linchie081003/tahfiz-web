@@ -1,7 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { api, setToken } from "../lib/api";
+import { GameButton } from "../components/game/GameButton";
+import { GameCard } from "../components/game/GameCard";
+import { setAgeMode, type AgeMode } from "../context/AgeModeContext";
+import { formatFamilyCodeDisplay } from "../lib/familyCode";
+import { syncReciterToAgeMode } from "../lib/reciterPolicy";
+import { AgeModeSelect } from "../components/AgeModeSelect";
+import { ageModeLabel } from "../lib/ageModeOptions";
 import { useLogout } from "../lib/auth";
 
 type Member = {
@@ -24,20 +31,32 @@ export function ChooseProfilePage() {
   const [newName, setNewName] = useState("");
   const [busy, setBusy] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [newAgeMode, setNewAgeMode] = useState<AgeMode>("sd");
 
   const session = useQuery({
     queryKey: ["session"],
     queryFn: () => api<Session & { role: string }>("/auth/session"),
   });
 
+  useEffect(() => {
+    if (session.data?.family_access_code) {
+      localStorage.setItem("hafiz_family_code", session.data.family_access_code);
+      localStorage.setItem("hafiz_family_name", session.data.family_name);
+    }
+  }, [session.data?.family_access_code, session.data?.family_name]);
+
   const members = useQuery({
     queryKey: ["members"],
     queryFn: () => api<Member[]>("/members"),
   });
 
-  const selectChild = async (memberId: string) => {
+  const selectChild = async (memberId: string, ageMode?: string) => {
     setBusy(true);
     try {
+      if (ageMode === "paud" || ageMode === "sd" || ageMode === "teen" || ageMode === "adult") {
+        setAgeMode(ageMode as AgeMode);
+        syncReciterToAgeMode(ageMode as AgeMode);
+      }
       const t = await api<{ access_token: string }>(`/members/${memberId}/impersonate`, { method: "POST" });
       setToken(t.access_token);
       await qc.invalidateQueries({ queryKey: ["session"] });
@@ -73,7 +92,7 @@ export function ChooseProfilePage() {
     try {
       const m = await api<Member>("/members", {
         method: "POST",
-        body: JSON.stringify({ name: newName.trim(), age_mode: "sd" }),
+        body: JSON.stringify({ name: newName.trim(), age_mode: newAgeMode }),
       });
       setNewName("");
       setShowAdd(false);
@@ -85,51 +104,85 @@ export function ChooseProfilePage() {
     }
   };
 
+  const updateChildAge = async (memberId: string, age_mode: AgeMode) => {
+    setBusy(true);
+    try {
+      await api(`/members/${memberId}`, { method: "PATCH", body: JSON.stringify({ age_mode }) });
+      await qc.invalidateQueries({ queryKey: ["members"] });
+    } catch (e) {
+      alert(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const list = members.data ?? [];
 
   return (
-    <div className="app-shell min-h-dvh p-6">
-      <h1 className="text-2xl font-extrabold">Pilih profil anak</h1>
+    <div className="app-shell min-h-dvh px-6 pb-24 pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-extrabold">Pilih profil anak</h1>
+        <Link to="/parent" className="rounded-pill border-2 border-white/40 bg-white/15 px-3 py-1 text-sm font-bold text-white">
+          Dashboard keluarga
+        </Link>
+      </div>
       <p className="mt-1 text-sm text-white/90">
         Keluarga <strong>{session.data?.family_name ?? "…"}</strong>
       </p>
       {session.data?.family_access_code && (
-        <p className="mt-2 rounded-2xl bg-white/15 p-3 text-sm">
-          Kode login anak:{" "}
-          <strong className="font-mono text-lg tracking-widest">{session.data.family_access_code}</strong>
-          <span className="mt-1 block text-xs opacity-90">Bagikan kode ini ke anak — tidak perlu UUID.</span>
+        <p className="mt-2 rounded-2xl bg-white/15 p-4 text-sm">
+          <span className="font-bold">Kode login anak</span> (6 angka — tempel di meja belajar):
+          <strong className="mt-2 block break-all font-mono text-2xl tracking-wide sm:text-3xl">
+            {formatFamilyCodeDisplay(session.data.family_access_code)}
+          </strong>
+          <span className="mt-2 block text-xs opacity-90">
+            Anak cukup buka tab Anak, ketuk angka ini, pilih nama, lalu PIN jika ada. Perangkat yang pernah login akan
+            mengingat kode.
+          </span>
         </p>
       )}
 
       <div className="mt-4 space-y-3">
         {members.isLoading && <p className="text-white/90">Memuat profil…</p>}
         {list.map((m) => (
-          <div key={m.id} className="card-surface flex items-center gap-3 p-3">
-            <button
-              type="button"
-              disabled={busy}
-              className="flex min-w-0 flex-1 items-center gap-4 text-left"
-              onClick={() => void selectChild(m.id)}
-            >
+          <div key={m.id} className="card-surface space-y-3 p-4">
+            <div className="flex items-start gap-3">
               <span
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl font-bold text-white"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl font-bold text-white"
                 style={{ backgroundColor: m.color }}
               >
                 {m.name.charAt(0).toUpperCase()}
               </span>
-              <div className="min-w-0">
-                <p className="text-lg font-bold text-gray-900">{m.name}</p>
-                <p className="text-xs text-gray-500 capitalize">Mode {m.age_mode.replace("_", " ")}</p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-lg font-bold text-gray-900">{m.name}</p>
+                <p className="text-xs text-gray-500">{ageModeLabel(m.age_mode)}</p>
               </div>
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              className="shrink-0 rounded-xl px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50"
-              onClick={() => void deleteChild(m)}
-            >
-              Hapus
-            </button>
+              <button
+                type="button"
+                disabled={busy}
+                className="shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-red-600 hover:bg-red-50"
+                onClick={() => void deleteChild(m)}
+              >
+                Hapus
+              </button>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-gray-600" htmlFor={`age-${m.id}`}>
+                Mode usia
+              </label>
+              <AgeModeSelect
+                id={`age-${m.id}`}
+                className="w-full rounded-xl border p-2 text-sm"
+                value={(m.age_mode as AgeMode) || "sd"}
+                disabled={busy}
+                onChange={(mode) => void updateChildAge(m.id, mode)}
+              />
+            </div>
+
+            <GameButton disabled={busy} onClick={() => void selectChild(m.id, m.age_mode)}>
+              Buka Home — {m.name}
+            </GameButton>
           </div>
         ))}
 
@@ -153,6 +206,8 @@ export function ChooseProfilePage() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
             />
+            <label className="block text-sm font-semibold text-gray-800">Mode usia</label>
+            <AgeModeSelect value={newAgeMode} disabled={busy} onChange={setNewAgeMode} />
             <button type="button" className="btn-cta" disabled={busy} onClick={() => void createChild()}>
               Simpan &amp; lanjut
             </button>

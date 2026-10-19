@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { QuranAyahBlock, type QuranAyah } from "../components/QuranAyahBlock";
 import { QuranAudioPlayer } from "../components/QuranAudioPlayer";
+import { AppPage } from "../components/layout/AppPage";
 import { TajweedLegend } from "../components/TajweedLegend";
 import { api } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
@@ -61,7 +62,7 @@ export function QuranSurahPage() {
 
   if (!validId) {
     return (
-      <div className="p-4 text-white">
+      <div className="p-4 pr-14 text-white">
         <Link to="/quran" className="underline">
           ← Daftar surat
         </Link>
@@ -73,7 +74,7 @@ export function QuranSurahPage() {
   const prev = surahId > 1 ? surahId - 1 : null;
   const next = surahId < 114 ? surahId + 1 : null;
   return (
-    <div className="space-y-4 p-4 pb-10">
+    <AppPage className="pb-10">
       <Link to="/quran" className="text-white underline">
         ← Daftar surat
       </Link>
@@ -144,6 +145,6 @@ export function QuranSurahPage() {
           <span className="flex-1" />
         )}
       </nav>
-    </div>
+    </AppPage>
   );
 }
