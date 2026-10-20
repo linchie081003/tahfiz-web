@@ -7,6 +7,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { MurojaahPage } from "./pages/MurojaahPage";
 import { ParentDashboardPage } from "./pages/ParentDashboardPage";
 import { ParentQueuePage } from "./pages/ParentQueuePage";
+import { WeeklyReportPage } from "./pages/WeeklyReportPage";
 import { PetaPage } from "./pages/PetaPage";
 import { SetorPage } from "./pages/SetorPage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -58,6 +59,7 @@ export default function App() {
       <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
       <Route path="/parent" element={<RequireAuth><ParentDashboardPage /></RequireAuth>} />
       <Route path="/parent/queue" element={<RequireAuth><ParentQueuePage /></RequireAuth>} />
+      <Route path="/parent/laporan" element={<RequireAuth><WeeklyReportPage /></RequireAuth>} />
       <Route
         path="/ujian"
         element={

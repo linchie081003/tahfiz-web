@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { GameDialogProvider } from "./components/game/GameDialog";
 import { GameToastProvider } from "./components/game/GameToast";
 import { AgeModeProvider } from "./context/AgeModeContext";
 import "./index.css";
@@ -16,9 +17,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <AgeModeProvider>
           <GameToastProvider>
-            <ErrorBoundary>
-              <App />
-            </ErrorBoundary>
+            <GameDialogProvider>
+              <ErrorBoundary>
+                <App />
+              </ErrorBoundary>
+            </GameDialogProvider>
           </GameToastProvider>
         </AgeModeProvider>
       </BrowserRouter>

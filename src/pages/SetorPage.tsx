@@ -6,7 +6,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArabicAyahText } from "../components/ArabicAyahText";
 import { GameButton } from "../components/game/GameButton";
 import { GameCard } from "../components/game/GameCard";
-import { useGameToast } from "../components/game/GameToast";
+import { friendlyError, useGameToast } from "../components/game/GameToast";
 import { Mascot } from "../components/game/Mascot";
 import { IconBack, IconMic } from "../components/icons/GameIcons";
 import { api } from "../lib/api";
@@ -37,6 +37,8 @@ export function SetorPage() {
   useEffect(() => {
     if (recording && hasVoice) voiceHeardRef.current = true;
   }, [recording, hasVoice]);
+  const startedAt = useRef(0);
+  const [durationSec, setDurationSec] = useState(0);
   const [busy, setBusy] = useState(false);
   const [micDenied, setMicDenied] = useState(false);
 
@@ -58,6 +60,9 @@ export function SetorPage() {
   }, [ayahsQ.data, ayahStart, ayahEnd, fallbackText]);
 
   const referenceText = display.textUthmani || fallbackText;
+
+  const blobUrl = useMemo(() => (blob ? URL.createObjectURL(blob) : null), [blob]);
+  useEffect(() => () => { if (blobUrl) URL.revokeObjectURL(blobUrl); }, [blobUrl]);
 
   const start = async () => {
     try {
@@ -91,16 +96,18 @@ export function SetorPage() {
       rec.onstop = () => {
         const b = new Blob(chunks.current, { type: rec.mimeType || "audio/webm" });
         setBlob(b);
+        setDurationSec(Math.round((Date.now() - startedAt.current) / 1000));
         const heard = voiceHeardRef.current || b.size > 3000;
         setLastCaptureOk(heard);
         stream.getTracks().forEach((t) => t.stop());
         setLiveStream(null);
       };
       mediaRef.current = rec;
+      startedAt.current = Date.now();
       rec.start(250);
     } catch {
       setMicDenied(true);
-      toast("Izin mikrofon ditolak. Aktifkan di pengaturan browser.");
+      toast("Izin mikrofon ditolak. Aktifkan di pengaturan browser.", "error");
     }
   };
 
@@ -124,10 +131,10 @@ export function SetorPage() {
       }
       fd.append("file", blob, "rec.webm");
       await api("/setor", { method: "POST", body: fd });
-      toast("Setoran terkirim! Menunggu penilaian orang tua.");
+      toast("Setoran terkirim! Menunggu penilaian orang tua.", "success");
       nav("/");
     } catch (e) {
-      toast(String(e));
+      toast(friendlyError(e), "error");
     } finally {
       setBusy(false);
     }
@@ -190,7 +197,15 @@ export function SetorPage() {
 
       {blob && (
         <>
-          <audio controls src={URL.createObjectURL(blob)} className="w-full rounded-game border-[3px] border-outline" />
+          <audio controls src={blobUrl ?? undefined} className="w-full rounded-game border-[3px] border-outline" />
+          <GameCard className="space-y-1 bg-brand-light text-sm font-bold text-outline">
+            <p>Cek rekaman</p>
+            <p className="font-semibold">
+              {lastCaptureOk ? "✓ Suara terdengar" : "⚠ Suara hampir tidak terdengar. Coba rekam lagi lebih dekat ke mikrofon."} ·
+              durasi {durationSec} detik
+            </p>
+            <p className="text-xs font-semibold text-outline/70">Rekaman hanya dikirim ke orang tuamu. Penilaian dilakukan orang tua.</p>
+          </GameCard>
           <GameButton disabled={busy} onClick={() => void submit()}>
             Kirim setoran
           </GameButton>
