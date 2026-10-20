@@ -10,12 +10,14 @@ import { syncReciterToAgeMode } from "../lib/reciterPolicy";
 import { filterRecitersForAge } from "../lib/reciterPolicy";
 import { FALLBACK_RECITERS, filterRecitersForGender, type ReciterOption } from "../lib/reciters";
 import { TajweedLegend } from "../components/TajweedLegend";
+import { RemindersAndAiSection } from "../components/RemindersAndAiSection";
 import { AppPage, PageTitleRow } from "../components/layout/AppPage";
 import { loadQuranPrefs, saveQuranPrefs, type QuranPrefs } from "../lib/quranPrefs";
 
 type Settings = {
   daily_ziyadah_ayahs: number;
   daily_murojaah_cap: number;
+  reminder_hour?: number;
   reciter_id?: string;
   playback_speed?: number;
   arabic_font_size?: string;
@@ -297,6 +299,8 @@ export function SettingsPage() {
           <code className="rounded bg-gray-100 px-1">python scripts/enrich_ayahs_quran_com.py</code> jika ayat masih
           terpotong atau tanpa warna.
         </p>
+
+        <RemindersAndAiSection isParent={isParent} reminderHour={settings?.reminder_hour} />
 
         {isParent && (
           <>
