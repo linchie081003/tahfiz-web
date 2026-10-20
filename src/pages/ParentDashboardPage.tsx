@@ -95,6 +95,9 @@ export function ParentDashboardPage() {
             Antrean penilaian
             {data.queue_total > 0 ? ` (${data.queue_total})` : ""}
           </Link>
+          <Link to="/parent/laporan" className="rounded-pill border-2 border-outline px-3 py-1 text-xs font-bold text-outline">
+            Laporan mingguan
+          </Link>
           <Link to="/pilih-profil" className="rounded-pill border-2 border-outline px-3 py-1 text-xs font-bold text-outline">
             Kelola profil
           </Link>
