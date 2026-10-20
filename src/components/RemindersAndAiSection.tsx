@@ -103,8 +103,8 @@ export function RemindersAndAiSection({ isParent, reminderHour }: { isParent: bo
           {consent.data?.available ? (
             <>
               <p className="text-xs text-gray-600">
-                Bila diizinkan, rekaman setoran anak dikirim ke layanan transkripsi pihak ketiga untuk membantu pra-cek.
-                Hasilnya hanya saran; keputusan tetap pada orang tua. Izin dapat dicabut kapan saja.
+                Bila diizinkan, rekaman setoran anak diproses oleh layanan transkripsi yang dipakai server aplikasi ini untuk
+                membantu pra-cek. Hasilnya hanya saran; keputusan tetap pada orang tua. Izin dapat dicabut kapan saja.
               </p>
               <label className="flex items-center gap-2 text-sm font-bold">
                 <input
@@ -113,7 +113,7 @@ export function RemindersAndAiSection({ isParent, reminderHour }: { isParent: bo
                   onChange={(e) => void setConsent(e.target.checked)}
                   className="h-5 w-5"
                 />
-                Izinkan pengiriman suara anak untuk pra-cek
+                Izinkan pemrosesan suara anak untuk pra-cek
               </label>
             </>
           ) : (
