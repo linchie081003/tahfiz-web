@@ -11,7 +11,8 @@ import { filterRecitersForAge } from "../lib/reciterPolicy";
 import { FALLBACK_RECITERS, filterRecitersForGender, type ReciterOption } from "../lib/reciters";
 import { TajweedLegend } from "../components/TajweedLegend";
 import { RemindersAndAiSection } from "../components/RemindersAndAiSection";
-import { AppPage, PageTitleRow } from "../components/layout/AppPage";
+import { GameHeader } from "../components/game/GameHeader";
+import { AppPage } from "../components/layout/AppPage";
 import { loadQuranPrefs, saveQuranPrefs, type QuranPrefs } from "../lib/quranPrefs";
 
 type Settings = {
@@ -170,12 +171,7 @@ export function SettingsPage() {
 
   return (
     <AppPage>
-      <Link to="/" className="text-white underline">
-        ← Home
-      </Link>
-      <PageTitleRow>
-        <h1 className="text-2xl font-bold">Pengaturan</h1>
-      </PageTitleRow>
+      <GameHeader title="Pengaturan" to="/" />
       <p className="text-sm text-white/90">
         Qari, tajwid, dan tampilan Arab berlaku untuk profil yang sedang aktif. Orang tua bisa memakai Tahsin, Ziyadah,
         Murojaah, dan Alquran seperti anak setelah memilih profil.

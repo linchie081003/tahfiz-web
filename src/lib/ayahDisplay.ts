@@ -2,6 +2,7 @@ export type AyahLine = {
   ayah_number: number;
   text_uthmani: string;
   text_tajweed?: string | null;
+  audio_url?: string | null;
 };
 
 export function mergeAyahRange(ayahs: AyahLine[], start: number, end: number) {

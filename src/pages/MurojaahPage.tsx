@@ -1,6 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { AppPage, PageTitleRow } from "../components/layout/AppPage";
+import { GameHeader } from "../components/game/GameHeader";
+import { GameCard } from "../components/game/GameCard";
+import { Mascot } from "../components/game/Mascot";
+import { AppPage } from "../components/layout/AppPage";
 import { api } from "../lib/api";
 
 type Item = { id: string; surah_name: string; due_date: string };
@@ -15,13 +17,13 @@ export function MurojaahPage() {
   };
   return (
     <AppPage>
-      <Link to="/" className="text-white underline">
-        ← Home
-      </Link>
-      <PageTitleRow>
-        <h1 className="text-2xl font-extrabold">Murojaah</h1>
-      </PageTitleRow>
-      {!data?.length && <p className="text-white/90">Tidak ada jadwal hari ini.</p>}
+      <GameHeader title="Murojaah" to="/" />
+      {!data?.length && (
+        <GameCard className="flex items-center gap-3">
+          <Mascot mood="happy" size={72} />
+          <p className="font-extrabold text-outline">Tidak ada murojaah hari ini. Hebat, sampai jumpa besok!</p>
+        </GameCard>
+      )}
       {data?.map((it) => (
         <div key={it.id} className="card-surface p-4">
           <p className="font-bold">{it.surah_name}</p>

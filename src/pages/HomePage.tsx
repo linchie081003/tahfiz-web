@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { setAgeMode, useAgeMode, type AgeMode } from "../context/AgeModeContext";
-import { HomePlayerHeader } from "../components/home/HomePlayerHeader";
+import { HomeChildScene, HomeMissionCta } from "../components/home/HomeChildScene";
 import { HomeParentHeader } from "../components/home/HomeParentHeader";
 import { BeautyRewardCard } from "../components/BeautyRewardCard";
 import { MenuGrid9 } from "../components/MenuGrid9";
@@ -66,17 +66,7 @@ export function HomePage() {
   return (
     <div className="px-4 pb-6 pt-1">
       {!isParent ? (
-        <HomePlayerHeader
-          name={data.greeting_name}
-          rankTitle={data.rank_title}
-          level={data.level}
-          streakDays={data.streak_days}
-          xp={data.xp}
-          xpNext={data.xp_next_level}
-          levelProgress={data.level_progress}
-          ageMode={effectiveAge}
-          home={data}
-        />
+        <HomeChildScene home={data} ageMode={effectiveAge} />
       ) : (
         <HomeParentHeader
           name={data.greeting_name}
@@ -91,7 +81,8 @@ export function HomePage() {
 
       {data.beauty_reward && !isParent && <BeautyRewardCard reward={data.beauty_reward} />}
 
-      <MenuGrid9 home={data} />
+      <MenuGrid9 home={data} isParent={isParent} />
+      {!isParent && <HomeMissionCta home={data} />}
     </div>
   );
 }
