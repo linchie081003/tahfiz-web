@@ -137,11 +137,40 @@ export function SettingsPage() {
   };
 
   const applyAgeMode = async (next: AgeMode) => {
+    // #region agent log
+    fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
+      body: JSON.stringify({
+        sessionId: "70ed62",
+        hypothesisId: "A",
+        location: "SettingsPage.tsx:applyAgeMode:entry",
+        message: "applyAgeMode called",
+        data: { isChild, isParent, activeMemberId, next, sessionRole: session.data?.role ?? null },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    if (isChild) {
+      // #region agent log
+      fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
+        body: JSON.stringify({
+          sessionId: "70ed62",
+          hypothesisId: "B",
+          location: "SettingsPage.tsx:applyAgeMode:child-blocked",
+          message: "Child session — skip PATCH age_mode",
+          data: { next },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+      return;
+    }
     setAgeBusy(true);
     try {
-      if (isChild && activeMemberId) {
-        await api(`/members/${activeMemberId}`, { method: "PATCH", body: JSON.stringify({ age_mode: next }) });
-      } else if (isParent && activeMemberId) {
+      if (isParent && activeMemberId) {
         await api(`/members/${activeMemberId}`, { method: "PATCH", body: JSON.stringify({ age_mode: next }) });
       } else {
         setAgeMode(next);
@@ -152,12 +181,63 @@ export function SettingsPage() {
       await qc.invalidateQueries({ queryKey: ["session"] });
       await qc.invalidateQueries({ queryKey: ["reciters"] });
       await qc.invalidateQueries({ queryKey: ["home"] });
+      // #region agent log
+      fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
+        body: JSON.stringify({
+          sessionId: "70ed62",
+          hypothesisId: "C",
+          location: "SettingsPage.tsx:applyAgeMode:success",
+          message: "Age mode saved",
+          data: { next, hadMemberId: Boolean(activeMemberId) },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
     } catch (e) {
+      // #region agent log
+      fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
+        body: JSON.stringify({
+          sessionId: "70ed62",
+          hypothesisId: "D",
+          location: "SettingsPage.tsx:applyAgeMode:error",
+          message: "applyAgeMode failed",
+          data: { error: String(e) },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       alert(String(e));
     } finally {
       setAgeBusy(false);
     }
   };
+
+  useEffect(() => {
+    if (!session.data) return;
+    // #region agent log
+    fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
+      body: JSON.stringify({
+        sessionId: "70ed62",
+        hypothesisId: "E",
+        location: "SettingsPage.tsx:session",
+        message: "Settings session loaded",
+        data: {
+          role: session.data.role,
+          member_id: session.data.member_id ?? null,
+          age_mode: session.data.age_mode ?? null,
+          ageUiEditable: session.data.role !== "child",
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  }, [session.data?.role, session.data?.member_id, session.data?.age_mode]);
 
   return (
     <AppPage>
@@ -174,34 +254,39 @@ export function SettingsPage() {
 
       <div className="card-surface space-y-4 p-4 text-gray-800">
         <h2 className="font-bold text-purple-800">Mode usia</h2>
-        {isChild && (
+        {isChild ? (
           <p className="text-xs text-gray-600">
-            Mode saat ini: <strong>{ageModeLabel(sessionAge)}</strong>. Ubah di bawah (qari &amp; tampilan mengikuti mode).
+            Mode saat ini: <strong>{ageModeLabel(sessionAge)}</strong>. Qari dan tampilan mengikuti mode ini. Minta orang tua
+            mengubah mode usia jika perlu.
           </p>
+        ) : (
+          <>
+            {isParent && !activeMemberId && (
+              <p className="text-xs text-gray-600">
+                Anda belajar sebagai orang tua tanpa profil anak. Mode ini hanya untuk tampilan &amp; qari di perangkat ini.
+                Untuk mengubah mode anak, buka{" "}
+                <Link to="/pilih-profil" className="font-bold text-brand underline">Kelola profil</Link>.
+              </p>
+            )}
+            {isParent && activeMemberId && session.data?.member_name && (
+              <p className="text-xs text-gray-600">
+                Mengatur mode untuk profil <strong>{session.data.member_name}</strong> (sedang aktif).
+              </p>
+            )}
+            <label className="block text-sm font-semibold" htmlFor="age-mode">
+              Tingkat / mode belajar
+            </label>
+            <AgeModeSelect
+              id="age-mode"
+              value={sessionAge}
+              disabled={ageBusy}
+              onChange={(next) => void applyAgeMode(next)}
+            />
+            <p className="text-xs text-gray-600">
+              PAUD/SD: qari Muallim (Husary) disarankan; remaja/dewasa: murattal. Mujawwad hanya hadiah setelah lulus setoran.
+            </p>
+          </>
         )}
-        {isParent && !activeMemberId && (
-          <p className="text-xs text-gray-600">
-            Anda belajar sebagai orang tua tanpa profil anak. Mode ini hanya untuk tampilan &amp; qari di perangkat ini.
-            Untuk mengubah mode anak, buka <Link to="/pilih-profil" className="font-bold text-brand underline">Kelola profil</Link>.
-          </p>
-        )}
-        {isParent && activeMemberId && session.data?.member_name && (
-          <p className="text-xs text-gray-600">
-            Mengatur mode untuk profil <strong>{session.data.member_name}</strong> (sedang aktif).
-          </p>
-        )}
-        <label className="block text-sm font-semibold" htmlFor="age-mode">
-          Tingkat / mode belajar
-        </label>
-        <AgeModeSelect
-          id="age-mode"
-          value={sessionAge}
-          disabled={ageBusy}
-          onChange={(next) => void applyAgeMode(next)}
-        />
-        <p className="text-xs text-gray-600">
-          PAUD/SD: qari Muallim (Husary) disarankan; remaja/dewasa: murattal. Mujawwad hanya hadiah setelah lulus setoran.
-        </p>
 
         <hr />
 
