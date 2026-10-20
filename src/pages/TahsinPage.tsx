@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArabicAyahText } from "../components/ArabicAyahText";
 import { QuranAudioPlayer } from "../components/QuranAudioPlayer";
-import { AppPage, PageTitleRow } from "../components/layout/AppPage";
+import { GameHeader } from "../components/game/GameHeader";
+import { AppPage } from "../components/layout/AppPage";
 import { TajweedLegend } from "../components/TajweedLegend";
 import { StatusCard } from "../components/game/StatusBadge";
 import { api } from "../lib/api";
@@ -34,12 +35,7 @@ export function TahsinPage() {
   });
   return (
     <AppPage>
-      <Link to="/" className="text-white underline">
-        ← Home
-      </Link>
-      <PageTitleRow>
-        <h1 className="text-2xl font-extrabold">Tahsin</h1>
-      </PageTitleRow>
+      <GameHeader title="Tahsin" to="/" />
       <StatusCard kind="tahsin" code={data.status} hint={data.hint} />
       <TajweedLegend tone="dark" />
       <div className="card-surface p-4">

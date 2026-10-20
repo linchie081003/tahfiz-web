@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { AppPage, PageTitleRow } from "../components/layout/AppPage";
+import { GameHeader } from "../components/game/GameHeader";
+import { AppPage } from "../components/layout/AppPage";
 import { api } from "../lib/api";
 
 export function LencanaPage() {
@@ -10,12 +10,7 @@ export function LencanaPage() {
   });
   return (
     <AppPage>
-      <Link to="/" className="text-white underline">
-        ← Home
-      </Link>
-      <PageTitleRow>
-        <h1 className="text-2xl font-bold">Lencana</h1>
-      </PageTitleRow>
+      <GameHeader title="Lencana" to="/" />
       <div className="space-y-2">
         {data?.badges.map((b) => (
           <div key={b.id} className={`card-surface p-3 ${b.earned ? "" : "opacity-50"}`}>

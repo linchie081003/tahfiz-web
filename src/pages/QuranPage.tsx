@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { AppPage, PageTitleRow } from "../components/layout/AppPage";
+import { GameHeader } from "../components/game/GameHeader";
+import { AppPage } from "../components/layout/AppPage";
 import { TajweedLegend } from "../components/TajweedLegend";
 import { api } from "../lib/api";
 
@@ -35,12 +36,7 @@ export function QuranPage() {
 
   return (
     <AppPage>
-      <Link to="/" className="text-white underline">
-        ← Home
-      </Link>
-      <PageTitleRow>
-        <h1 className="text-2xl font-extrabold">Alquran</h1>
-      </PageTitleRow>
+      <GameHeader title="Al-Quran" to="/" />
       <p className="text-sm text-white/90">114 surat · audio qori lewat ikon pengaturan kanan atas</p>
 
       <TajweedLegend tone="dark" />

@@ -18,11 +18,13 @@ const RUBRIC: { key: string; label: string }[] = [
 ];
 
 type Insights = {
+  available?: boolean;
+  reason?: string;
   summaryPercent?: number;
   modelVersion?: string;
   tajwidFlags?: { note: string }[];
   makhrajFlags?: { message: string }[];
-  wordAlignment?: { word: string; match: boolean }[];
+  wordMarks?: { index: number; word: string; status: string }[];
 };
 
 function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
@@ -68,18 +70,33 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
       <ArabicAyahText textUthmani={s.reference_text} textTajweed={s.reference_text_tajweed} />
       {s.recording_url && <audio controls src={s.recording_url} className="w-full rounded-game border-2 border-outline" />}
 
-      {insights && (
-        <details className="rounded-game border-2 border-outline bg-brand-light/60 p-2 text-sm text-outline">
+      {insights && insights.available === false && (
+        <p className="rounded-game border-2 border-outline bg-brand-light/60 p-2 text-xs font-semibold text-outline">
+          Pra-cek otomatis tidak tersedia
+          {insights.reason === "no_consent" ? " (belum diizinkan di Pengaturan)" : ""}. Nilai berdasarkan rekaman yang Anda dengar.
+        </p>
+      )}
+      {insights && insights.available !== false && (
+        <details className="rounded-game border-2 border-outline bg-brand-light/60 p-2 text-sm text-outline" open>
           <summary className="cursor-pointer font-bold">
             <span className="mr-2 rounded-pill border-2 border-outline bg-[#FFE08A] px-2 py-0.5 text-xs font-extrabold">
-              Pra-cek (percobaan)
+              Pra-cek (saran)
             </span>
-            Lihat catatan otomatis
+            Kata terdengar sesuai: {insights.summaryPercent ?? "—"}%
           </summary>
-          <p className="mt-2 text-xs font-semibold">
-            Pra-cek otomatis belum mendengarkan bacaan secara sungguhan, jadi jangan dijadikan patokan. Nilai berdasarkan
-            rekaman yang Anda dengar.
-          </p>
+          <p className="mt-2 text-xs font-semibold">Hasil transkripsi otomatis bisa keliru, terutama untuk suara anak. Jadikan saran saja.</p>
+          {insights.wordMarks?.length ? (
+            <p className="mt-2 flex flex-wrap gap-1" dir="rtl">
+              {insights.wordMarks.map((w) => (
+                <span
+                  key={w.index}
+                  className={`rounded-pill px-2 py-0.5 text-sm font-bold ${w.status === "benar" ? "bg-game-green-start/40" : "bg-game-coral/40"}`}
+                >
+                  {w.word}
+                </span>
+              ))}
+            </p>
+          ) : null}
           {insights.tajwidFlags?.length ? (
             <div className="mt-2 flex flex-wrap gap-1">
               {insights.tajwidFlags.map((f, i) => (
