@@ -71,14 +71,7 @@ export default function App() {
       <Route path="/quran" element={<RequireAuth><QuranPage /></RequireAuth>} />
       <Route path="/quran/:surahId" element={<RequireAuth><QuranSurahPage /></RequireAuth>} />
       <Route path="/referensi" element={<RequireAuth><Navigate to="/quran" replace /></RequireAuth>} />
-      <Route
-        path="/laporan"
-        element={
-          <RequireAuth>
-            <div className="app-page space-y-4 p-4 pb-24 pt-1">Laporan — Segera (Fase 2)</div>
-          </RequireAuth>
-        }
-      />
+      <Route path="/laporan" element={<RequireAuth><Navigate to="/parent/laporan" replace /></RequireAuth>} />
     </Routes>
   );
 }

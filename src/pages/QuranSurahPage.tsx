@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { GameHeader } from "../components/game/GameHeader";
 import { QuranAyahBlock, type QuranAyah } from "../components/QuranAyahBlock";
 import { QuranAudioPlayer } from "../components/QuranAudioPlayer";
 import { AppPage } from "../components/layout/AppPage";
@@ -62,12 +63,10 @@ export function QuranSurahPage() {
 
   if (!validId) {
     return (
-      <div className="p-4 pr-14 text-white">
-        <Link to="/quran" className="underline">
-          ← Daftar surat
-        </Link>
-        <p className="mt-4">Nomor surat tidak valid.</p>
-      </div>
+      <AppPage>
+        <GameHeader title="Al-Quran" to="/quran" />
+        <p className="text-center text-white">Nomor surat tidak valid.</p>
+      </AppPage>
     );
   }
 
@@ -75,15 +74,12 @@ export function QuranSurahPage() {
   const next = surahId < 114 ? surahId + 1 : null;
   return (
     <AppPage className="pb-10">
-      <Link to="/quran" className="text-white underline">
-        ← Daftar surat
-      </Link>
+      <GameHeader title={surah?.name_id ?? "Memuat…"} to="/quran" />
 
       <header className="card-surface p-4 text-center">
         <p className="font-serif text-3xl text-gray-900" dir="rtl" lang="ar">
           {surah?.name_ar ?? "…"}
         </p>
-        <h1 className="text-xl font-bold text-gray-800">{surah?.name_id ?? "Memuat…"}</h1>
         {surah && (
           <p className="text-sm text-gray-600">
             Surat ke-{surah.id} · {surah.ayah_count} ayat · Juz {surah.juz_number}

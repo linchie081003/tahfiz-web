@@ -1,13 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { GameHeader } from "../components/game/GameHeader";
 import { ArabicAyahText } from "../components/ArabicAyahText";
 import { GameButton } from "../components/game/GameButton";
 import { GameCard } from "../components/game/GameCard";
 import { friendlyError, useGameToast } from "../components/game/GameToast";
 import { StarRating } from "../components/game/StarRating";
-import { IconBack } from "../components/icons/GameIcons";
-import { AppPage, PageTitleRow } from "../components/layout/AppPage";
+import { AppPage } from "../components/layout/AppPage";
+import { AuthenticatedAudio } from "../components/AuthenticatedAudio";
 import { api, type Submission } from "../lib/api";
 
 const RUBRIC: { key: string; label: string }[] = [
@@ -27,13 +28,75 @@ type Insights = {
   wordMarks?: { index: number; word: string; status: string }[];
 };
 
+function precheckHint(reason?: string) {
+  if (reason === "no_consent") {
+    return (
+      <>
+        Pra-cek otomatis tidak jalan karena izin belum aktif. Buka{" "}
+        <Link to="/settings" className="font-bold text-brand underline">
+          Pengaturan
+        </Link>
+        , centang <strong>Izinkan pengiriman suara anak untuk pra-cek</strong>, lalu ketuk &quot;Jalankan pra-cek ulang&quot; di
+        bawah. Setoran yang sudah ada tidak otomatis ter-update.
+      </>
+    );
+  }
+  if (reason === "stt_not_installed") {
+    return "Engine Whisper lokal belum terpasang. Di server: pip install -r requirements-stt-local.txt dan FFmpeg di PATH.";
+  }
+  if (reason === "stt_av_version") {
+    return "Paket PyAV tidak cocok dengan faster-whisper. Di server: pip install \"av>=12,<14\" lalu restart backend.";
+  }
+  if (reason === "disabled") {
+    return "Pra-cek AI belum diaktifkan di server (STT). Nilai berdasarkan rekaman yang Anda dengar.";
+  }
+  if (reason === "stt_quota") {
+    return "Kuota API cloud habis (429). Pakai STT_ENGINE=faster_whisper di server untuk pra-cek gratis lokal, lalu jalankan pra-cek ulang.";
+  }
+  if (reason === "stt_auth") {
+    return "Kunci API transkripsi ditolak (401). Periksa STT_API_KEY di server. Nilai berdasarkan rekaman yang Anda dengar.";
+  }
+  if (reason === "stt_network") {
+    return "Tidak dapat hubungi layanan transkripsi. Periksa internet/firewall server. Nilai berdasarkan rekaman yang Anda dengar.";
+  }
+  if (reason === "empty_audio") {
+    return "File rekaman kosong atau terlalu pendek untuk transkripsi. Nilai berdasarkan rekaman yang Anda dengar.";
+  }
+  if (reason === "stt_empty" || reason === "no_transcript") {
+    return "Whisper tidak menghasilkan teks (rekaman terlalu sunyi atau backend lama). Restart backend, lalu ketuk Jalankan pra-cek ulang.";
+  }
+  if (reason === "stt_api") {
+    return "Engine STT error (stt_api). Cek log backend; pastikan pip install -r requirements-stt-local.txt dan av>=12,<14.";
+  }
+  return `Pra-cek otomatis tidak tersedia${reason ? ` (${reason})` : ""}. Nilai berdasarkan rekaman yang Anda dengar.`;
+}
+
 function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
   const toast = useGameToast();
   const [scores, setScores] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [precheckBusy, setPrecheckBusy] = useState(false);
   const insights = s.ai_insights as Insights | null;
   const allRated = RUBRIC.every((r) => (scores[r.key] ?? 0) > 0);
+
+  const runPrecheck = async () => {
+    setPrecheckBusy(true);
+    try {
+      const updated = await api<Submission>(`/setor/${s.id}/reprocess-precheck`, { method: "POST" });
+      const ins = updated.ai_insights as Insights | null;
+      if (ins?.available) {
+        toast(`Pra-cek selesai — kecocokan kata ~${ins.summaryPercent ?? 0}%.`, "success");
+      } else {
+        toast(`Pra-cek selesai tanpa transkripsi (${ins?.reason ?? "unknown"}).`, "error");
+      }
+      onDone();
+    } catch (e) {
+      toast(friendlyError(e), "error");
+    } finally {
+      setPrecheckBusy(false);
+    }
+  };
 
   const send = async (status: "passed" | "needs_retry") => {
     if (status === "passed" && !allRated) {
@@ -68,13 +131,21 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
         </p>
       </div>
       <ArabicAyahText textUthmani={s.reference_text} textTajweed={s.reference_text_tajweed} />
-      {s.recording_url && <audio controls src={s.recording_url} className="w-full rounded-game border-2 border-outline" />}
+      {s.recording_url && (
+        <AuthenticatedAudio url={s.recording_url} className="w-full rounded-game border-2 border-outline" />
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <GameButton size="sm" variant="gold" disabled={precheckBusy} onClick={() => void runPrecheck()}>
+          Jalankan pra-cek ulang
+        </GameButton>
+        <span className="text-[10px] font-semibold text-outline/65">Retest manual · butuh STT + izin di Pengaturan</span>
+      </div>
 
       {insights && insights.available === false && (
-        <p className="rounded-game border-2 border-outline bg-brand-light/60 p-2 text-xs font-semibold text-outline">
-          Pra-cek otomatis tidak tersedia
-          {insights.reason === "no_consent" ? " (belum diizinkan di Pengaturan)" : ""}. Nilai berdasarkan rekaman yang Anda dengar.
-        </p>
+        <div className="rounded-game border-2 border-outline bg-brand-light/60 p-2 text-xs font-semibold text-outline">
+          <p>{precheckHint(insights.reason)}</p>
+        </div>
       )}
       {insights && insights.available !== false && (
         <details className="rounded-game border-2 border-outline bg-brand-light/60 p-2 text-sm text-outline" open>
@@ -157,17 +228,7 @@ export function ParentQueuePage() {
 
   return (
     <AppPage className="pb-8">
-      <div className="flex flex-wrap gap-3 text-sm font-bold">
-        <Link to="/parent" className="inline-flex items-center gap-1 text-outline underline">
-          <IconBack size={22} decorative /> Dashboard
-        </Link>
-        <Link to="/" className="text-outline/80 underline">
-          Home anak
-        </Link>
-      </div>
-      <PageTitleRow>
-        <h1 className="game-text-stroke text-2xl font-extrabold">Antrean penilaian</h1>
-      </PageTitleRow>
+      <GameHeader title="Antrean penilaian" to="/parent" />
       <p className="text-xs font-semibold text-outline/90">Keputusan akhir ada pada Anda.</p>
       {!data?.length && <GameCard>Tidak ada setoran menunggu.</GameCard>}
       {data?.map((s) => (

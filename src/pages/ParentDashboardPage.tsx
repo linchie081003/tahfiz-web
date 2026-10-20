@@ -3,10 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { GameButton } from "../components/game/GameButton";
 import { GameCard } from "../components/game/GameCard";
 import { StatusBadge } from "../components/game/StatusBadge";
-import { IconBack, IconPearl, IconStreak } from "../components/icons/GameIcons";
+import { GameHeader } from "../components/game/GameHeader";
+import { IconPearl, IconStreak } from "../components/icons/GameIcons";
 import { formatFamilyCodeDisplay } from "../lib/familyCode";
 import { api, setToken } from "../lib/api";
-import { AppPage, PageTitleRow } from "../components/layout/AppPage";
+import { AppPage } from "../components/layout/AppPage";
 
 type ChildSummary = {
   id: string;
@@ -53,36 +54,41 @@ export function ParentDashboardPage() {
     await qc.invalidateQueries({ queryKey: ["parent-dashboard"] });
   };
 
-  if (isLoading) return <div className="p-8 text-center font-bold text-outline">Memuat dashboard…</div>;
+  if (isLoading) {
+    return (
+      <AppPage>
+        <GameHeader title="Dashboard keluarga" to="/" />
+        <p className="text-center font-bold text-outline">Memuat dashboard…</p>
+      </AppPage>
+    );
+  }
   if (isError || !data) {
     return (
-      <div className="space-y-4 p-6">
+      <AppPage>
+        <GameHeader title="Dashboard keluarga" to="/" />
         <p className="font-bold text-outline">Dashboard hanya untuk akun orang tua.</p>
-        <Link to="/" className="text-brand underline">
-          ← Kembali
-        </Link>
-      </div>
+      </AppPage>
     );
   }
 
   return (
     <AppPage className="pb-10">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <Link to="/" className="inline-flex items-center gap-1 text-sm font-bold text-outline underline">
-            <IconBack size={20} decorative /> Home anak
-          </Link>
-          <PageTitleRow className="mt-1">
-            <h1 className="game-text-stroke text-2xl font-extrabold">Dashboard keluarga</h1>
-          </PageTitleRow>
-          <p className="text-sm font-semibold text-outline/90">{data.family_name}</p>
-        </div>
-        {data.active_member_id && (
-          <button type="button" onClick={() => void exitChildView()} className="text-xs font-bold text-brand underline">
-            Keluar mode anak
-          </button>
-        )}
-      </div>
+      <GameHeader
+        title="Dashboard keluarga"
+        to="/"
+        right={
+          data.active_member_id ? (
+            <button
+              type="button"
+              onClick={() => void exitChildView()}
+              className="max-w-[7rem] text-right text-[10px] font-bold leading-tight text-brand underline"
+            >
+              Keluar mode anak
+            </button>
+          ) : undefined
+        }
+      />
+      <p className="-mt-2 text-center text-sm font-semibold text-outline/90">{data.family_name}</p>
 
       <GameCard className="space-y-2">
         <p className="text-sm font-bold text-outline">Kode login anak</p>

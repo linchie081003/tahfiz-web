@@ -28,7 +28,7 @@ export function RemindersAndAiSection({ isParent, reminderHour }: { isParent: bo
 
   const consent = useQuery({
     queryKey: ["ai-consent"],
-    queryFn: () => api<{ granted: boolean; available: boolean }>("/settings/ai-consent"),
+    queryFn: () => api<{ granted: boolean; available: boolean; engine?: string }>("/settings/ai-consent"),
     enabled: isParent,
     retry: false,
   });
@@ -103,8 +103,9 @@ export function RemindersAndAiSection({ isParent, reminderHour }: { isParent: bo
           {consent.data?.available ? (
             <>
               <p className="text-xs text-gray-600">
-                Bila diizinkan, rekaman setoran anak dikirim ke layanan transkripsi pihak ketiga untuk membantu pra-cek.
-                Hasilnya hanya saran; keputusan tetap pada orang tua. Izin dapat dicabut kapan saja.
+                Engine: <strong>{consent.data.engine ?? "STT"}</strong>. Bila diizinkan, rekaman diproses untuk pra-cek
+                (cloud, server lokal open source, atau Whisper in-process). Hasilnya hanya saran; keputusan tetap pada
+                orang tua. Izin dapat dicabut kapan saja.
               </p>
               <label className="flex items-center gap-2 text-sm font-bold">
                 <input

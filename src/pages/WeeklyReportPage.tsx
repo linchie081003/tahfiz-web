@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { GameCard } from "../components/game/GameCard";
-import { IconBack } from "../components/icons/GameIcons";
-import { AppPage, PageTitleRow } from "../components/layout/AppPage";
+import { GameHeader } from "../components/game/GameHeader";
+import { AppPage } from "../components/layout/AppPage";
 import { api } from "../lib/api";
 
 type Child = { id: string; name: string };
@@ -48,12 +47,7 @@ export function WeeklyReportPage() {
 
   return (
     <AppPage className="pb-8">
-      <Link to="/parent" className="inline-flex items-center gap-1 text-sm font-bold text-outline underline">
-        <IconBack size={22} decorative /> Dashboard
-      </Link>
-      <PageTitleRow>
-        <h1 className="game-text-stroke text-2xl font-extrabold">Laporan minggu ini</h1>
-      </PageTitleRow>
+      <GameHeader title="Laporan minggu ini" to="/parent" />
 
       {kids.data && kids.data.length > 1 && (
         <div className="flex flex-wrap gap-2">
