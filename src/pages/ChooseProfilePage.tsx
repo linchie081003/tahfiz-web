@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { api, setToken } from "../lib/api";
 import { GameButton } from "../components/game/GameButton";
 import { GameCard } from "../components/game/GameCard";
+import { useGameConfirm } from "../components/game/GameDialog";
+import { friendlyError, useGameToast } from "../components/game/GameToast";
 import { setAgeMode, type AgeMode } from "../context/AgeModeContext";
 import { formatFamilyCodeDisplay } from "../lib/familyCode";
 import { syncReciterToAgeMode } from "../lib/reciterPolicy";
@@ -27,6 +29,8 @@ type Session = {
 export function ChooseProfilePage() {
   const nav = useNavigate();
   const qc = useQueryClient();
+  const toast = useGameToast();
+  const confirmDialog = useGameConfirm();
   const logout = useLogout();
   const [newName, setNewName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -62,16 +66,19 @@ export function ChooseProfilePage() {
       await qc.invalidateQueries({ queryKey: ["session"] });
       nav("/", { replace: true });
     } catch (e) {
-      alert(String(e));
+      toast(friendlyError(e), "error");
     } finally {
       setBusy(false);
     }
   };
 
   const deleteChild = async (m: Member) => {
-    const ok = window.confirm(
-      `Hapus profil "${m.name}"?\n\nProgres hafalan, setoran, dan XP anak ini akan dihapus permanen.`,
-    );
+    const ok = await confirmDialog({
+      title: `Hapus profil ${m.name}?`,
+      message: "Progres hafalan, setoran, dan XP anak ini akan dihapus permanen. Ini tidak bisa dibatalkan.",
+      confirmLabel: "Hapus",
+      tone: "danger",
+    });
     if (!ok) return;
     setBusy(true);
     try {
@@ -80,7 +87,7 @@ export function ChooseProfilePage() {
       await qc.invalidateQueries({ queryKey: ["members"] });
       await qc.invalidateQueries({ queryKey: ["session"] });
     } catch (e) {
-      alert(String(e));
+      toast(friendlyError(e), "error");
     } finally {
       setBusy(false);
     }
@@ -99,7 +106,7 @@ export function ChooseProfilePage() {
       await qc.invalidateQueries({ queryKey: ["members"] });
       await selectChild(m.id);
     } catch (e) {
-      alert(String(e));
+      toast(friendlyError(e), "error");
       setBusy(false);
     }
   };
@@ -110,7 +117,7 @@ export function ChooseProfilePage() {
       await api(`/members/${memberId}`, { method: "PATCH", body: JSON.stringify({ age_mode }) });
       await qc.invalidateQueries({ queryKey: ["members"] });
     } catch (e) {
-      alert(String(e));
+      toast(friendlyError(e), "error");
     } finally {
       setBusy(false);
     }

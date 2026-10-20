@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { friendlyError, useGameToast } from "../components/game/GameToast";
 import { useAgeMode, setAgeMode, type AgeMode } from "../context/AgeModeContext";
 import { AgeModeSelect } from "../components/AgeModeSelect";
 import { ageModeLabel } from "../lib/ageModeOptions";
@@ -23,6 +24,7 @@ type Settings = {
 
 export function SettingsPage() {
   const qc = useQueryClient();
+  const toast = useGameToast();
   const { mode: ageMode } = useAgeMode();
   const session = useQuery({
     queryKey: ["session"],
@@ -130,42 +132,14 @@ export function SettingsPage() {
       await qc.invalidateQueries({ queryKey: ["home"] });
       await qc.invalidateQueries({ queryKey: ["murojaah"] });
     } catch (e) {
-      alert(String(e));
+      toast(friendlyError(e), "error");
     } finally {
       setMissionBusy(false);
     }
   };
 
   const applyAgeMode = async (next: AgeMode) => {
-    // #region agent log
-    fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
-      body: JSON.stringify({
-        sessionId: "70ed62",
-        hypothesisId: "A",
-        location: "SettingsPage.tsx:applyAgeMode:entry",
-        message: "applyAgeMode called",
-        data: { isChild, isParent, activeMemberId, next, sessionRole: session.data?.role ?? null },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     if (isChild) {
-      // #region agent log
-      fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
-        body: JSON.stringify({
-          sessionId: "70ed62",
-          hypothesisId: "B",
-          location: "SettingsPage.tsx:applyAgeMode:child-blocked",
-          message: "Child session — skip PATCH age_mode",
-          data: { next },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
       return;
     }
     setAgeBusy(true);
@@ -181,36 +155,8 @@ export function SettingsPage() {
       await qc.invalidateQueries({ queryKey: ["session"] });
       await qc.invalidateQueries({ queryKey: ["reciters"] });
       await qc.invalidateQueries({ queryKey: ["home"] });
-      // #region agent log
-      fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
-        body: JSON.stringify({
-          sessionId: "70ed62",
-          hypothesisId: "C",
-          location: "SettingsPage.tsx:applyAgeMode:success",
-          message: "Age mode saved",
-          data: { next, hadMemberId: Boolean(activeMemberId) },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
     } catch (e) {
-      // #region agent log
-      fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
-        body: JSON.stringify({
-          sessionId: "70ed62",
-          hypothesisId: "D",
-          location: "SettingsPage.tsx:applyAgeMode:error",
-          message: "applyAgeMode failed",
-          data: { error: String(e) },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
-      alert(String(e));
+      toast(friendlyError(e), "error");
     } finally {
       setAgeBusy(false);
     }
@@ -218,25 +164,6 @@ export function SettingsPage() {
 
   useEffect(() => {
     if (!session.data) return;
-    // #region agent log
-    fetch("http://127.0.0.1:7462/ingest/a9bfa8ed-ff6b-477f-819e-b77f5ba5b1a7", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "70ed62" },
-      body: JSON.stringify({
-        sessionId: "70ed62",
-        hypothesisId: "E",
-        location: "SettingsPage.tsx:session",
-        message: "Settings session loaded",
-        data: {
-          role: session.data.role,
-          member_id: session.data.member_id ?? null,
-          age_mode: session.data.age_mode ?? null,
-          ageUiEditable: session.data.role !== "child",
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
   }, [session.data?.role, session.data?.member_id, session.data?.age_mode]);
 
   return (
