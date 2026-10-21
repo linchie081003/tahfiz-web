@@ -85,11 +85,9 @@ export function SetorPage() {
       setLiveStream(stream);
       setRecording(true);
 
-      const mime =
-        typeof MediaRecorder !== "undefined" &&
-        MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-          ? "audio/webm;codecs=opus"
-          : undefined;
+      if (typeof MediaRecorder === "undefined") throw new DOMException("MediaRecorder tidak tersedia", "NotSupportedError");
+      // Chrome/Android merekam webm; Safari/iPhone hanya mp4. Pilih yang didukung.
+      const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((m) => MediaRecorder.isTypeSupported(m));
       const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
       chunks.current = [];
       rec.ondataavailable = (e) => {
@@ -107,9 +105,20 @@ export function SetorPage() {
       mediaRef.current = rec;
       startedAt.current = Date.now();
       rec.start(250);
-    } catch {
-      setMicDenied(true);
-      toast("Izin mikrofon ditolak. Aktifkan di pengaturan browser.", "error");
+    } catch (e) {
+      const name = e instanceof DOMException ? e.name : "";
+      setRecording(false);
+      setLiveStream(null);
+      if (name === "NotFoundError") {
+        toast("Mikrofon tidak ditemukan di perangkat ini.", "error");
+      } else if (name === "NotReadableError") {
+        toast("Mikrofon sedang dipakai aplikasi lain. Tutup aplikasi itu lalu coba lagi.", "error");
+      } else if (name === "NotSupportedError" || !window.isSecureContext) {
+        toast("Browser ini belum mendukung perekaman. Coba Chrome atau Safari terbaru.", "error");
+      } else {
+        setMicDenied(true);
+        toast("Izin mikrofon ditolak. Aktifkan di pengaturan browser.", "error");
+      }
     }
   };
 
