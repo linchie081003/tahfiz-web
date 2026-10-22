@@ -131,8 +131,12 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
         </p>
       </div>
       <ArabicAyahText textUthmani={s.reference_text} textTajweed={s.reference_text_tajweed} />
-      {s.recording_url && (
+      {s.recording_url ? (
         <AuthenticatedAudio url={s.recording_url} className="w-full rounded-game border-2 border-line" />
+      ) : (
+        <p className="rounded-[18px] bg-cream p-3 text-sm font-bold text-gold-ink">
+          Rekaman tidak tersimpan (belum ada persetujuan rekaman atau sudah dihapus). Nilai berdasarkan pengamatan Anda langsung.
+        </p>
       )}
 
       <div className="flex flex-wrap items-center gap-2">

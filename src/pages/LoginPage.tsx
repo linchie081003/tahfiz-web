@@ -97,7 +97,7 @@ export function LoginPage() {
     });
     setToken(t.access_token);
     localStorage.setItem(FAMILY_CODE_KEY, t.family_access_code);
-    nav("/", { replace: true });
+    nav("/parent/persetujuan", { replace: true });
   };
 
   const childLogin = async (child: PublicChild, childPin: string) => {
