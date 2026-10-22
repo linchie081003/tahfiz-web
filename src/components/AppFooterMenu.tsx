@@ -27,7 +27,7 @@ export function AppFooterMenu() {
     staleTime: 60_000,
   });
   const isParent = session.data?.role === "parent";
-  if (["/login", "/gabung", "/onboarding", "/parent/gerbang"].includes(pathname) || /^\/tahsin\/\d/.test(pathname)) return null;
+  if (["/login", "/gabung", "/guru/masuk", "/guru/daftar", "/onboarding", "/parent/gerbang"].includes(pathname) || /^\/tahsin\/\d/.test(pathname)) return null;
 
   return (
     <nav
