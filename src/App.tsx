@@ -23,6 +23,8 @@ import { PindahInstansiPage } from "./pages/parent/PindahInstansiPage";
 import { GuruShell } from "./pages/guru/GuruShell";
 import { GuruMasukPage } from "./pages/guru/GuruMasukPage";
 import { GuruAntreanPage, GuruBerandaPage, GuruEvaluasiPage, GuruMuridDetailPage, GuruMuridPage, GuruPengaturanPage } from "./pages/guru/GuruPages";
+import { HasilPage } from "./pages/HasilPage";
+import { SertifikatPage } from "./pages/SertifikatPage";
 import { ZiyadahPage } from "./pages/ZiyadahPage";
 
 import { GameScene } from "./components/game/GameScene";
@@ -84,6 +86,8 @@ export default function App() {
       <Route path="/ziyadah" element={<RequireAuth><ZiyadahPage /></RequireAuth>} />
       <Route path="/murojaah" element={<RequireAuth><MurojaahPage /></RequireAuth>} />
       <Route path="/setor" element={<RequireAuth><SetorPage /></RequireAuth>} />
+      <Route path="/hasil/:id" element={<RequireAuth><HasilPage /></RequireAuth>} />
+      <Route path="/sertifikat/:point" element={<RequireAuth><SertifikatPage /></RequireAuth>} />
       <Route path="/lencana" element={<RequireAuth><LencanaPage /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
       <Route path="/parent" element={<RequireAuth><ParentDashboardPage /></RequireAuth>} />

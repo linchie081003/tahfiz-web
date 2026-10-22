@@ -17,6 +17,7 @@ import { api } from "../lib/api";
 import { AppPage, PageTitleRow } from "../components/layout/AppPage";
 import { mergeAyahRange, type AyahLine } from "../lib/ayahDisplay";
 import { loadQuranPrefs } from "../lib/quranPrefs";
+import { StateScreen, Steps, Tips } from "../components/ui/StateScreen";
 
 export function SetorPage() {
   const [params] = useSearchParams();
@@ -45,6 +46,8 @@ export function SetorPage() {
   const [durationSec, setDurationSec] = useState(0);
   const [busy, setBusy] = useState(false);
   const [micDenied, setMicDenied] = useState(false);
+  const [offline, setOffline] = useState(false);
+  const [forceSend, setForceSend] = useState(false);
 
   const session = useQuery({
     queryKey: ["session"],
@@ -72,6 +75,7 @@ export function SetorPage() {
     try {
       setMicDenied(false);
       setBlob(null);
+      setForceSend(false);
       setLastCaptureOk(undefined);
       voiceHeardRef.current = false;
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -111,7 +115,6 @@ export function SetorPage() {
       rec.start(250);
     } catch {
       setMicDenied(true);
-      toast("Izin mikrofon ditolak. Aktifkan di pengaturan browser.", "error");
     }
   };
 
@@ -134,11 +137,11 @@ export function SetorPage() {
         fd.append("ayah_end", String(ayahEnd));
       }
       fd.append("file", blob, "rec.webm");
-      await api("/setor", { method: "POST", body: fd });
-      toast("Setoran terkirim! Menunggu penilaian orang tua.", "success");
-      nav("/");
+      const created = await api<{ id: string }>("/setor", { method: "POST", body: fd });
+      nav(`/hasil/${created.id}`, { replace: true });
     } catch (e) {
-      toast(friendlyError(e), "error");
+      if (!navigator.onLine || String((e as Error).message).startsWith("Tidak dapat hubungi")) setOffline(true);
+      else toast(friendlyError(e), "error");
     } finally {
       setBusy(false);
     }
@@ -155,6 +158,37 @@ export function SetorPage() {
 
   const totalAyahs = ayahsQ.data?.length ?? 0;
   const ayahLabel = ayahStart === ayahEnd ? `ayat ${ayahStart}` : `ayat ${ayahStart}–${ayahEnd}`;
+
+  if (micDenied) {
+    return (
+      <StateScreen title="Mikrofon belum diizinkan" lead="Tenang, kamu tidak salah apa-apa."
+        actions={[{ label: "Coba lagi", onClick: () => void start() }, { label: "Minta Ayah atau Ibu membantu", variant: "outline", onClick: () => nav("/") }]}
+        link={{ label: "Nanti saja", onClick: () => nav(-1) }}>
+        <Steps items={["Buka pengaturan situs di browser (ikon gembok)", "Pilih Mikrofon, lalu Izinkan", "Kembali ke sini dan coba lagi"]} />
+        <p className="font-bold text-muted">Latihan dengar dan baca tetap bisa, tanpa mikrofon.</p>
+      </StateScreen>
+    );
+  }
+  if (offline) {
+    return (
+      <StateScreen title="Tidak ada internet" lead="Tidak apa-apa. Rekamanmu masih ada di layar ini."
+        actions={[{ label: "Coba kirim lagi", onClick: () => { setOffline(false); void submit(); } }]}
+        link={{ label: "Lanjut tanpa internet", onClick: () => { setOffline(false); } }}>
+        <Tips title="Masih bisa tanpa internet" items={["Mendengar contoh dan membaca", "Merekam ulang bila perlu"]} />
+        <p className="text-sm font-bold text-muted">Jangan tutup halaman ini sampai rekaman terkirim.</p>
+      </StateScreen>
+    );
+  }
+  if (blob && !recording && !forceSend && (!lastCaptureOk || durationSec < 2)) {
+    return (
+      <StateScreen title="Rekaman belum berhasil" lead="Suaramu belum sempat terekam. Rekamannya terlalu pendek atau terputus. Tidak apa-apa!"
+        actions={[{ label: "Coba rekam lagi", onClick: () => { setBlob(null); setLastCaptureOk(undefined); } }]}
+        link={{ label: "Kirim saja", onClick: () => setForceSend(true) }}>
+        <Tips title="Coba begini ya" items={["Dekatkan perangkat ke mulutmu", "Cari tempat yang tenang"]} />
+        <p className="text-sm font-bold text-muted">Percobaan ini tidak dihitung. Bintangmu tidak berkurang.</p>
+      </StateScreen>
+    );
+  }
 
   return (
     <div className="px-4 pb-28 pt-2">
