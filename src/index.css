@@ -117,3 +117,11 @@ body {
 .app-page input[type="range"] {
   accent-color: #4f46b5;
 }
+
+/* Tulisan Arab sederhana untuk latihan huruf: Naskh yang jelas, jarak baris lega agar harakat tidak terpotong. */
+.font-arab {
+  font-family: "Noto Naskh Arabic", "Amiri Quran", "Scheherazade New", serif;
+  font-weight: 500;
+  line-height: 1.9;
+  text-rendering: optimizeLegibility;
+}

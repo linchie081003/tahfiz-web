@@ -1,3 +1,4 @@
+import { FocusArabic } from "../components/FocusArabic";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RecordingLevelMeter } from "../components/game/RecordingLevelMeter";
@@ -23,6 +24,7 @@ export function SetorPage() {
   const [params] = useSearchParams();
   const context = params.get("context") ?? "ziyadah";
   const fallbackText = params.get("text") ?? "";
+  const focusParam = params.get("focus") ?? "";
   const surahIdParam = params.get("surah_id");
   const surahId = surahIdParam ? Number(surahIdParam) : null;
   const ayahStart = Number(params.get("ayah_start") ?? 1);
@@ -252,6 +254,8 @@ export function SetorPage() {
       <GameCard className="mt-3 flex min-h-[170px] items-center justify-center rounded-[22px] border-[4px] p-4 text-center">
         {ayahsQ.isLoading && surahId ? (
           <p className="text-sm font-semibold text-outline">Memuat teks ayat…</p>
+        ) : isLetterDrill && focusParam ? (
+          <FocusArabic text={referenceText} focus={focusParam} color="#C98A00" className="block text-[4rem]" />
         ) : (
           <ArabicAyahText textUthmani={referenceText} textTajweed={display.textTajweed} className="!text-[2.6rem] !leading-[2.2]" />
         )}
