@@ -1,3 +1,4 @@
+import { surahName } from "../../lib/surahInfo";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
@@ -118,8 +119,7 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
   const next = ACTION_LABEL[home.mission_action];
   let lastSurah = "";
   try { lastSurah = localStorage.getItem("hafiz_last_surah") || ""; } catch { /* abaikan */ }
-  const surahs = useQuery({ queryKey: ["quran", "surahs", "all"], queryFn: () => api<{ id: number; name_id: string }[]>("/quran/surahs"), staleTime: 3600_000, retry: false });
-  const lastName = surahs.data?.find((x) => String(x.id) === (lastSurah || "1"))?.name_id;
+  const lastName = surahName(Number(lastSurah || 1));
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">

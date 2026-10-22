@@ -1,3 +1,4 @@
+import { surahName } from "../lib/surahInfo";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +111,7 @@ export function MurojaahPage() {
             return (
               <div key={n.surah_id} className={`flex flex-col items-center gap-1 rounded-[28px] p-3 ${isDue ? "border-2 border-gold bg-cream" : growing ? "bg-[#6C63C9]" : "bg-teal"}`}>
                 <Tree tone={isDue ? "#F2B01E" : growing ? "#E6E4F8" : "#6FCFC1"} />
-                <p className={`text-base font-extrabold ${isDue ? "text-gold-ink" : "text-white"}`}>{n.name_id}</p>
+                <p className={`text-base font-extrabold ${isDue ? "text-gold-ink" : "text-white"}`}>{surahName(n.surah_id, n.name_id)}</p>
                 <p className={`text-[13px] font-extrabold ${isDue ? "text-[#7A5200]" : "text-white"}`}>{isDue ? "Perlu disiram" : growing ? "Sedang tumbuh" : "Sudah dihafal"}</p>
                 <span className={`rounded-pill px-2.5 py-0.5 text-xs font-extrabold ${isDue ? "bg-white text-[#7A5200]" : growing ? "bg-lav text-brand-dark" : "bg-[#D9F0EC] text-[#0A4F4A]"}`}>{isDue ? "Murajaah, hari ini" : growing ? "Hafalan baru" : "Tersimpan"}</span>
               </div>
