@@ -6,7 +6,7 @@ import { loadQuranPrefs } from "../lib/quranPrefs";
 import { Mascot } from "../components/game/Mascot";
 import { NavMic, NavPlay } from "../components/icons/NavIcons";
 
-type Item = { index: number; arabic: string; title: string; tip: string; articulation: "raised" | "flat" | "throat" | null; versus: string | null; audio_url: string };
+type Item = { index: number; arabic: string; title: string; tip: string; articulation: "raised" | "flat" | "throat" | null; versus: string | null; audio_url: string; audio_urls?: string[]; audio_fallback_urls?: string[] };
 type Cur = { point: number; items: Item[]; draft: boolean };
 
 /** Diagram mulut sederhana: posisi lidah. Animasi dimatikan bila pengguna memilih mengurangi gerakan. */
@@ -40,22 +40,44 @@ export function LatihanTahsinPage() {
   const [slow, setSlow] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audio = useRef<HTMLAudioElement | null>(null);
+  const token = useRef(0);
+  const pts = useQuery({ queryKey: ["tahsin-points"], queryFn: () => api<{ gate_open: boolean }>("/tahsin/points"), retry: false });
   const q = useQuery({ queryKey: ["tahsin-cur", point, prefs.reciterId], queryFn: () => api<Cur>(`/tahsin/curriculum/${point}?reciter_id=${encodeURIComponent(prefs.reciterId)}`) });
   const it = q.data?.items.find((x) => x.index === i);
   if (q.isError) return <div className="space-y-3 p-8 text-center"><p className="font-extrabold">Pulau tidak ditemukan.</p><button type="button" className="font-extrabold text-brand" onClick={() => nav("/tahsin")}>Kembali ke peta</button></div>;
   if (!it) return <p className="p-8 text-center font-extrabold text-muted">Memuat…</p>;
 
+  // Putar kata contoh satu per satu (kata pendek yang memuat huruf). Bila sumber utama gagal,
+  // coba sumber cadangan, lalu seluruh ayat contoh.
   const listen = (rate: number) => {
     const el = audio.current ?? (audio.current = new Audio());
     el.pause();
-    el.src = it.audio_url;
-    el.playbackRate = rate;
-    el.onended = () => setPlaying(false);
-    el.onerror = () => setPlaying(false);
-    void el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    const run = ++token.current;
+    const chain = [it.audio_urls ?? [], it.audio_fallback_urls ?? [], [it.audio_url]].filter((l) => l.length);
+    const playList = (ci: number) => {
+      const list = chain[ci];
+      if (!list) { setPlaying(false); return; }
+      let n = 0;
+      const step = () => {
+        if (run !== token.current) return;
+        if (n >= list.length) { setPlaying(false); return; }
+        el.src = list[n++];
+        el.playbackRate = rate;
+        el.onended = step;
+        el.onerror = () => { if (run === token.current) playList(ci + 1); };
+        void el.play().then(() => setPlaying(true)).catch(() => { if (run === token.current) playList(ci + 1); });
+      };
+      step();
+    };
+    playList(0);
   };
-  const nextPath = i < 3 ? `/tahsin/${point}?i=${i + 1}` : "/tahsin";
+  const nextPoint = Number(point) + 1;
+  const gateOpen = pts.data?.gate_open ?? false;
+  // Selesai 3 latihan: lanjut ke Pulau berikutnya. Pulau 4 dst. menunggu Pulau 1-3 lulus.
+  const canNext = nextPoint <= 9 && (nextPoint <= 3 || gateOpen);
+  const nextPath = i < 3 ? `/tahsin/${point}?i=${i + 1}` : canNext ? `/tahsin/${nextPoint}?i=1` : "/tahsin";
   const go = () => {
+    token.current++;
     audio.current?.pause();
     const p = new URLSearchParams({ context: "tahsin", text: it.arabic, next: nextPath });
     nav(`/setor?${p}`);
@@ -101,7 +123,7 @@ export function LatihanTahsinPage() {
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-lav text-brand">{playing && slow ? "…" : "🐢"}</span>Pelan
         </button>
       </div>
-      <p className="text-center text-xs font-bold text-muted">Contoh bacaan diambil dari ayat yang memuat huruf atau hukum ini. Pra-cek AI hanya membantu; guru atau orang tua yang memutuskan.</p>
+      <p className="text-center text-xs font-bold text-muted">Contoh bacaan berupa kata dari Al-Qur'an yang memuat huruf atau hukum ini. Pra-cek AI hanya membantu; guru atau orang tua yang memutuskan.</p>
     </div>
   );
 }

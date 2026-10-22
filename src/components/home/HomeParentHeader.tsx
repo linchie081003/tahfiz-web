@@ -20,6 +20,7 @@ type Props = {
 
 /** Ringkasan orang tua: antrean penilaian, anak, tautan laporan. */
 export function HomeParentHeader({ name, memberId, memberName, queueTotal }: Props) {
+  const consent = useQuery({ queryKey: ["consent"], queryFn: () => api<{ granted: boolean }>("/family/consent/recording"), retry: false });
   const { data } = useQuery({
     queryKey: ["parent-dashboard"],
     queryFn: () => api<Dashboard>("/parent/dashboard"),
@@ -77,6 +78,11 @@ export function HomeParentHeader({ name, memberId, memberName, queueTotal }: Pro
             </li>
           ))}
         </ul>
+      )}
+      {consent.data && !consent.data.granted && (
+        <Link to="/parent/persetujuan" className="block rounded-[20px] border-2 border-gold bg-cream p-3 text-sm font-extrabold text-gold-ink">
+          Rekaman suara anak belum diizinkan, jadi setoran tidak tersimpan. Ketuk untuk memberi izin.
+        </Link>
       )}
       {data && <p className="text-xs font-semibold text-muted">Kode keluarga untuk anak: {formatFamilyCodeDisplay(data.family_access_code)}</p>}
 

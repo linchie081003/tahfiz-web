@@ -157,7 +157,8 @@ export function SetorPage() {
   }, [recording]);
 
   const totalAyahs = ayahsQ.data?.length ?? 0;
-  const ayahLabel = ayahStart === ayahEnd ? `ayat ${ayahStart}` : `ayat ${ayahStart}–${ayahEnd}`;
+  const isLetterDrill = context === "tahsin" && (surahId == null || Number.isNaN(surahId));
+  const ayahLabel = isLetterDrill ? "latihan huruf" : ayahStart === ayahEnd ? `ayat ${ayahStart}` : `ayat ${ayahStart}–${ayahEnd}`;
 
   if (micDenied) {
     return (

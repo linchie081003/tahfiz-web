@@ -20,11 +20,11 @@ function rows(home: HomeData): Row[] {
     {
       key: "murojaah",
       title: "Murajaah",
-      sub: lock("murojaah") || items.murojaah || "Ulang hafalan yang sudah lulus",
+      sub: lock("murojaah") || items.murojaah || (afterTahsin && tahsinOk ? "Belum ada hafalan untuk diulang" : "Ulang hafalan yang sudah lulus"),
       path: "/murojaah",
       icon: <NavDrop size={22} />,
-      state: act === "murojaah" ? "now" : tahsinOk && afterTahsin ? "done" : "wait",
-      note: act === "murojaah" ? "Sekarang" : tahsinOk && afterTahsin ? "Selesai" : lock("murojaah") ? "Setelah tahsin" : "Nanti",
+      state: act === "murojaah" ? "now" : tahsinOk && afterTahsin && items.murojaah === undefined && act === "home" ? "done" : "wait",
+      note: act === "murojaah" ? "Sekarang" : act === "home" && tahsinOk ? "Selesai" : lock("murojaah") ? "Setelah tahsin" : "Nanti",
       locked: !!lock("murojaah"),
     },
     {

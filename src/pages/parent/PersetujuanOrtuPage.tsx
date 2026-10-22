@@ -12,10 +12,12 @@ export function PersetujuanOrtuPage() {
   const toast = useGameToast();
   const [ok, setOk] = useState(false);
   const c = useQuery({ queryKey: ["consent"], queryFn: () => api<{ granted: boolean; retention_days: number }>("/family/consent/recording") });
+  const dash = useQuery({ queryKey: ["parent-dashboard"], queryFn: () => api<{ children: unknown[] }>("/parent/dashboard"), retry: false });
+  const kids = dash.data?.children.length ?? 1;
   const days = c.data?.retention_days ?? 30;
   const save = useMutation({
     mutationFn: () => api("/family/consent/recording", { method: "POST", body: JSON.stringify({ granted: true }) }),
-    onSuccess: () => { qc.invalidateQueries(); toast("Persetujuan tersimpan", "success"); nav("/parent", { replace: true }); },
+    onSuccess: () => { qc.invalidateQueries(); toast("Persetujuan tersimpan", "success"); nav(kids === 0 ? "/parent/tambah-anak" : "/parent", { replace: true }); },
     onError: (e) => toast(friendlyError(e), "error"),
   });
   return (
@@ -32,6 +34,9 @@ export function PersetujuanOrtuPage() {
       </label>
       <p className="text-sm font-semibold text-muted">Izin guru mendengar rekaman diberikan terpisah, per guru, di menu Guru.</p>
       <Btn disabled={!ok || save.isPending || c.data?.granted} onClick={() => save.mutate()}>{c.data?.granted ? "Sudah disetujui" : "Setuju dan lanjut"}</Btn>
+      <button type="button" onClick={() => nav(kids === 0 ? "/parent/tambah-anak" : "/parent", { replace: true })} className="min-h-[48px] w-full text-base font-extrabold text-muted">
+        {c.data?.granted ? "Lanjut" : "Nanti saja (rekaman tidak disimpan)"}
+      </button>
     </Page>
   );
 }

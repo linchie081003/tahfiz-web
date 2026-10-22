@@ -40,7 +40,7 @@ export function HasilPage() {
   if (!ins?.available) {
     return (
       <StateScreen mood="default" title="Penilaian AI belum bisa" lead="Rekamanmu aman. Guru atau orang tua tetap bisa mendengarnya dan memutuskan."
-        actions={[{ label: "Selesai", onClick: home }]}>
+        actions={[{ label: next === "/" ? "Selesai" : "Lanjut", onClick: home }]}>
         <Card tone="lav" className="text-left"><Chip tone="gold">Menunggu didengar</Chip><p className="mt-1 font-bold">{s.reference_text.slice(0, 40)}</p><p className="text-sm font-semibold text-muted">Ayah, Ibu, atau guru yang memutuskan lanjut atau ulang.</p></Card>
         <p className="text-sm font-bold text-muted">Tidak ada bintang yang hilang. AI hanya pra-cek, bukan penentu.</p>
       </StateScreen>
