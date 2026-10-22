@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { LoginChooser } from "./LoginChooser";
 import { ChildFamilyCodeInput } from "../components/game/ChildFamilyCodeInput";
 import { GameButton } from "../components/game/GameButton";
 import { GameInput } from "../components/game/GameInput";
@@ -23,7 +24,10 @@ type PublicFamily = { family_name: string; children: PublicChild[] };
 export function LoginPage() {
   const nav = useNavigate();
   const toast = useGameToast();
-  const [tab, setTab] = useState<Tab>("parent");
+  const [sp] = useSearchParams();
+  const initial = sp.get("tab");
+  const [chosen, setChosen] = useState<boolean>(initial === "parent" || initial === "child" || initial === "register");
+  const [tab, setTab] = useState<Tab>(initial === "child" ? "child" : initial === "register" ? "register" : "parent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [familyName, setFamilyName] = useState("");
@@ -158,6 +162,10 @@ export function LoginPage() {
 
   const savedFamilyName = localStorage.getItem(FAMILY_NAME_KEY);
   const lastChildId = localStorage.getItem(LAST_CHILD_KEY);
+
+  if (!chosen) {
+    return <LoginChooser onChild={() => { setTab("child"); setChosen(true); }} onParent={() => { setTab("parent"); setChosen(true); }} onRegister={() => { setTab("register"); setChosen(true); }} />;
+  }
 
   return (
     <div className="app-shell">

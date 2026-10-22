@@ -9,7 +9,7 @@ const input = "mb-3 min-h-[56px] w-full rounded-pill border-[3px] border-line px
 export function GuruMasukPage({ mode }: { mode: "masuk" | "daftar" }) {
   const nav = useNavigate();
   const toast = useGameToast();
-  const [f, setF] = useState({ name: "", email: "", password: "", institution_code: "" });
+  const [f, setF] = useState({ name: "", email: "", password: "", institution_code: new URLSearchParams(window.location.search).get("kode") ?? "" });
   const [busy, setBusy] = useState(false);
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
   const submit = async () => {
