@@ -31,7 +31,7 @@ export function PetaPage() {
   const listItems = useMemo(() => {
     if (!data) return [];
     if (data.nodes.length) {
-      return [...data.nodes].sort((a, b) => a.curriculum_order - b.curriculum_order);
+      return [...data.nodes].sort((a, b) => (data.track === "mushaf" ? a.surah_id - b.surah_id : a.curriculum_order - b.curriculum_order));
     }
     const rows = surahsJuz30.data ?? [];
     return rows.map((s) => ({
@@ -56,8 +56,8 @@ export function PetaPage() {
           <IconBack size={24} decorative />
         </Link>
         <div>
-          <h1 className="game-text-stroke text-lg font-extrabold leading-tight sm:text-xl">Perjalanan Juz Amma</h1>
-          <p className="text-xs font-bold text-outline/90">Juz 30 · jalur hafalan</p>
+          <h1 className="game-text-stroke text-lg font-extrabold leading-tight sm:text-xl">{data.track === "mushaf" ? "Perjalanan Al-Qur'an" : "Perjalanan Juz Amma"}</h1>
+          <p className="text-xs font-bold text-outline/90">{data.track === "mushaf" ? "Dari Al-Fatihah · jalur hafalan" : "Juz 30 · jalur hafalan"}</p>
         </div>
       </div>
 
@@ -79,7 +79,7 @@ export function PetaPage() {
       )}
 
       <section className="mx-3 mt-4 pb-4">
-        <h2 className="mb-2 text-sm font-extrabold text-outline">Daftar surat Juz 30</h2>
+        <h2 className="mb-2 text-sm font-extrabold text-outline">{data.track === "mushaf" ? "Daftar surat Al-Qur'an" : "Daftar surat Juz 30"}</h2>
         {listLoading && listItems.length === 0 && (
           <p className="text-sm font-semibold text-outline/80">Memuat daftar surat…</p>
         )}

@@ -75,6 +75,7 @@ export type PetaData = {
   juz_number: number;
   passed_count: number;
   total_count: number;
+  track?: "juz30" | "mushaf";
   active_surah_id: number | null;
   active_surah_name: string | null;
   unlock_hint: string | null;
