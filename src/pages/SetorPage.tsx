@@ -46,6 +46,7 @@ export function SetorPage() {
   const [durationSec, setDurationSec] = useState(0);
   const [busy, setBusy] = useState(false);
   const [micDenied, setMicDenied] = useState(false);
+  const [micIssue, setMicIssue] = useState<{ title: string; lead: string; steps: string[] } | null>(null);
   const [offline, setOffline] = useState(false);
   const [forceSend, setForceSend] = useState(false);
 
@@ -72,49 +73,64 @@ export function SetorPage() {
   useEffect(() => () => { if (blobUrl) URL.revokeObjectURL(blobUrl); }, [blobUrl]);
 
   const start = async () => {
+    let stream: MediaStream | null = null;
     try {
       setMicDenied(false);
+      setMicIssue(null);
       setBlob(null);
       setForceSend(false);
       setLastCaptureOk(undefined);
       voiceHeardRef.current = false;
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+        setMicIssue({
+          title: "Perangkat ini belum bisa merekam",
+          lead: window.isSecureContext ? "Browser ini belum mendukung perekaman suara." : "Merekam hanya bisa lewat alamat https yang aman.",
+          steps: ["Buka Hafiz lewat Chrome atau Safari versi terbaru", "Pastikan alamatnya diawali https://", "Coba lagi dari halaman ini"],
+        });
+        return;
+      }
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       const track = stream.getAudioTracks()[0];
-      if (!track) throw new Error("Tidak ada track audio");
+      if (!track) throw new DOMException("Tidak ada track audio", "NotFoundError");
 
-      setLiveStream(stream);
-      setRecording(true);
-
-      const mime =
-        typeof MediaRecorder !== "undefined" &&
-        MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-          ? "audio/webm;codecs=opus"
-          : undefined;
+      const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"].find((m) => MediaRecorder.isTypeSupported(m));
       const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      const live = stream;
       chunks.current = [];
       rec.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.current.push(e.data);
       };
+      rec.onerror = () => {
+        live.getTracks().forEach((t) => t.stop());
+        setLiveStream(null);
+        setRecording(false);
+        setMicIssue({ title: "Rekaman terhenti", lead: "Perekam suara berhenti tiba-tiba.", steps: ["Tutup aplikasi lain yang memakai mikrofon", "Coba rekam lagi"] });
+      };
       rec.onstop = () => {
-        const b = new Blob(chunks.current, { type: rec.mimeType || "audio/webm" });
+        const b = new Blob(chunks.current, { type: rec.mimeType || mime || "audio/webm" });
         setBlob(b);
         setDurationSec(Math.round((Date.now() - startedAt.current) / 1000));
         const heard = voiceHeardRef.current || b.size > 3000;
         setLastCaptureOk(heard);
-        stream.getTracks().forEach((t) => t.stop());
+        live.getTracks().forEach((t) => t.stop());
         setLiveStream(null);
       };
       mediaRef.current = rec;
       startedAt.current = Date.now();
       rec.start(250);
-    } catch {
-      setMicDenied(true);
+      setLiveStream(stream);
+      setRecording(true);
+    } catch (e) {
+      stream?.getTracks().forEach((t) => t.stop());
+      setLiveStream(null);
+      setRecording(false);
+      const name = (e as DOMException)?.name ?? "";
+      if (name === "NotAllowedError" || name === "SecurityError" || name === "PermissionDeniedError") setMicDenied(true);
+      else if (name === "NotFoundError" || name === "OverconstrainedError") setMicIssue({ title: "Mikrofon tidak ditemukan", lead: "Perangkat ini tidak punya mikrofon yang bisa dipakai.", steps: ["Sambungkan mikrofon atau headset", "Pastikan mikrofon tidak dimatikan di pengaturan perangkat", "Coba lagi"] });
+      else if (name === "NotReadableError" || name === "AbortError") setMicIssue({ title: "Mikrofon sedang dipakai", lead: "Aplikasi lain sedang memakai mikrofon.", steps: ["Tutup aplikasi atau tab lain yang memakai mikrofon", "Coba lagi dari halaman ini"] });
+      else setMicIssue({ title: "Rekaman belum bisa dimulai", lead: "Ada kendala di perangkat atau browser.", steps: ["Muat ulang halaman", "Coba browser lain (Chrome atau Safari terbaru)"] });
     }
   };
 
@@ -136,7 +152,7 @@ export function SetorPage() {
         fd.append("ayah_start", String(ayahStart));
         fd.append("ayah_end", String(ayahEnd));
       }
-      fd.append("file", blob, "rec.webm");
+      fd.append("file", blob, `rec.${blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm"}`);
       const created = await api<{ id: string }>("/setor", { method: "POST", body: fd });
       nav(`/hasil/${created.id}`, { replace: true, state: { next: params.get("next") } });
     } catch (e) {
@@ -166,6 +182,16 @@ export function SetorPage() {
         actions={[{ label: "Coba lagi", onClick: () => void start() }, { label: "Minta Ayah atau Ibu membantu", variant: "outline", onClick: () => nav("/") }]}
         link={{ label: "Nanti saja", onClick: () => nav(-1) }}>
         <Steps items={["Buka pengaturan situs di browser (ikon gembok)", "Pilih Mikrofon, lalu Izinkan", "Kembali ke sini dan coba lagi"]} />
+        <p className="font-bold text-muted">Latihan dengar dan baca tetap bisa, tanpa mikrofon.</p>
+      </StateScreen>
+    );
+  }
+  if (micIssue) {
+    return (
+      <StateScreen title={micIssue.title} lead={micIssue.lead}
+        actions={[{ label: "Coba lagi", onClick: () => void start() }]}
+        link={{ label: "Nanti saja", onClick: () => { setMicIssue(null); nav(-1); } }}>
+        <Steps items={micIssue.steps} />
         <p className="font-bold text-muted">Latihan dengar dan baca tetap bisa, tanpa mikrofon.</p>
       </StateScreen>
     );
@@ -270,7 +296,8 @@ export function SetorPage() {
             <NavMic size={56} />
           )}
         </button>
-        <p className="text-xl font-extrabold text-outline">{recording ? "Tekan untuk berhenti" : "Tekan untuk merekam"}</p>
+        <p className="text-xl font-extrabold text-outline">{recording ? "Tekan untuk berhenti" : needsProfile ? "Pilih profil anak dulu" : "Tekan untuk merekam"}</p>
+        {needsProfile && <Link to="/pilih-profil" className="rounded-pill bg-brand px-5 py-2 text-sm font-extrabold text-white">Pilih profil anak</Link>}
         <p className="text-sm font-bold text-outline">
           {ayahLabel.replace(/^./, (c) => c.toUpperCase())} · {fmtTime(recording ? elapsed : durationSec)}
         </p>
