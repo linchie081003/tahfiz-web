@@ -1,3 +1,4 @@
+import { surahName } from "../lib/surahInfo";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
@@ -102,7 +103,7 @@ export function PetaPage() {
                       <PetaSurahIcon surahId={n.surah_id} size={22} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-outline">{n.name_id}</p>
+                      <p className="font-bold text-outline">{surahName(n.surah_id, n.name_id)}</p>
                       <p className="text-xs text-outline/70">{n.ayah_count} ayat</p>
                     </div>
                     <StatusBadge kind="journey" code="locked" size="sm" compact />
@@ -117,7 +118,7 @@ export function PetaPage() {
                       <PetaSurahIcon surahId={n.surah_id} size={24} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-extrabold text-outline">{n.name_id}</p>
+                      <p className="font-extrabold text-outline">{surahName(n.surah_id, n.name_id)}</p>
                       <p className="text-xs text-outline/75">{n.ayah_count} ayat</p>
                     </div>
                     <StatusBadge kind="journey" code={n.status} size="sm" compact />

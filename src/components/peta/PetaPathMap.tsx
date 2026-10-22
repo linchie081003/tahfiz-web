@@ -1,3 +1,4 @@
+import { surahName } from "../../lib/surahInfo";
 import { Mascot } from "../game/Mascot";
 import { IconCheck, IconLock } from "../icons/GameIcons";
 import { PetaSurahIcon, petaNodeAccent } from "./PetaSurahIcons";
@@ -142,7 +143,7 @@ export function PetaPathMap({ nodes, onOpen }: Props) {
                 }`}
               >
                 {isPrimary && <span className="block text-[9px] font-extrabold uppercase text-brand">Misi</span>}
-                {n.name_id}
+                {surahName(n.surah_id, n.name_id)}
               </p>
             </button>
           </div>
