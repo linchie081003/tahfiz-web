@@ -4,11 +4,16 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { Page, ScreenHead } from "../components/ui/ui";
 import { LAST_SURAH_KEY } from "./QuranSurahPage";
+import { OrtuTilawahPage } from "./parent/OrtuTilawahPage";
+import { surahName } from "../lib/surahInfo";
 
 type Surah = { id: number; name_ar: string; name_id: string; ayah_count: number; juz_number: number };
 
 /** Tab Tilawah membuka surat terakhir dibaca (bawaan Al-Fatihah). */
 export function QuranHome() {
+  const session = useQuery({ queryKey: ["session"], queryFn: () => api<{ role: string; member_id?: string | null }>("/auth/session"), staleTime: 60_000 });
+  if (session.isLoading) return <p className="p-8 text-center font-bold text-muted">Memuat…</p>;
+  if (session.data?.role === "parent" && !session.data?.member_id) return <OrtuTilawahPage />;
   let last = "1";
   try { last = localStorage.getItem(LAST_SURAH_KEY) || "1"; } catch { /* abaikan */ }
   return <Navigate to={`/quran/${last}`} replace />;
@@ -23,7 +28,7 @@ export function QuranPage() {
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const list = surahs.data ?? [];
-    return needle ? list.filter((s) => s.name_id.toLowerCase().includes(needle) || s.name_ar.includes(q.trim()) || String(s.id) === needle) : list;
+    return needle ? list.filter((s) => (s.name_id + " " + surahName(s.id)).toLowerCase().includes(needle) || s.name_ar.includes(q.trim()) || String(s.id) === needle) : list;
   }, [surahs.data, q]);
   return (
     <Page>
@@ -40,7 +45,7 @@ export function QuranPage() {
           <li key={s.id}>
             <Link to={`/quran/${s.id}`} className="flex min-h-[64px] items-center gap-3 rounded-[24px] bg-brand-light px-4 py-2">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-lg font-extrabold text-white">{s.id}</span>
-              <span className="min-w-0 flex-1"><span className="block text-lg font-extrabold text-outline">{s.name_id}</span><span className="block text-sm font-semibold text-muted">{s.ayah_count} ayat · Juz {s.juz_number}</span></span>
+              <span className="min-w-0 flex-1"><span className="block text-lg font-extrabold text-outline">{surahName(s.id, s.name_id)}</span><span className="block text-sm font-semibold text-muted">{s.ayah_count} ayat · Juz {s.juz_number}</span></span>
               <span className="font-quran text-2xl text-brand" dir="rtl" lang="ar">{s.name_ar}</span>
             </Link>
           </li>
