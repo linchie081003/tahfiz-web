@@ -11,6 +11,7 @@ import { ParentDashboardPage } from "./pages/ParentDashboardPage";
 import { ParentQueuePage } from "./pages/ParentQueuePage";
 import { WeeklyReportPage } from "./pages/WeeklyReportPage";
 import { PetaPage } from "./pages/PetaPage";
+import { PetaTahsinPage } from "./pages/PetaTahsinPage";
 import { SetorPage } from "./pages/SetorPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { TahsinPage } from "./pages/TahsinPage";
@@ -87,7 +88,8 @@ export default function App() {
       <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
       <Route path="/parent/persetujuan" element={<RequireAuth><PersetujuanOrtuPage /></RequireAuth>} />
       <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
-      <Route path="/peta" element={<RequireAuth><PetaPage /></RequireAuth>} />
+      <Route path="/peta" element={<RequireAuth><PetaTahsinPage /></RequireAuth>} />
+      <Route path="/peta/hafalan" element={<RequireAuth><PetaPage /></RequireAuth>} />
       <Route path="/tahsin" element={<RequireAuth><TahsinPage /></RequireAuth>} />
       <Route path="/ziyadah" element={<RequireAuth><ZiyadahPage /></RequireAuth>} />
       <Route path="/murojaah" element={<RequireAuth><MurojaahPage /></RequireAuth>} />
