@@ -7,7 +7,7 @@ import { Page, ScreenHead, Toggle } from "../../components/ui/ui";
 import { AGE_MODE_OPTIONS } from "../../lib/ageModeOptions";
 
 type Child = { id: string; name: string; age_mode?: string };
-type MS = { coverage: string; daily_ayahs: number; murajaah_strong_days: number; set_by: string; parallel_hafalan?: boolean };
+type MS = { coverage: string; daily_ayahs: number; murajaah_strong_days: number; set_by: string; parallel_hafalan?: boolean; hafalan_track?: "juz30" | "mushaf" };
 type TeacherRes = { link: { status: string; teacher: { name?: string; verified?: boolean } } | null };
 const sel = "min-h-[52px] w-full rounded-pill border-[3px] border-line bg-white px-4 font-bold text-outline outline-none focus:border-brand disabled:opacity-60";
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
@@ -62,6 +62,16 @@ export function OrtuAnakPage() {
                 <select id="cak" className={sel} disabled={busy || locked} value={d.coverage} onChange={(e) => void put({ coverage: e.target.value })}>
                   <option value="juz30">Juz 30</option><option value="all">Seluruh 114 surat</option>
                 </select>
+                {d.coverage === "all" && (
+                  <>
+                    <L id="jal">Mulai hafalan dari</L>
+                    <select id="jal" className={sel} disabled={busy || locked} value={d.hafalan_track ?? "juz30"} onChange={(e) => void put({ hafalan_track: e.target.value as "juz30" | "mushaf" })}>
+                      <option value="juz30">Juz 30 (An-Nas dan seterusnya)</option>
+                      <option value="mushaf">Al-Fatihah dan Juz 1</option>
+                    </select>
+                    <p className="text-sm font-semibold text-muted">Surat yang sudah lulus tetap tersimpan. Hafalan berlanjut ke surat pertama yang belum lulus di jalur pilihan.</p>
+                  </>
+                )}
                 <L id="kec">Hafalan baru</L>
                 <select id="kec" className={sel} disabled={busy || locked} value={d.daily_ayahs} onChange={(e) => void put({ daily_ayahs: Number(e.target.value) })}>
                   {[1, 2, 3, 5].map((n) => <option key={n} value={n}>{n} ayat per hari{n === 1 ? " (bawaan)" : ""}</option>)}
