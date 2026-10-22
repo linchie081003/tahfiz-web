@@ -3,6 +3,7 @@ import { getToken } from "./lib/api";
 import { ChooseProfilePage } from "./pages/ChooseProfilePage";
 import { HomePage } from "./pages/HomePage";
 import { LencanaPage } from "./pages/LencanaPage";
+import { JoinFamilyPage } from "./pages/JoinFamilyPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MurojaahPage } from "./pages/MurojaahPage";
 import { ParentDashboardPage } from "./pages/ParentDashboardPage";
@@ -40,6 +41,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/gabung" element={<JoinFamilyPage />} />
       <Route
         path="/pilih-profil"
         element={

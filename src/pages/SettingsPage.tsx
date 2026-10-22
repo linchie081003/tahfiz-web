@@ -10,6 +10,8 @@ import { syncReciterToAgeMode } from "../lib/reciterPolicy";
 import { filterRecitersForAge } from "../lib/reciterPolicy";
 import { FALLBACK_RECITERS, filterRecitersForGender, type ReciterOption } from "../lib/reciters";
 import { TajweedLegend } from "../components/TajweedLegend";
+import { FamilyParents } from "../components/FamilyParents";
+import { MemberLearningSettings } from "../components/MemberLearningSettings";
 import { RemindersAndAiSection } from "../components/RemindersAndAiSection";
 import { GameHeader } from "../components/game/GameHeader";
 import { AppPage } from "../components/layout/AppPage";
@@ -301,32 +303,14 @@ export function SettingsPage() {
         {isParent && (
           <>
             <hr />
-            <h2 className="font-bold text-purple-800">Target belajar harian (keluarga)</h2>
+            {activeMemberId && <MemberLearningSettings memberId={activeMemberId} name={session.data?.member_name} />}
+            <hr />
+            <FamilyParents />
+            <hr />
+            <h2 className="font-bold text-purple-800">Batas murojaah harian (keluarga)</h2>
             <p className="text-xs text-gray-600">
-              Berlaku untuk semua profil anak. Misi di Home dan daftar murojaah mengikuti angka ini.
+              Berlaku untuk semua profil anak. Kecepatan hafalan baru diatur per anak di bagian "Belajar".
             </p>
-            <label className="block text-sm font-semibold" htmlFor="ziyadah-target">
-              Target ziyadah harian (ayat)
-            </label>
-            <input
-              id="ziyadah-target"
-              type="number"
-              min={1}
-              max={30}
-              disabled={missionBusy}
-              className="w-full rounded-game border-2 border-outline/30 p-2 font-semibold"
-              value={ziyadahTarget}
-              onChange={(e) => setZiyadahTarget(Number(e.target.value))}
-              onBlur={() => {
-                const z = Math.min(30, Math.max(1, ziyadahTarget || 3));
-                const m = Math.min(30, Math.max(1, murojaahCap || 5));
-                setZiyadahTarget(z);
-                setMurojaahCap(m);
-                if (z !== settings?.daily_ziyadah_ayahs || m !== settings?.daily_murojaah_cap) {
-                  void saveMissionTargets(z, m);
-                }
-              }}
-            />
             <label className="block text-sm font-semibold" htmlFor="murojaah-cap">
               Batas murojaah per hari (item)
             </label>

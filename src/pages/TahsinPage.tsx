@@ -6,6 +6,7 @@ import { GameHeader } from "../components/game/GameHeader";
 import { AppPage } from "../components/layout/AppPage";
 import { TajweedLegend } from "../components/TajweedLegend";
 import { StatusCard } from "../components/game/StatusBadge";
+import { TahsinPulau } from "../components/TahsinPulau";
 import { api } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
 
@@ -25,6 +26,10 @@ export function TahsinPage() {
     queryFn: () =>
       api<TahsinReference>(`/tahsin/reference?reciter_id=${encodeURIComponent(prefs.reciterId)}`),
   });
+  const session = useQuery({
+    queryKey: ["session"],
+    queryFn: () => api<{ role: string; member_id?: string | null }>("/auth/session"),
+  });
   if (!data) return <div className="p-4 pr-14">Memuat…</div>;
   const q = new URLSearchParams({
     context: "tahsin",
@@ -37,6 +42,7 @@ export function TahsinPage() {
     <AppPage>
       <GameHeader title="Tahsin" to="/" />
       <StatusCard kind="tahsin" code={data.status} hint={data.hint} />
+      <TahsinPulau memberId={session.data?.member_id} isParent={session.data?.role === "parent"} />
       <TajweedLegend tone="dark" />
       <div className="card-surface p-4">
         <ArabicAyahText textUthmani={data.reference_text} textTajweed={data.text_tajweed} />
