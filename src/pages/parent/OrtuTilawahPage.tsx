@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { surahName } from "../../lib/surahInfo";
-import { AYAH_PER_PAGE, TOTAL_PAGES, loadTilawah, pagesRead, setTarget, streak, weekDots, type TilawahState } from "../../lib/tilawahProgress";
+import { AYAH_PER_PAGE, TOTAL_PAGES, loadTilawah, pagesRead, resumePoint, setTarget, streak, weekDots, type TilawahState } from "../../lib/tilawahProgress";
 import { Page, ScreenHead } from "../../components/ui/ui";
 
 type Surah = { id: number; ayah_count: number; juz_number: number };
@@ -26,7 +26,8 @@ export function OrtuTilawahPage() {
   const months = Math.max(1, Math.round((TOTAL_PAGES - page) / perDay / 30));
   const dots = weekDots(st);
   const run = streak(st);
-  const lastS = st.last ? list.find((s) => s.id === st.last!.surah) : undefined;
+  const rp = resumePoint(st);
+  const lastS = rp ? list.find((s) => s.id === rp.surah) : undefined;
   void offset;
   return (
     <Page>
@@ -56,14 +57,14 @@ export function OrtuTilawahPage() {
       </section>
 
       <section className="rounded-[28px] bg-brand-light p-5">
-        <p className="font-extrabold text-outline">Terakhir dibaca</p>
-        {st.last ? (
+        <p className="font-extrabold text-outline">{st.bookmark ? "Terakhir ditandai" : "Terakhir dibaca"}</p>
+        {rp ? (
           <>
-            <p className="text-xl font-extrabold text-brand-dark">{surahName(st.last.surah, "Surat")}, ayat {st.last.ayah}</p>
+            <p className="text-xl font-extrabold text-brand-dark">{surahName(rp!.surah, "Surat")}, ayat {rp!.ayah}</p>
             <p className="text-sm font-semibold text-muted">{lastS ? `Juz ${lastS.juz_number}` : ""}</p>
           </>
         ) : <p className="text-sm font-semibold text-muted">Belum ada bacaan. Mulai dari Al-Fatihah.</p>}
-        <Link to={st.last ? `/quran/${st.last.surah}?ayat=${st.last.ayah}` : "/quran/1"} className="mt-3 flex min-h-[56px] items-center justify-center rounded-pill bg-brand text-lg font-extrabold text-white">{st.last ? "Lanjutkan" : "Mulai membaca"}</Link>
+        <Link to={rp ? `/quran/${rp.surah}?ayat=${rp.ayah}` : "/quran/1"} className="mt-3 flex min-h-[56px] items-center justify-center rounded-pill bg-brand text-lg font-extrabold text-white">{rp ? "Lanjutkan" : "Mulai membaca"}</Link>
         <p className="mt-2 text-center text-sm font-semibold text-muted">Qari: {QARI}</p>
         <Link to="/quran/daftar" className="mt-1 block text-center text-sm font-extrabold text-brand">Pilih surat lain</Link>
       </section>

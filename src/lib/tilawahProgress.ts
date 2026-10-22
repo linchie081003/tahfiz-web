@@ -6,6 +6,7 @@ const KEY = "hafiz_tilawah_v1";
 
 export type TilawahState = {
   last?: { surah: number; ayah: number };
+  bookmark?: { surah: number; ayah: number }; // penanda ayat terakhir yang dipilih sendiri
   target: number; // halaman per hari
   days: Record<string, string[]>; // yyyy-mm-dd -> "surah:ayah" unik
   max?: number; // posisi terjauh (ayat ke-n dari 6236)
@@ -39,6 +40,15 @@ export function recordAyah(surah: number, ayah: number, offset: number) {
   s.max = Math.max(s.max ?? 0, offset + ayah);
   save(s);
 }
+/** Tandai ayat terakhir; menandai ayat yang sama sekali lagi melepas tandanya. */
+export function toggleBookmark(surah: number, ayah: number) {
+  const s = loadTilawah();
+  if (s.bookmark?.surah === surah && s.bookmark.ayah === ayah) delete s.bookmark;
+  else s.bookmark = { surah, ayah };
+  save(s);
+}
+/** Posisi untuk melanjutkan: penanda jika ada, kalau tidak ayat terakhir diputar. */
+export const resumePoint = (s: TilawahState) => s.bookmark ?? s.last;
 export function setTarget(pages: number) { const s = loadTilawah(); s.target = pages; save(s); }
 export const pagesRead = (s: TilawahState, key = dayKey()) => (s.days[key]?.length ?? 0) / AYAH_PER_PAGE;
 export function streak(s: TilawahState) {

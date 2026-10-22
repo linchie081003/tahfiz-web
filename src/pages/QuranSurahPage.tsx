@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { api, type HomeData } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
 import { surahKind, surahName } from "../lib/surahInfo";
-import { loadTilawah, pagesRead, recordAyah } from "../lib/tilawahProgress";
+import { loadTilawah, pagesRead, recordAyah, toggleBookmark } from "../lib/tilawahProgress";
 import { NavPlay, NavStar } from "../components/icons/NavIcons";
 import { Toggle } from "../components/ui/ui";
 import { QuranWords } from "../components/QuranWords";
@@ -44,6 +44,9 @@ export function QuranSurahPage() {
   useEffect(() => { const a = Number(sp.get("ayat")); setIdx(a > 1 ? a - 1 : 0); setPlaying(false); audio.current?.pause(); }, [surahId, sp]);
   useEffect(() => { const f = () => bump((n) => n + 1); window.addEventListener("hafiz_tilawah_changed", f); return () => window.removeEventListener("hafiz_tilawah_changed", f); }, []);
   const offset = (meta.data ?? []).filter((s) => s.id < surahId).reduce((a, s) => a + s.ayah_count, 0);
+  const bm = loadTilawah().bookmark;
+  const marked = bm?.surah === surahId ? bm.ayah : 0;
+  const curAyah = list[idx]?.ayah_number ?? 0;
   const mark = (i: number) => { const n = list[i]?.ayah_number; if (n) recordAyah(surahId, n, offset); };
   useEffect(() => () => audio.current?.pause(), []);
   useEffect(() => { if (follow) document.getElementById(`ay-${idx}`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }, [idx, follow]);
@@ -108,6 +111,7 @@ export function QuranSurahPage() {
           <button key={a.ayah_number} id={`ay-${i}`} type="button" onClick={() => play(i)} aria-label={`Putar ayat ${a.ayah_number}`} dir="rtl" lang="ar"
             className={`w-full rounded-[14px] px-2 text-right text-outline ${follow && i === idx ? "bg-cream" : ""}`}>
             <QuranWords textUthmani={a.text_uthmani} textTajweed={a.text_tajweed} className="text-[2rem] leading-[2.5]" />{" "}
+            {marked === a.ayah_number && <span className="ml-1 rounded-pill bg-gold px-2 py-0.5 align-middle font-sans text-xs font-extrabold text-gold-ink" dir="ltr">Ditandai</span>}{" "}
             <span className="inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] border-brand align-middle text-[13px] leading-none text-brand" aria-hidden="true">{arabicDigits(a.ayah_number)}</span>
           </button>
         ))}
@@ -122,6 +126,10 @@ export function QuranSurahPage() {
             {playing ? <span className="flex gap-1" aria-hidden="true"><i className="h-5 w-1.5 rounded bg-brand" /><i className="h-5 w-1.5 rounded bg-brand" /></span> : <NavPlay size={26} />}
           </button>
           <div className="min-w-0 flex-1"><p className="font-extrabold">Ayat {list[idx]?.ayah_number ?? 1} dari {list.length || surah?.ayah_count || "…"}</p><p className="truncate text-sm font-semibold opacity-90">Qari: {QARI[prefs.reciterId] ?? prefs.reciterId.replace(/_/g, " ")}</p></div>
+          <button type="button" onClick={() => curAyah && toggleBookmark(surahId, curAyah)} disabled={!curAyah} aria-pressed={marked === curAyah && !!curAyah} aria-label={marked === curAyah ? "Lepas tanda ayat" : "Tandai ayat terakhir"}
+            className={`flex min-h-[40px] items-center gap-1 rounded-pill px-3 font-extrabold ${marked === curAyah && curAyah ? "bg-gold text-gold-ink" : "bg-white text-brand"}`}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z" fill={marked === curAyah && curAyah ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" /></svg>Tandai
+          </button>
           <button type="button" onClick={cycleRate} aria-label="Kecepatan" className="min-h-[40px] rounded-pill bg-white px-3 font-extrabold text-brand">{RATES[rateI]}x</button>
         </div>
       </div>
