@@ -17,6 +17,7 @@ export function ZiyadahPage() {
   const nav = useNavigate();
   const prefs = loadQuranPrefs();
   const home = useQuery({ queryKey: ["home"], queryFn: () => api<HomeData>("/home") });
+  const pts = useQuery({ queryKey: ["tahsin-points", "self"], queryFn: () => api<{ gate_open: boolean }>("/tahsin/points"), retry: false });
   const peta = useQuery({ queryKey: ["peta"], queryFn: () => api<{ active_surah_id: number | null; active_surah_name?: string }>("/peta/juz/30") });
   const surahId = peta.data?.active_surah_id ?? 114;
   const ayahs = useQuery({ queryKey: ["ayahs", surahId, prefs.reciterId], queryFn: () => api<Ayah[]>(`/quran/surahs/${surahId}/ayahs?reciter_id=${prefs.reciterId}`), enabled: Boolean(surahId) });
@@ -34,10 +35,11 @@ export function ZiyadahPage() {
   const hideIdx = useMemo(() => new Set(words.map((_, i) => i).filter((i) => i % 2 === 1).slice(0, hidden)), [words, hidden]);
 
   if (home.data?.menu_locks.ziyadah) {
-    const waiting = home.data.tahsin_status === "pending_eval";
+    // "Menunggu" hanya jika Pulau 1-3 benar-benar lulus; setoran tahsin saja belum cukup.
+    const waiting = pts.data?.gate_open === true;
     return (
       <StateScreen mood={waiting ? "happy" : "default"} title={waiting ? `Hebat, ${home.data.greeting_name}!` : "Hafalan baru belum terbuka"}
-        lead={waiting ? "Pulau 1, 2, dan 3 sudah kamu kerjakan." : home.data.menu_locks.ziyadah}
+        lead={waiting ? "Pulau 1, 2, dan 3 sudah kamu kerjakan." : "Selesaikan Pulau 1, 2, dan 3 dulu di latihan tahsin."}
         actions={[{ label: "Lanjut latihan tahsin", onClick: () => nav("/tahsin") }]}>
         {waiting && <Card tone="lav"><p className="font-extrabold">Gerbang hafalan menunggu</p><p className="text-sm font-semibold text-muted">Minta Ayah atau Ibu mendengarkan bacaanmu, lalu membuka gerbangnya.</p></Card>}
       </StateScreen>
