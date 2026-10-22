@@ -5,7 +5,7 @@ import { api } from "../../lib/api";
 import { Btn, Card, Page, ScreenHead } from "../../components/ui/ui";
 import { friendlyError, useGameToast } from "../../components/game/GameToast";
 
-const AGES = [{ id: "5-6", mode: "paud" }, { id: "7-8", mode: "sd" }, { id: "9-10", mode: "sd" }, { id: "11-12", mode: "teen" }];
+const AGES = [{ id: "5-6", mode: "paud" }, { id: "7-8", mode: "sd" }, { id: "9-10", mode: "sd" }, { id: "11-12", mode: "teen" }, { id: "13-17", mode: "teen" }, { id: "18+", mode: "adult" }];
 
 /** Tambah anak: nama panggilan, usia, dan kode guru atau instansi (boleh kosong). */
 export function TambahAnakPage() {
@@ -38,7 +38,8 @@ export function TambahAnakPage() {
       </Card>
       <Card tone="plain">
         <p className="mb-2 font-extrabold">Usia</p>
-        <div className="grid grid-cols-4 gap-2" role="radiogroup">
+        <p className="mb-2 text-sm font-semibold text-muted">Untuk remaja dan dewasa, pilih 13–17 atau 18+.</p>
+        <div className="grid grid-cols-3 gap-2" role="radiogroup">
           {AGES.map((a) => <button key={a.id} type="button" role="radio" aria-checked={age === a.id} onClick={() => setAge(a.id)} className={`min-h-[52px] rounded-pill text-lg font-extrabold ${age === a.id ? "bg-brand text-white" : "bg-lav text-brand-dark"}`}>{a.id}</button>)}
         </div>
       </Card>
