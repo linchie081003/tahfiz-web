@@ -10,9 +10,10 @@ const itemCls = (active: boolean) =>
     active ? "bg-lav text-brand-dark" : "text-muted"
   }`;
 
-function FooterLink({ to, label, icon: Icon, end }: { to: string; label: string; icon: IconC; end?: boolean }) {
+function FooterLink({ to, label, icon: Icon, end, also }: { to: string; label: string; icon: IconC; end?: boolean; also?: string }) {
+  const { pathname } = useLocation();
   return (
-    <NavLink to={to} end={end} className={({ isActive }) => itemCls(isActive)}>
+    <NavLink to={to} end={end} className={({ isActive }) => itemCls(isActive || (!!also && pathname.startsWith(also)))}>
       <Icon size={22} />
       {label}
     </NavLink>
@@ -46,7 +47,7 @@ export function AppFooterMenu() {
           <>
             <FooterLink to="/" label="Beranda" icon={NavHome} end />
             <FooterLink to="/tahsin" label="Tahsin" icon={NavMic} />
-            <FooterLink to="/ziyadah" label="Hafalan" icon={NavSprout} />
+            <FooterLink to="/ziyadah" label="Hafalan" icon={NavSprout} also="/murojaah" />
             <FooterLink to="/quran" label="Tilawah" icon={NavBook} />
           </>
         )}
