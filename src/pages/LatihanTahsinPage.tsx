@@ -46,6 +46,8 @@ function MouthDiagram({ kind }: { kind: "raised" | "flat" | "throat" }) {
   );
 }
 
+/** Satu sesi = 5 latihan (huruf pilihan di awal, sisanya acak) supaya tidak terlalu panjang. */
+const SESSION = 5;
 const FOCUS_COLOR = "#FFD34D";
 /** Cadangan bila server belum mengirim `focus`: huruf Arab pada judul, mis. "Huruf ص (shad)". */
 const focusOf = (it: Item) => it.focus ?? [...it.title].filter((c) => /[\u0621-\u064A]/.test(c)).join("");
@@ -73,7 +75,7 @@ export function LatihanTahsinPage() {
   const start = (first?: number) => {
     const all = items.map((x) => x.index);
     const rest = shuffle(first ? all.filter((x) => x !== first) : all);
-    nav(`/tahsin/${point}?o=${(first ? [first, ...rest] : rest).join(",")}&n=0`);
+    nav(`/tahsin/${point}?o=${(first ? [first, ...rest] : rest).slice(0, SESSION).join(",")}&n=0`);
   };
 
   if (q.isError) return <div className="space-y-3 p-8 text-center"><p className="font-extrabold">Pulau tidak ditemukan.</p><button type="button" className="font-extrabold text-brand" onClick={() => nav("/tahsin")}>Kembali ke peta</button></div>;
@@ -94,12 +96,12 @@ export function LatihanTahsinPage() {
           <p className="flex-1 rounded-[24px] bg-brand p-4 text-lg font-extrabold text-white">Pilih huruf yang mau dilatih, atau biarkan acak.</p>
         </div>
         <button type="button" onClick={() => start()} className="btn-cta">🎲 Acak latihan</button>
-        <ul className="grid grid-cols-2 gap-3">
+        <ul className={`grid gap-3 ${total > 10 ? "grid-cols-3" : "grid-cols-2"}`}>
           {items.map((x) => (
             <li key={x.index}>
-              <button type="button" onClick={() => start(x.index)} className="flex min-h-[132px] w-full flex-col items-center justify-center gap-1 rounded-[24px] bg-teal px-2 py-3 text-white" aria-label={`Latih ${x.title}`}>
+              <button type="button" onClick={() => start(x.index)} className={`flex w-full flex-col ${total > 10 ? "min-h-[104px]" : "min-h-[132px]"} items-center justify-center gap-1 rounded-[24px] bg-teal px-2 py-3 text-white`} aria-label={`Latih ${x.title}`}>
                 <FocusArabic text={x.arabic} focus={focusOf(x)} color={FOCUS_COLOR} style={{ fontSize: arabSize(x.arabic, true) }} />
-                <span className="text-sm font-extrabold">{x.title}</span>
+                <span className={`font-extrabold ${total > 10 ? "text-xs" : "text-sm"}`}>{x.title}</span>
               </button>
             </li>
           ))}
