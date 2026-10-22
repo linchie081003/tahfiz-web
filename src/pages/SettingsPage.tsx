@@ -14,8 +14,7 @@ import { LogoutButton } from "../components/LogoutButton";
 import { FamilyParents } from "../components/FamilyParents";
 import { MemberLearningSettings } from "../components/MemberLearningSettings";
 import { RemindersAndAiSection } from "../components/RemindersAndAiSection";
-import { GameHeader } from "../components/game/GameHeader";
-import { AppPage } from "../components/layout/AppPage";
+import { Page, ScreenHead } from "../components/ui/ui";
 import { loadQuranPrefs, saveQuranPrefs, type QuranPrefs } from "../lib/quranPrefs";
 
 type Settings = {
@@ -173,31 +172,28 @@ export function SettingsPage() {
   }, [session.data?.role, session.data?.member_id, session.data?.age_mode]);
 
   return (
-    <AppPage>
-      <GameHeader title="Pengaturan" to="/" />
-      <p className="text-sm text-muted">
-        Qari, tajwid, dan tampilan Arab berlaku untuk profil yang sedang aktif. Orang tua bisa memakai Tahsin, Ziyadah,
-        Murojaah, dan Alquran seperti anak setelah memilih profil.
-      </p>
+    <Page>
+      <ScreenHead to={isParent ? "/parent/pengaturan" : "/"} eyebrow={isParent ? "Area orang tua" : undefined} title="Pengaturan belajar" sub="Qari, tajwid, dan tampilan Arab berlaku untuk profil yang sedang aktif." />
 
-      <div className="card-surface space-y-4 p-4 text-gray-800">
-        <h2 className="font-bold text-brand-dark">Mode usia</h2>
+      <div className="space-y-4 [&_h2]:text-lg [&_h2]:font-extrabold [&_h2]:text-brand-dark [&_label]:text-sm [&_label]:font-extrabold [&_label]:text-outline [&_hr]:hidden [&_section]:rounded-[28px] [&_section]:bg-brand-light [&_section]:p-5 [&_section]:space-y-3">
+      <section>
+        <h2>Mode usia</h2>
         {isChild ? (
-          <p className="text-xs text-gray-600">
+          <p className="text-sm font-semibold text-muted">
             Mode saat ini: <strong>{ageModeLabel(sessionAge)}</strong>. Qari dan tampilan mengikuti mode ini. Minta orang tua
             mengubah mode usia jika perlu.
           </p>
         ) : (
           <>
             {isParent && !activeMemberId && (
-              <p className="text-xs text-gray-600">
+              <p className="text-sm font-semibold text-muted">
                 Anda belajar sebagai orang tua tanpa profil anak. Mode ini hanya untuk tampilan &amp; qari di perangkat ini.
                 Untuk mengubah mode anak, buka{" "}
                 <Link to="/pilih-profil" className="font-bold text-brand underline">Kelola profil</Link>.
               </p>
             )}
             {isParent && activeMemberId && session.data?.member_name && (
-              <p className="text-xs text-gray-600">
+              <p className="text-sm font-semibold text-muted">
                 Mengatur mode untuk profil <strong>{session.data.member_name}</strong> (sedang aktif).
               </p>
             )}
@@ -208,23 +204,25 @@ export function SettingsPage() {
               id="age-mode"
               value={sessionAge}
               disabled={ageBusy}
+              className="min-h-[52px] w-full rounded-pill border-[3px] border-line bg-white px-4 font-bold text-outline outline-none focus:border-brand"
               onChange={(next) => void applyAgeMode(next)}
             />
-            <p className="text-xs text-gray-600">
+            <p className="text-sm font-semibold text-muted">
               PAUD/SD: qari Muallim (Husary) disarankan; remaja/dewasa: murattal. Mujawwad hanya hadiah setelah lulus setoran.
             </p>
           </>
         )}
 
-        <hr />
+      </section>
 
-        <h2 className="font-bold text-brand-dark">Suara (Qari)</h2>
-        <p className="text-xs text-gray-600">
+      <section>
+        <h2>Suara (Qari)</h2>
+        <p className="text-sm font-semibold text-muted">
           Mode usia aktif: <strong>{ageModeLabel(ageMode)}</strong>
         </p>
         <label className="block text-sm font-semibold">Jenis suara</label>
         <select
-          className="w-full rounded-xl border p-2"
+          className="min-h-[52px] w-full truncate rounded-pill border-[3px] border-line bg-white px-4 font-bold text-outline outline-none focus:border-brand"
           value={prefs.voiceGender}
           onChange={(e) => {
             const voiceGender = e.target.value as QuranPrefs["voiceGender"];
@@ -236,7 +234,7 @@ export function SettingsPage() {
           <option value="female">Perempuan</option>
         </select>
         {noFemaleReciters && (
-          <p className="text-xs text-amber-800">
+          <p className="text-sm font-bold text-gold-ink">
             Qori perempuan belum tersedia di sumber audio EveryAyah. Daftar di bawah menampilkan qori laki-laki yang
             tersedia.
           </p>
@@ -244,7 +242,7 @@ export function SettingsPage() {
 
         <label className="block text-sm font-semibold">Pilihan qari</label>
         <select
-          className="w-full rounded-xl border p-2"
+          className="min-h-[52px] w-full truncate rounded-pill border-[3px] border-line bg-white px-4 font-bold text-outline outline-none focus:border-brand"
           value={displayReciters.some((r) => r.id === prefs.reciterId) ? prefs.reciterId : ""}
           disabled={!displayReciters.length && isLoading}
           onChange={(e) => void persist({ ...prefs, reciterId: e.target.value })}
@@ -257,7 +255,7 @@ export function SettingsPage() {
             </option>
           ))}
         </select>
-        <p className="text-xs text-gray-600">{selectedReciter?.description ?? "Pilih qori untuk audio Ziyadah & Tahsin."}</p>
+        <p className="text-sm font-semibold text-muted">{selectedReciter?.description ?? "Pilih qori untuk audio Ziyadah & Tahsin."}</p>
 
         <label className="block text-sm font-semibold">Kecepatan audio ({prefs.playbackSpeed}x)</label>
         <input
@@ -267,13 +265,16 @@ export function SettingsPage() {
           step={0.1}
           value={prefs.playbackSpeed}
           onChange={(e) => void persist({ ...prefs, playbackSpeed: Number(e.target.value) })}
-          className="w-full"
+          className="w-full accent-brand"
         />
 
-        <h2 className="pt-2 font-bold text-brand-dark">Tampilan Arab</h2>
+      </section>
+
+      <section>
+        <h2>Tampilan Arab</h2>
         <label className="block text-sm font-semibold">Ukuran huruf</label>
         <select
-          className="w-full rounded-xl border p-2"
+          className="min-h-[52px] w-full truncate rounded-pill border-[3px] border-line bg-white px-4 font-bold text-outline outline-none focus:border-brand"
           value={prefs.arabicFontSize}
           onChange={(e) =>
             void persist({ ...prefs, arabicFontSize: e.target.value as QuranPrefs["arabicFontSize"] })
@@ -284,32 +285,29 @@ export function SettingsPage() {
           <option value="xlarge">Sangat besar</option>
         </select>
 
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-[44px] items-center gap-3 text-sm font-bold">
           <input
-            type="checkbox"
+            type="checkbox" className="h-5 w-5 accent-brand"
             checked={prefs.showTajweed}
             onChange={(e) => void persist({ ...prefs, showTajweed: e.target.checked })}
           />
           Tampilkan teks tajwid (warna hukum bacaan, jika tersedia)
         </label>
         <TajweedLegend tone="light" defaultOpen />
-        <p className="text-xs text-gray-600">
-          Font <strong>Amiri Quran</strong> + harakat lengkap dari Quran.com. Jalankan{" "}
-          <code className="rounded bg-gray-100 px-1">python scripts/enrich_ayahs_quran_com.py</code> jika ayat masih
-          terpotong atau tanpa warna.
-        </p>
 
+      </section>
+
+      <section>
         <RemindersAndAiSection isParent={isParent} reminderHour={settings?.reminder_hour} />
+      </section>
 
         {isParent && (
           <>
-            <hr />
             {activeMemberId && <MemberLearningSettings memberId={activeMemberId} name={session.data?.member_name} />}
-            <hr />
-            <FamilyParents />
-            <hr />
-            <h2 className="font-bold text-brand-dark">Batas murojaah harian (keluarga)</h2>
-            <p className="text-xs text-gray-600">
+            <section><FamilyParents /></section>
+            <section>
+            <h2>Batas murajaah harian (keluarga)</h2>
+            <p className="text-sm font-semibold text-muted">
               Berlaku untuk semua profil anak. Kecepatan hafalan baru diatur per anak di bagian "Belajar".
             </p>
             <label className="block text-sm font-semibold" htmlFor="murojaah-cap">
@@ -321,7 +319,7 @@ export function SettingsPage() {
               min={1}
               max={30}
               disabled={missionBusy}
-              className="w-full rounded-game border-2 border-line p-2 font-semibold"
+              className="min-h-[52px] w-full rounded-pill border-[3px] border-line bg-white px-4 font-bold outline-none focus:border-brand"
               value={murojaahCap}
               onChange={(e) => setMurojaahCap(Number(e.target.value))}
               onBlur={() => {
@@ -334,12 +332,12 @@ export function SettingsPage() {
                 }
               }}
             />
+            </section>
           </>
         )}
 
-        <hr />
         <LogoutButton label="Keluar" className="flex min-h-[56px] w-full items-center justify-center rounded-pill border-[3px] border-brand bg-white text-lg font-extrabold text-brand-dark" />
       </div>
-    </AppPage>
+    </Page>
   );
 }
