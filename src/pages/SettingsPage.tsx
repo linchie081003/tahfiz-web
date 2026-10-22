@@ -10,6 +10,7 @@ import { syncReciterToAgeMode } from "../lib/reciterPolicy";
 import { filterRecitersForAge } from "../lib/reciterPolicy";
 import { FALLBACK_RECITERS, filterRecitersForGender, type ReciterOption } from "../lib/reciters";
 import { TajweedLegend } from "../components/TajweedLegend";
+import { LogoutButton } from "../components/LogoutButton";
 import { FamilyParents } from "../components/FamilyParents";
 import { MemberLearningSettings } from "../components/MemberLearningSettings";
 import { RemindersAndAiSection } from "../components/RemindersAndAiSection";
@@ -336,6 +337,8 @@ export function SettingsPage() {
           </>
         )}
 
+        <hr />
+        <LogoutButton label="Keluar" className="flex min-h-[56px] w-full items-center justify-center rounded-pill border-[3px] border-brand bg-white text-lg font-extrabold text-brand-dark" />
       </div>
     </AppPage>
   );
