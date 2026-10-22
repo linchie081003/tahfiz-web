@@ -9,23 +9,38 @@ import { NavMic, NavPlay } from "../components/icons/NavIcons";
 type Item = { index: number; arabic: string; title: string; tip: string; articulation: "raised" | "flat" | "throat" | null; versus: string | null; audio_url: string; audio_urls?: string[]; audio_fallback_urls?: string[] };
 type Cur = { point: number; items: Item[]; draft: boolean };
 
-/** Diagram mulut sederhana: posisi lidah. Animasi dimatikan bila pengguna memilih mengurangi gerakan. */
+const REST = "M44 90 C90 100 170 104 240 102 C270 100 290 96 296 108 L296 114 L44 114 Z";
+const RAISED = "M44 70 C90 84 170 62 244 58 C272 58 292 78 296 100 L296 114 L44 114 Z";
+const FLAT_UP = "M44 86 C90 96 170 98 240 96 C270 95 290 94 296 106 L296 114 L44 114 Z";
+const reduceMotion = () => typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+/** Penampang mulut dari samping: gigi, langit-langit, lidah bergerak. Animasi mati bila pengguna mengurangi gerakan. */
 function MouthDiagram({ kind }: { kind: "raised" | "flat" | "throat" }) {
-  const tongue = kind === "raised" ? "M20 88 Q70 80 120 60 Q150 46 168 50 L168 90 L20 98 Z" : kind === "flat" ? "M20 88 Q100 86 168 84 L168 96 L20 98 Z" : "M20 88 Q100 90 168 92 L168 98 L20 98 Z";
+  const still = reduceMotion();
+  const label = kind === "raised" ? "Penampang mulut dari samping. Pangkal lidah naik mendekati langit-langit belakang." : kind === "flat" ? "Penampang mulut dari samping. Lidah tetap rata dan rendah." : "Penampang mulut dari samping. Suara keluar dari tenggorokan.";
+  const base = kind === "raised" ? RAISED : kind === "flat" ? FLAT_UP : REST;
+  const values = kind === "raised" ? `${REST};${RAISED};${REST}` : kind === "flat" ? `${REST};${FLAT_UP};${REST}` : `${REST};${REST};${REST}`;
+  const dot = kind === "raised" ? { x: [240, 244, 240], y: [100, 58, 100] } : kind === "flat" ? { x: [240, 242, 240], y: [100, 94, 100] } : { x: [296, 296, 296], y: [84, 84, 84] };
+  const j = (a: number[]) => a.join(";");
   return (
-    <svg viewBox="0 0 220 120" className="w-full" role="img" aria-label={kind === "raised" ? "Pangkal lidah naik ke langit-langit" : kind === "flat" ? "Lidah rata" : "Suara dari tenggorokan"}>
-      <path d="M30 22 Q120 -2 196 60" stroke="#6C63C9" strokeWidth="5" fill="none" strokeLinecap="round" />
-      <rect x="14" y="26" width="10" height="22" rx="4" fill="#fff" stroke="#6C63C9" strokeWidth="3" />
-      <rect x="14" y="86" width="10" height="20" rx="4" fill="#fff" stroke="#6C63C9" strokeWidth="3" />
-      <path d="M8 60 q-8 8 0 20 q14 -6 8 -20z" fill="#F26B3A" />
-      <path d={tongue} fill="#F2B01E" stroke="#C98A0A" strokeWidth="3">
-        {kind !== "throat" && <animate attributeName="opacity" values="1;.75;1" dur="2.4s" repeatCount="indefinite" />}
+    <svg viewBox="0 0 340 130" width="100%" role="img" aria-label={label} style={{ display: "block" }}>
+      <path d="M40 22 C100 6 210 6 270 34 C300 48 310 70 306 96" fill="none" stroke="#6C63C9" strokeWidth="5" strokeLinecap="round" />
+      <rect x="30" y="20" width="16" height="26" rx="6" fill="#FFFFFF" stroke="#6C63C9" strokeWidth="3" />
+      <rect x="30" y="86" width="16" height="24" rx="6" fill="#FFFFFF" stroke="#6C63C9" strokeWidth="3" />
+      <path d="M14 44 Q6 66 14 88 Q30 80 32 66 Q30 52 14 44Z" fill="#F26B3A" />
+      <path d="M40 114 L300 114" stroke="#E3E0EE" strokeWidth="5" strokeLinecap="round" />
+      <path d={still ? base : REST} fill="#F2B01E" stroke="#C98A00" strokeWidth="3" strokeLinejoin="round">
+        {!still && <animate attributeName="d" dur="2.4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines=".4 0 .2 1;.4 0 .2 1" values={values} />}
       </path>
-      {kind === "throat" && <circle cx="196" cy="86" r="9" fill="#0F766E"><animate attributeName="r" values="7;11;7" dur="1.6s" repeatCount="indefinite" /></circle>}
-      <circle cx={kind === "raised" ? 150 : 130} cy={kind === "raised" ? 58 : 85} r="5" fill="#0F766E" />
-      <text x="150" y="14" fontSize="11" fontWeight="800" fill="#3C3489">langit-langit</text>
-      <text x="26" y="44" fontSize="11" fontWeight="800" fill="#3C3489" dx="12">gigi</text>
-      <text x="22" y="118" fontSize="11" fontWeight="800" fill="#7A4A1A">lidah</text>
+      <circle cx={dot.x[still ? 1 : 0]} cy={dot.y[still ? 1 : 0]} r="9" fill="#0F766E" opacity=".25">
+        {!still && <><animate attributeName="r" values="7;13;7" dur="2.4s" repeatCount="indefinite" /><animate attributeName="cx" values={j(dot.x)} dur="2.4s" repeatCount="indefinite" /><animate attributeName="cy" values={j(dot.y)} dur="2.4s" repeatCount="indefinite" /></>}
+      </circle>
+      <circle cx={dot.x[still ? 1 : 0]} cy={dot.y[still ? 1 : 0]} r="5" fill="#0F766E">
+        {!still && <><animate attributeName="cx" values={j(dot.x)} dur="2.4s" repeatCount="indefinite" /><animate attributeName="cy" values={j(dot.y)} dur="2.4s" repeatCount="indefinite" /></>}
+      </circle>
+      <text x="56" y="60" fontFamily="Nunito,sans-serif" fontSize="12" fontWeight="800" fill="#3C3489">gigi</text>
+      <text x="262" y="30" fontFamily="Nunito,sans-serif" fontSize="12" fontWeight="800" fill="#3C3489">langit-langit</text>
+      <text x="30" y="126" fontFamily="Nunito,sans-serif" fontSize="12" fontWeight="800" fill="#7A5200">lidah</text>
     </svg>
   );
 }
