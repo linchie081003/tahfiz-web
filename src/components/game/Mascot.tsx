@@ -1,17 +1,17 @@
 export type MascotMood = "default" | "happy" | "excited" | "sad";
 
-/** Maskot: bulan sabit emas dengan bintang kecil. */
+/** Maskot: bintang emas tersenyum dengan bulan sabit kecil (sesuai design). */
 export function Mascot({ mood = "default", size = 120, className = "" }: { mood?: MascotMood; size?: number; className?: string }) {
-  const mouth = mood === "sad" ? "M34 76q9-9 19 0" : "M34 68q9 10 19 0";
-  const eye = mood === "sad" ? "M30 44q7 7 15 0" : "M30 42q7-9 15 0";
-  const crescent = "M80 12A50 50 0 1 0 108 88A38 38 0 1 1 80 12Z";
+  const mouth = mood === "sad" ? "M16.5 31.4 Q20 28 23.5 31.4" : "M16.5 29.2 Q20 32.6 23.5 29.2";
   return (
-    <svg viewBox="0 0 120 120" width={size} height={size} className={className} role="img" aria-label="Maskot Hafiz">
-      <path d={crescent} fill="#F2B01E" />
-      <path d={eye} fill="none" stroke="#412402" strokeWidth="5" strokeLinecap="round" />
-      <path d={mouth} fill="none" stroke="#412402" strokeWidth="5" strokeLinecap="round" />
-      <ellipse cx="26" cy="60" rx="6" ry="4.5" fill="#F26B3A" opacity=".45" />
-      <path d="M98 22l3.4 7 7.6.9-5.6 5.2 1.5 7.5-6.9-3.8-6.9 3.8 1.5-7.5-5.6-5.2 7.6-.9z" fill="#4F46B5" />
+    <svg viewBox="0 0 44 44" width={size} height={size} className={className} role="img" aria-label="Maskot Hafiz">
+      <polygon points="20.0,8.0 25.8,17.1 36.2,19.7 29.3,28.0 30.0,38.8 20.0,34.8 10.0,38.8 10.7,28.0 3.8,19.7 14.2,17.1" fill="#F2B01E" stroke="#F2B01E" strokeWidth="3.5" strokeLinejoin="round" />
+      <circle cx="15.5" cy="25" r="2.2" fill="#412402" />
+      <circle cx="24.5" cy="25" r="2.2" fill="#412402" />
+      <circle cx="12.6" cy="29" r="1.8" fill="#F26B3A" opacity=".55" />
+      <circle cx="27.4" cy="29" r="1.8" fill="#F26B3A" opacity=".55" />
+      <path d={mouth} stroke="#412402" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M37 3 A7.2 7.2 0 1 0 37 17.4 A5.6 5.6 0 0 1 37 3Z" fill="#4F46B5" />
     </svg>
   );
 }

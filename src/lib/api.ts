@@ -60,6 +60,7 @@ export type HomeData = {
   menu_locks: Record<string, string>;
   level_progress: number;
   parent_preview?: boolean;
+  mission_items?: Record<string, string>;
   beauty_reward?: {
     submission_id: string;
     surah_id: number;
