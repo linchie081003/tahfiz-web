@@ -30,12 +30,12 @@ function MouthDiagram({ kind }: { kind: "raised" | "flat" | "throat" }) {
   );
 }
 
-/** Detail satu Pulau: tiga latihan. Pra-cek AI membantu; keputusan lulus ada pada guru atau orang tua. */
+/** Detail satu Pulau: lima latihan. Pra-cek AI membantu; keputusan lulus ada pada guru atau orang tua. */
 export function LatihanTahsinPage() {
   const { point } = useParams();
   const [sp] = useSearchParams();
   const nav = useNavigate();
-  const i = Math.min(3, Math.max(1, Number(sp.get("i") ?? 1)));
+  const iRaw = Math.max(1, Number(sp.get("i") ?? 1));
   const prefs = loadQuranPrefs();
   const [slow, setSlow] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -43,6 +43,8 @@ export function LatihanTahsinPage() {
   const token = useRef(0);
   const pts = useQuery({ queryKey: ["tahsin-points"], queryFn: () => api<{ gate_open: boolean }>("/tahsin/points"), retry: false });
   const q = useQuery({ queryKey: ["tahsin-cur", point, prefs.reciterId], queryFn: () => api<Cur>(`/tahsin/curriculum/${point}?reciter_id=${encodeURIComponent(prefs.reciterId)}`) });
+  const total = q.data?.items.length ?? 5;
+  const i = Math.min(total, iRaw);
   const it = q.data?.items.find((x) => x.index === i);
   if (q.isError) return <div className="space-y-3 p-8 text-center"><p className="font-extrabold">Pulau tidak ditemukan.</p><button type="button" className="font-extrabold text-brand" onClick={() => nav("/tahsin")}>Kembali ke peta</button></div>;
   if (!it) return <p className="p-8 text-center font-extrabold text-muted">Memuat…</p>;
@@ -73,9 +75,9 @@ export function LatihanTahsinPage() {
   };
   const nextPoint = Number(point) + 1;
   const gateOpen = pts.data?.gate_open ?? false;
-  // Selesai 3 latihan: lanjut ke Pulau berikutnya. Pulau 4 dst. menunggu Pulau 1-3 lulus.
+  // Selesai semua latihan: lanjut ke Pulau berikutnya. Pulau 4 dst. menunggu Pulau 1-3 lulus.
   const canNext = nextPoint <= 9 && (nextPoint <= 3 || gateOpen);
-  const nextPath = i < 3 ? `/tahsin/${point}?i=${i + 1}` : canNext ? `/tahsin/${nextPoint}?i=1` : "/tahsin";
+  const nextPath = i < total ? `/tahsin/${point}?i=${i + 1}` : canNext ? `/tahsin/${nextPoint}?i=1` : "/tahsin";
   const go = () => {
     token.current++;
     audio.current?.pause();
@@ -89,10 +91,10 @@ export function LatihanTahsinPage() {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
         <div className="flex-1">
-          <div className="flex gap-2" role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={i} aria-label={`Latihan ${i} dari 3`}>
-            {[1, 2, 3].map((n) => <span key={n} className={`h-3.5 flex-1 rounded-pill ${n <= i ? "bg-teal" : "bg-lav"}`} />)}
+          <div className="flex gap-2" role="progressbar" aria-valuemin={1} aria-valuemax={total} aria-valuenow={i} aria-label={`Latihan ${i} dari ${total}`}>
+            {Array.from({ length: total }, (_, k) => k + 1).map((n) => <span key={n} className={`h-3.5 flex-1 rounded-pill ${n <= i ? "bg-teal" : "bg-lav"}`} />)}
           </div>
-          <p className="mt-1 text-sm font-extrabold text-brand-dark">Pulau {point} · Latihan {i} dari 3</p>
+          <p className="mt-1 text-sm font-extrabold text-brand-dark">Pulau {point} · Latihan {i} dari {total}</p>
         </div>
       </div>
 
