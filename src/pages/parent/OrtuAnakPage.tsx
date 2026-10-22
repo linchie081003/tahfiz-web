@@ -3,11 +3,11 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../lib/api";
 import { friendlyError, useGameToast } from "../../components/game/GameToast";
-import { Page, ScreenHead } from "../../components/ui/ui";
+import { Page, ScreenHead, Toggle } from "../../components/ui/ui";
 import { AGE_MODE_OPTIONS } from "../../lib/ageModeOptions";
 
 type Child = { id: string; name: string; age_mode?: string };
-type MS = { coverage: string; daily_ayahs: number; murajaah_strong_days: number; set_by: string };
+type MS = { coverage: string; daily_ayahs: number; murajaah_strong_days: number; set_by: string; parallel_hafalan?: boolean };
 type TeacherRes = { link: { status: string; teacher: { name?: string; verified?: boolean } } | null };
 const sel = "min-h-[52px] w-full rounded-pill border-[3px] border-line bg-white px-4 font-bold text-outline outline-none focus:border-brand disabled:opacity-60";
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
@@ -70,6 +70,13 @@ export function OrtuAnakPage() {
                 <select id="jed" className={sel} disabled={busy || locked} value={d.murajaah_strong_days} onChange={(e) => void put({ murajaah_strong_days: Number(e.target.value) })}>
                   <option value={14}>14 hari (bawaan)</option><option value={7}>7 hari</option>
                 </select>
+                <div className="flex items-center gap-3 rounded-[20px] bg-lav p-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-extrabold text-outline">Hafalan jalan bersama tahsin</p>
+                    <p className="text-sm font-semibold text-muted">{d.parallel_hafalan ? `${name} bisa hafalan dan murajaah walau Pulau 1 sampai 3 belum lulus.` : `Bawaan: hafalan dan murajaah terbuka setelah Pulau 1 sampai 3 lulus.`}</p>
+                  </div>
+                  <Toggle on={!!d.parallel_hafalan} disabled={busy || locked} onChange={(v) => void put({ parallel_hafalan: v })} label="Hafalan jalan bersama tahsin" />
+                </div>
               </>
             )}
             {locked

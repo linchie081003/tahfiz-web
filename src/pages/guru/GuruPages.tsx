@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../../lib/api";
 import { useLogout } from "../../lib/auth";
 import { AuthenticatedAudio } from "../../components/AuthenticatedAudio";
-import { Avatar, Btn, Card, Chip, Notice, Page, ScreenHead, Segmented } from "../../components/ui/ui";
+import { Avatar, Btn, Card, Chip, Notice, Page, ScreenHead, Segmented, Toggle } from "../../components/ui/ui";
 import { friendlyError, useGameToast } from "../../components/game/GameToast";
 import { useTeacher } from "./GuruShell";
 
@@ -194,7 +194,7 @@ export function GuruMuridPage() {
 }
 
 type Overview = { points: { point: number; name: string; mandatory: boolean; passed: boolean; best_score: number; approved_below_threshold: boolean }[]; gate_open: boolean; threshold: number };
-type Settings = { daily_ayahs: number; murajaah_strong_days: number; set_by: string };
+type Settings = { daily_ayahs: number; murajaah_strong_days: number; set_by: string; parallel_hafalan?: boolean };
 
 export function GuruMuridDetailPage() {
   const { id } = useParams();
@@ -259,6 +259,13 @@ export function GuruMuridDetailPage() {
           <Segmented value={st.data.daily_ayahs} onChange={(v) => save.mutate({ daily_ayahs: v })} options={[1, 2, 3, 5].map((n) => ({ id: n, label: `${n}`, hint: "ayat/hari" }))} />
           <p className="mb-2 mt-4 text-lg font-extrabold">Murajaah “Kuat” kembali setelah</p>
           <Segmented value={st.data.murajaah_strong_days} onChange={(v) => save.mutate({ murajaah_strong_days: v })} options={[{ id: 7, label: "7 hari" }, { id: 14, label: "14 hari" }]} />
+          <div className="mt-4 flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-extrabold">Hafalan jalan bersama tahsin</p>
+              <p className="text-xs font-semibold text-muted">Jika aktif, hafalan dan murajaah terbuka walau Pulau 1 sampai 3 belum lulus.</p>
+            </div>
+            <Toggle on={!!st.data.parallel_hafalan} onChange={(v) => save.mutate({ parallel_hafalan: v } as Partial<Settings>)} label="Hafalan jalan bersama tahsin" />
+          </div>
           <p className="mt-2 text-xs font-semibold text-muted">Diatur oleh: {st.data.set_by === "teacher" ? "guru" : "orang tua"}</p>
         </Card>
       )}
