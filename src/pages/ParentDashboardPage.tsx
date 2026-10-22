@@ -35,7 +35,6 @@ export function ParentDashboardPage() {
     if (c.murajaah_due > 0) attention.push({ key: "mr", tone: "bg-coral", icon: <NavDrop size={22} />, body: <>Hafalan <b>{c.murajaah_surah || "surat"}</b> perlu diulang hari ini{c.murajaah_due > 1 ? ` (+${c.murajaah_due - 1} lainnya)` : ""}.</> });
     if (c.pending_setor > 0) attention.push({ key: "ps", tone: "bg-teal", icon: <NavMic size={22} />, body: <>{c.pending_setor} keputusan menunggu {hasTeacher ? "guru" : "Anda"}: lanjut atau ulang.</>, action: !hasTeacher ? <Link to="/parent/queue" className="rounded-pill bg-brand px-4 py-2 text-sm font-extrabold text-white">Tinjau</Link> : undefined });
     if (c.tahsin_status !== "passed" && !hasTeacher) attention.push({ key: "gt", tone: "bg-teal", icon: <NavMic size={22} />, body: <>Gerbang hafalan belum terbuka.</>, action: <Link to={`/parent/sahkan/${c.id}`} className="rounded-pill bg-teal px-4 py-2 text-sm font-extrabold text-white">Buka</Link> });
-    if (!hasTeacher) attention.push({ key: "gr", tone: "bg-gold", icon: <NavUser size={22} />, body: <>{link?.status === "requested" ? "Menunggu guru menerima permintaan." : "Belum ada guru. Penilaian dari AI dan keputusan ada pada Anda."}</>, action: <Link to="/parent/guru" className="rounded-pill bg-white px-4 py-2 text-sm font-extrabold text-brand">Guru</Link> });
   }
   const row = (icon: React.ReactNode, tone: string, label: string, text: string, to: string) => (
     <Link to={to} className={`flex min-h-[52px] items-center gap-3 rounded-pill px-2.5 py-1.5 ${tone}`}>
@@ -68,6 +67,17 @@ export function ParentDashboardPage() {
         <Card tone="lav"><p className="font-extrabold">Belum ada profil anak.</p><p className="text-sm font-semibold text-muted">Ketuk "+ Anak" untuk menambah.</p></Card>
       ) : (
         <>
+          {!hasTeacher && (
+            <section className="flex items-center gap-3 rounded-[24px] bg-lav p-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-gold-ink"><NavUser size={22} /></span>
+              <div className="min-w-0 flex-1">
+                <p className="font-extrabold text-outline">{link?.status === "requested" ? "Menunggu guru" : "Belum ada guru"}</p>
+                <p className="text-sm font-semibold leading-snug text-muted">{link?.status === "requested" ? `Permintaan untuk ${c.name} sudah dikirim. Penilaian sementara dari AI dan Anda.` : `Penilaian saat ini dari AI saja. Hubungkan guru agar bacaan ${c.name} diperiksa.`}</p>
+              </div>
+              <Link to="/parent/guru" className="shrink-0 rounded-pill bg-brand px-4 py-2 text-sm font-extrabold text-white">{link?.status === "requested" ? "Lihat" : "Hubungkan"}</Link>
+            </section>
+          )}
+
           <section className="space-y-3 rounded-[32px] bg-brand p-4 text-white">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-extrabold">Belajar hari ini</h2>
