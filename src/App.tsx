@@ -14,8 +14,8 @@ import { PetaPage } from "./pages/PetaPage";
 import { PetaTahsinPage } from "./pages/PetaTahsinPage";
 import { SetorPage } from "./pages/SetorPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { TahsinPage } from "./pages/TahsinPage";
-import { QuranPage } from "./pages/QuranPage";
+import { LatihanTahsinPage } from "./pages/LatihanTahsinPage";
+import { QuranHome, QuranPage } from "./pages/QuranPage";
 import { QuranSurahPage } from "./pages/QuranSurahPage";
 import { OrtuHubPage } from "./pages/parent/OrtuHubPage";
 import { HubungkanGuruPage } from "./pages/parent/HubungkanGuruPage";
@@ -90,7 +90,8 @@ export default function App() {
       <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
       <Route path="/peta" element={<RequireAuth><PetaTahsinPage /></RequireAuth>} />
       <Route path="/peta/hafalan" element={<RequireAuth><PetaPage /></RequireAuth>} />
-      <Route path="/tahsin" element={<RequireAuth><TahsinPage /></RequireAuth>} />
+      <Route path="/tahsin" element={<RequireAuth><PetaTahsinPage /></RequireAuth>} />
+      <Route path="/tahsin/:point" element={<RequireAuth><LatihanTahsinPage /></RequireAuth>} />
       <Route path="/ziyadah" element={<RequireAuth><ZiyadahPage /></RequireAuth>} />
       <Route path="/murojaah" element={<RequireAuth><MurojaahPage /></RequireAuth>} />
       <Route path="/setor" element={<RequireAuth><SetorPage /></RequireAuth>} />
@@ -121,7 +122,8 @@ export default function App() {
           </RequireAuth>
         }
       />
-      <Route path="/quran" element={<RequireAuth><QuranPage /></RequireAuth>} />
+      <Route path="/quran" element={<RequireAuth><QuranHome /></RequireAuth>} />
+      <Route path="/quran/daftar" element={<RequireAuth><QuranPage /></RequireAuth>} />
       <Route path="/quran/:surahId" element={<RequireAuth><QuranSurahPage /></RequireAuth>} />
       <Route path="/referensi" element={<RequireAuth><Navigate to="/quran" replace /></RequireAuth>} />
       <Route path="/laporan" element={<RequireAuth><Navigate to="/parent/laporan" replace /></RequireAuth>} />

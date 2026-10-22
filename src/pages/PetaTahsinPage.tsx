@@ -64,7 +64,7 @@ export function PetaTahsinPage() {
           const label = p.passed ? "Lulus" : current ? "Sedang dijelajahi" : locked ? "Terkunci" : "Terbuka";
           return (
             <div key={p.point}>
-              <Link to={locked ? "#" : "/tahsin"} aria-disabled={locked} aria-label={`Pulau ${p.point}, ${p.name}, ${label}`} className={`flex min-h-[84px] items-center gap-3 rounded-pill p-3 pr-5 ${tone}`}>
+              <Link to={locked ? "#" : `/tahsin/${p.point}`} aria-disabled={locked} aria-label={`Pulau ${p.point}, ${p.name}, ${label}`} className={`flex min-h-[84px] items-center gap-3 rounded-pill p-3 pr-5 ${tone}`}>
                 <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl font-extrabold ring-4 ring-white ${p.passed ? "bg-gold text-gold-ink" : current ? "bg-white text-brand ring-gold" : "bg-[#E4F3F0] text-teal"}`}>{p.point}</span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2 text-xs font-extrabold"><span className="rounded-pill bg-cream px-2 py-0.5 text-gold-ink">{must ? "WAJIB" : "PILIHAN"}</span>{label}</span>

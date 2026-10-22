@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { api, type Submission } from "../lib/api";
 import { Mascot } from "../components/game/Mascot";
 import { Card, Chip, Page, ScreenHead } from "../components/ui/ui";
@@ -13,6 +13,7 @@ type Ins = { available?: boolean; summaryPercent?: number; reason?: string; word
 export function HasilPage() {
   const { id } = useParams();
   const nav = useNavigate();
+  const next = (useLocation().state as { next?: string | null } | null)?.next ?? "/";
   const qc = useQueryClient();
   const [waited, setWaited] = useState(0);
   const q = useQuery({
@@ -24,7 +25,7 @@ export function HasilPage() {
   const s = q.data;
   if (!s) return <p className="p-8 text-center font-extrabold text-muted">Memuat…</p>;
   const ins = s.ai_insights as Ins | null;
-  const home = () => { qc.invalidateQueries(); nav("/", { replace: true }); };
+  const home = () => { qc.invalidateQueries(); nav(next, { replace: true }); };
 
   if (s.ai_status !== "completed" && waited >= 6) {
     return (
@@ -66,8 +67,8 @@ export function HasilPage() {
       </Card>
       <Tips title="Ingat" items={["Ini pra-cek AI, bukan nilai akhir.", "Ayah, Ibu, atau guru yang memutuskan lanjut atau mengulang."]} />
       <div className="grid grid-cols-2 gap-2">
-        <Btn variant="outline" onClick={() => nav(-2)}>Ulangi</Btn>
-        <Btn onClick={home}>Selesai</Btn>
+        <Btn variant="outline" onClick={() => nav(-1)}>Ulangi</Btn>
+        <Btn onClick={home}>{next === "/" ? "Selesai" : "Lanjut"}</Btn>
       </div>
     </Page>
   );

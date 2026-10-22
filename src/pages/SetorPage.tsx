@@ -138,7 +138,7 @@ export function SetorPage() {
       }
       fd.append("file", blob, "rec.webm");
       const created = await api<{ id: string }>("/setor", { method: "POST", body: fd });
-      nav(`/hasil/${created.id}`, { replace: true });
+      nav(`/hasil/${created.id}`, { replace: true, state: { next: params.get("next") } });
     } catch (e) {
       if (!navigator.onLine || String((e as Error).message).startsWith("Tidak dapat hubungi")) setOffline(true);
       else toast(friendlyError(e), "error");
