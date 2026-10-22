@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import { setAgeMode, useAgeMode, type AgeMode } from "../context/AgeModeContext";
 import { HomeChildScene } from "../components/home/HomeChildScene";
 import { HomeParentHeader } from "../components/home/HomeParentHeader";
@@ -14,6 +15,12 @@ export function HomePage() {
       api<{ role: string; age_mode?: string | null; member_name?: string | null; member_id?: string | null }>(
         "/auth/session",
       ),
+  });
+  const placement = useQuery({
+    queryKey: ["placement", session.data?.member_id],
+    queryFn: () => api<{ placement: string | null }>("/placement"),
+    enabled: !!session.data?.member_id,
+    retry: false,
   });
   const { mode: ageMode } = useAgeMode();
   const isParent = session.data?.role === "parent";
@@ -49,6 +56,8 @@ export function HomePage() {
           data?.age_mode === "adult"
         ? data.age_mode
         : ageMode;
+
+  if (session.data?.member_id && placement.data && placement.data.placement === null) return <Navigate to="/onboarding" replace />;
 
   if (isError) {
     return (

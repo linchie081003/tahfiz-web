@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { getToken } from "./lib/api";
+import { tokenRole } from "./lib/auth";
 import { ChooseProfilePage } from "./pages/ChooseProfilePage";
 import { HomePage } from "./pages/HomePage";
 import { LencanaPage } from "./pages/LencanaPage";
@@ -25,6 +26,13 @@ import { GuruMasukPage } from "./pages/guru/GuruMasukPage";
 import { GuruAntreanPage, GuruBerandaPage, GuruEvaluasiPage, GuruMuridDetailPage, GuruMuridPage, GuruPengaturanPage } from "./pages/guru/GuruPages";
 import { HasilPage } from "./pages/HasilPage";
 import { SertifikatPage } from "./pages/SertifikatPage";
+import { OrtuSahkanPage } from "./pages/parent/OrtuSahkanPage";
+import { OrtuGerbangPage } from "./pages/parent/OrtuGerbangPage";
+import { HapusBerhasilPage, OrtuDitolakGuruPage, OrtuGuruMenungguPage, PengingatTerkirimPage } from "./pages/parent/OrtuStatusPages";
+import { TambahAnakPage } from "./pages/parent/TambahAnakPage";
+import { OnboardingPage } from "./pages/OnboardingPage";
+import { PersetujuanOrtuPage } from "./pages/parent/PersetujuanOrtuPage";
+import { AdminBerandaPage, AdminGuruPage, AdminKeluargaPage, AdminShell } from "./pages/guru/AdminPages";
 import { ZiyadahPage } from "./pages/ZiyadahPage";
 
 import { GameScene } from "./components/game/GameScene";
@@ -40,14 +48,6 @@ function Shell({ children }: { children: React.ReactNode }) {
       </div>
     </ParentDashboardOpenProvider>
   );
-}
-
-function tokenRole(): string | null {
-  try {
-    return JSON.parse(atob((getToken() ?? "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role ?? null;
-  } catch {
-    return null;
-  }
 }
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -70,6 +70,11 @@ export default function App() {
         <Route path="murid/:id" element={<GuruMuridDetailPage />} />
         <Route path="pengaturan" element={<GuruPengaturanPage />} />
       </Route>
+      <Route path="/admin" element={<AdminShell />}>
+        <Route index element={<AdminBerandaPage />} />
+        <Route path="guru" element={<AdminGuruPage />} />
+        <Route path="keluarga" element={<AdminKeluargaPage />} />
+      </Route>
       <Route path="/gabung" element={<JoinFamilyPage />} />
       <Route
         path="/pilih-profil"
@@ -79,7 +84,8 @@ export default function App() {
           </RequireAuth>
         }
       />
-      <Route path="/onboarding" element={<Navigate to="/pilih-profil" replace />} />
+      <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
+      <Route path="/parent/persetujuan" element={<RequireAuth><PersetujuanOrtuPage /></RequireAuth>} />
       <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
       <Route path="/peta" element={<RequireAuth><PetaPage /></RequireAuth>} />
       <Route path="/tahsin" element={<RequireAuth><TahsinPage /></RequireAuth>} />
@@ -97,6 +103,13 @@ export default function App() {
       <Route path="/parent/privasi" element={<RequireAuth><PrivasiSuaraPage /></RequireAuth>} />
       <Route path="/parent/pesan" element={<RequireAuth><PesanGuruPage /></RequireAuth>} />
       <Route path="/parent/instansi" element={<RequireAuth><PindahInstansiPage /></RequireAuth>} />
+      <Route path="/parent/sahkan/:memberId" element={<RequireAuth><OrtuSahkanPage /></RequireAuth>} />
+      <Route path="/parent/gerbang" element={<RequireAuth><OrtuGerbangPage /></RequireAuth>} />
+      <Route path="/parent/guru/ditolak" element={<RequireAuth><OrtuDitolakGuruPage /></RequireAuth>} />
+      <Route path="/parent/guru/menunggu" element={<RequireAuth><OrtuGuruMenungguPage /></RequireAuth>} />
+      <Route path="/parent/pengingat" element={<RequireAuth><PengingatTerkirimPage /></RequireAuth>} />
+      <Route path="/parent/privasi/hapus-berhasil" element={<RequireAuth><HapusBerhasilPage /></RequireAuth>} />
+      <Route path="/parent/tambah-anak" element={<RequireAuth><TambahAnakPage /></RequireAuth>} />
       <Route path="/parent/laporan" element={<RequireAuth><WeeklyReportPage /></RequireAuth>} />
       <Route
         path="/ujian"

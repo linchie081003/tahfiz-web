@@ -27,6 +27,15 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       `Tidak dapat hubungi API di ${API}. Pastikan backend jalan: uvicorn app.main:app --reload --port 8010`,
     );
   }
+  if (res.status === 401 && token) {
+    // Hanya token/sesi yang gagal yang memicu keluar otomatis (bukan PIN atau sandi salah).
+    const body = await res.clone().text();
+    if (/Token (tidak valid|diperlukan)|Sesi berakhir/.test(body)) {
+      const { forceLogout } = await import("./auth");
+      forceLogout();
+      throw new Error("Sesi berakhir. Silakan masuk lagi.");
+    }
+  }
   if (!res.ok) {
     const err = await res.text();
     throw new Error(err || res.statusText);

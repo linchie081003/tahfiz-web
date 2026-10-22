@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
-import { Card, Chip, Page, ScreenHead } from "../../components/ui/ui";
+import { useLogout } from "../../lib/auth";
+import { Btn, Card, Chip, Page, ScreenHead } from "../../components/ui/ui";
 import { FamilyParents } from "../../components/FamilyParents";
 
 const ROWS = [
+  { to: "/parent/tambah-anak", t: "Tambah anak", d: "Daftarkan anak lain untuk belajar" },
   { to: "/parent/guru", t: "Guru", d: "Hubungkan, tinjau, atau ganti guru" },
   { to: "/parent/privasi", t: "Privasi suara", d: "Izin rekaman, hapus, dan unduh data" },
   { to: "/parent/pesan", t: "Pesan guru", d: "Catatan dari guru untuk keluarga" },
@@ -13,6 +15,7 @@ const ROWS = [
 ];
 
 export function OrtuHubPage() {
+  const logout = useLogout();
   const msgs = useQuery({ queryKey: ["messages"], queryFn: () => api<{ unread: number }>("/family/messages") });
   return (
     <Page>
@@ -30,6 +33,7 @@ export function OrtuHubPage() {
           </Link>
         ))}
       </div>
+      <Btn variant="outline" onClick={logout}>Keluar</Btn>
     </Page>
   );
 }

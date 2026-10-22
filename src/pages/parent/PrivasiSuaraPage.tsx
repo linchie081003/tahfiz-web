@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api, API, downloadFile } from "../../lib/api";
 import { useChild } from "../../lib/useChild";
 import { Avatar, Btn, Card, Notice, Page, ScreenHead, Toggle } from "../../components/ui/ui";
@@ -15,6 +16,8 @@ function PinBox({ value, onChange, label }: { value: string; onChange: (v: strin
 
 export function PrivasiSuaraPage() {
   const toast = useGameToast();
+  const nav = useNavigate();
+  const [ready, setReady] = useState<string | null>(null);
   const qc = useQueryClient();
   const { children, child, select } = useChild();
   const [pin, setPin] = useState("");
@@ -34,14 +37,15 @@ export function PrivasiSuaraPage() {
   });
   const del = useMutation({
     mutationFn: () => api<{ deleted: number }>("/family/recordings/delete", { method: "POST", body: JSON.stringify({ member_id: child!.id, pin }) }),
-    onSuccess: (r) => { setPin(""); setAskDelete(false); refresh(); toast(`${r.deleted} rekaman dihapus`, "success"); }, onError: fail,
+    onSuccess: () => { setPin(""); setAskDelete(false); refresh(); nav("/parent/privasi/hapus-berhasil"); }, onError: fail,
   });
   const exp = useMutation({
-    mutationFn: async () => {
-      const r = await api<{ token: string; valid_hours: number }>("/family/export", { method: "POST", body: JSON.stringify({ member_id: child!.id }) });
-      await downloadFile(`${API}/family/export/download?token=${encodeURIComponent(r.token)}`, `hafiz-${child!.name}.zip`, false);
-    },
-    onSuccess: () => toast("Data diunduh. Tautan berlaku 24 jam.", "success"), onError: fail,
+    mutationFn: () => api<{ token: string }>("/family/export", { method: "POST", body: JSON.stringify({ member_id: child!.id }) }),
+    onSuccess: (r) => setReady(r.token), onError: fail,
+  });
+  const download = useMutation({
+    mutationFn: () => downloadFile(`${API}/family/export/download?token=${encodeURIComponent(ready!)}`, `hafiz-${child!.name}.zip`, false),
+    onError: fail,
   });
   const s = sum.data;
 
@@ -83,8 +87,18 @@ export function PrivasiSuaraPage() {
         <Btn variant="soft" disabled={pin.length !== 4 || savePin.isPending} onClick={() => savePin.mutate()}>{hasPin.data?.has_pin ? "Ganti PIN" : "Buat PIN"}</Btn>
       </Card>
 
-      <Btn variant="outline" disabled={!child || exp.isPending} onClick={() => exp.mutate()}>Unduh data {child?.name}</Btn>
-      <p className="-mt-2 text-center text-xs font-semibold text-muted">Berkas ZIP berisi kemajuan, penilaian, catatan guru, dan rekaman. Tautan berlaku 24 jam.</p>
+      {ready ? (
+        <Card tone="mint">
+          <p className="text-lg font-extrabold text-outline">Berkas siap diunduh</p>
+          <p className="mb-3 text-sm font-semibold text-muted">Berisi rekaman, nilai pra-cek, dan catatan guru milik {child?.name}. Tautan berlaku 24 jam dan hanya untuk Ayah atau Ibu.</p>
+          <Btn disabled={download.isPending} onClick={() => download.mutate()}>Unduh hafiz-{child?.name}.zip</Btn>
+        </Card>
+      ) : (
+        <>
+          <Btn variant="outline" disabled={!child || exp.isPending} onClick={() => exp.mutate()}>Siapkan data {child?.name} untuk diunduh</Btn>
+          <p className="-mt-2 text-center text-xs font-semibold text-muted">Berkas ZIP berisi kemajuan, penilaian, catatan guru, dan rekaman. Tautan berlaku 24 jam.</p>
+        </>
+      )}
 
       {!askDelete ? (
         <Btn variant="danger-outline" disabled={!s || s.recordings === 0} onClick={() => { setPin(""); setAskDelete(true); }}>Hapus semua rekaman</Btn>

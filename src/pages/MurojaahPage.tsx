@@ -1,4 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Btn, Card, Chip, Page, ScreenHead } from "../components/ui/ui";
 import { GameHeader } from "../components/game/GameHeader";
 import { Mascot } from "../components/game/Mascot";
 import { AppPage } from "../components/layout/AppPage";
@@ -14,12 +17,33 @@ const RATINGS = [
 
 export function MurojaahPage() {
   const qc = useQueryClient();
+  const nav = useNavigate();
+  const [done, setDone] = useState<{ name: string; rating: string }[]>([]);
   const { data } = useQuery({ queryKey: ["murojaah"], queryFn: () => api<Item[]>("/murojaah/due") });
   const complete = async (id: string, rating: string) => {
+    const it = data?.find((x) => x.id === id);
+    if (it) setDone((d) => [...d, { name: it.surah_name, rating }]);
     await api(`/murojaah/${id}/complete`, { method: "POST", body: JSON.stringify({ rating }) });
     qc.invalidateQueries({ queryKey: ["murojaah"] });
     qc.invalidateQueries({ queryKey: ["home"] });
   };
+  if (done.length > 0 && !data?.length) {
+    const strong = done.filter((d) => d.rating === "lancar").length;
+    const when = (r: string) => (r === "lancar" ? "Ulang lagi sesuai jadwal Kuat" : r === "ragu" ? "Ulang lagi 7 hari (Cukup)" : "Ulang lagi besok");
+    return (
+      <Page>
+        <ScreenHead back={false} eyebrow="Hasil murajaah" title="Murajaah selesai!" sub={`${strong} pohon kuat, ${done.length - strong} pohon perlu disiram`} />
+        {done.map((d, i) => (
+          <Card key={i} tone="lav">
+            <div className="flex items-center gap-2"><p className="min-w-0 flex-1 text-lg font-extrabold">{d.name}</p><Chip tone={d.rating === "lancar" ? "teal" : d.rating === "ragu" ? "gold" : "coral"}>{d.rating === "lancar" ? "Kuat" : d.rating === "ragu" ? "Cukup" : "Lemah"}</Chip></div>
+            <p className="text-sm font-semibold text-muted">{when(d.rating)}</p>
+          </Card>
+        ))}
+        <p className="text-center text-sm font-bold text-muted">Ini penilaianmu sendiri. Guru atau orang tua yang memutuskan status dan jadwal ulang.</p>
+        <Btn onClick={() => nav("/")}>Kembali ke beranda</Btn>
+      </Page>
+    );
+  }
   return (
     <AppPage>
       <GameHeader title="Murajaah" to="/" />

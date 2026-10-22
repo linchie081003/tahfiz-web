@@ -2,57 +2,33 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArabicAyahText } from "../components/ArabicAyahText";
 import { QuranAudioPlayer } from "../components/QuranAudioPlayer";
-import { GameHeader } from "../components/game/GameHeader";
-import { AppPage } from "../components/layout/AppPage";
 import { TajweedLegend } from "../components/TajweedLegend";
-import { StatusCard } from "../components/game/StatusBadge";
 import { TahsinPulau } from "../components/TahsinPulau";
+import { Card, Chip, Page, ScreenHead } from "../components/ui/ui";
 import { api } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
 
-type TahsinReference = {
-  reference_text: string;
-  text_tajweed?: string | null;
-  audio_urls: string[];
-  status: string;
-  hint: string;
-  surah_id: number;
-};
+type TahsinReference = { reference_text: string; text_tajweed?: string | null; audio_urls: string[]; status: string; hint: string; surah_id: number };
+const STATUS: Record<string, string> = { not_started: "Belum mulai", in_progress: "Sedang berlatih", pending_eval: "Menunggu keputusan", passed: "Pulau 1–3 selesai" };
 
 export function TahsinPage() {
   const prefs = loadQuranPrefs();
-  const { data } = useQuery({
-    queryKey: ["tahsin", prefs.reciterId],
-    queryFn: () =>
-      api<TahsinReference>(`/tahsin/reference?reciter_id=${encodeURIComponent(prefs.reciterId)}`),
-  });
-  const session = useQuery({
-    queryKey: ["session"],
-    queryFn: () => api<{ role: string; member_id?: string | null }>("/auth/session"),
-  });
-  if (!data) return <div className="p-4 pr-14">Memuat…</div>;
-  const q = new URLSearchParams({
-    context: "tahsin",
-    text: data.reference_text,
-    surah_id: String(data.surah_id),
-    ayah_start: "1",
-    ayah_end: "2",
-  });
+  const { data } = useQuery({ queryKey: ["tahsin", prefs.reciterId], queryFn: () => api<TahsinReference>(`/tahsin/reference?reciter_id=${encodeURIComponent(prefs.reciterId)}`) });
+  const session = useQuery({ queryKey: ["session"], queryFn: () => api<{ role: string; member_id?: string | null }>("/auth/session") });
+  if (!data) return <p className="p-8 text-center font-extrabold text-muted">Memuat…</p>;
+  const q = new URLSearchParams({ context: "tahsin", text: data.reference_text, surah_id: String(data.surah_id), ayah_start: "1", ayah_end: "2" });
   return (
-    <AppPage>
-      <GameHeader title="Tahsin" to="/" />
-      <StatusCard kind="tahsin" code={data.status} hint={data.hint} />
+    <Page>
+      <ScreenHead to="/" eyebrow="Latihan tahsin" title="Dengarkan dulu, lalu tirukan ya!" right={<Chip tone="lav">{STATUS[data.status] ?? data.status}</Chip>} />
+      <Card tone="plain"><ArabicAyahText textUthmani={data.reference_text} textTajweed={data.text_tajweed} /></Card>
+      <Card tone="lav" className="space-y-2">
+        <p className="font-extrabold">Dengarkan qori dulu</p>
+        <QuranAudioPlayer sources={data.audio_urls} label="Dengar" />
+        <p className="text-sm font-semibold text-muted">{data.hint}</p>
+      </Card>
+      <Link to={`/setor?${q}`} className="flex min-h-[56px] items-center justify-center rounded-pill bg-brand text-lg font-extrabold text-white">Ketuk, lalu baca</Link>
       <TahsinPulau memberId={session.data?.member_id} isParent={session.data?.role === "parent"} />
       <TajweedLegend tone="dark" />
-      <div className="card-surface p-4">
-        <ArabicAyahText textUthmani={data.reference_text} textTajweed={data.text_tajweed} />
-      </div>
-      <div className="card-surface p-4 space-y-2">
-        <QuranAudioPlayer sources={data.audio_urls} label="Dengarkan qori dulu" />
-      </div>
-      <Link to={`/setor?${q}`} className="btn-cta block text-center">
-        Rekam & setor tahsin
-      </Link>
-    </AppPage>
+    </Page>
   );
 }

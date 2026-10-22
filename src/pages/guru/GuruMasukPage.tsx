@@ -18,7 +18,8 @@ export function GuruMasukPage({ mode }: { mode: "masuk" | "daftar" }) {
       const body = mode === "masuk" ? { email: f.email, password: f.password } : { ...f, institution_code: f.institution_code || undefined };
       const r = await api<{ access_token: string }>(`/teacher/${mode === "masuk" ? "login" : "register"}`, { method: "POST", body: JSON.stringify(body) });
       setToken(r.access_token);
-      nav("/guru", { replace: true });
+      const me = await api<{ is_admin: boolean }>("/teacher/me");
+      nav(me.is_admin ? "/admin" : "/guru", { replace: true });
     } catch (e) { toast(friendlyError(e), "error"); } finally { setBusy(false); }
   };
   return (

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { AgeMode } from "../../context/AgeModeContext";
 import type { HomeData } from "../../lib/api";
+import { useLogout } from "../../lib/auth";
 import { Mascot } from "../game/Mascot";
 import { NavCheck, NavDrop, NavFlame, NavMic, NavPlay, NavSprout, NavStar } from "../icons/NavIcons";
 
@@ -75,6 +76,7 @@ function MissionRow({ r, locked }: { r: Row; locked: boolean }) {
 /** Beranda anak: HUD, sapaan, misi hari ini, tombol lanjut. */
 export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
   const nav = useNavigate();
+  const logout = useLogout();
   const pct = Math.min(100, Math.max(0, home.level_progress * 100));
   const list = rows(home);
   const next = ACTION_LABEL[home.mission_action];
@@ -128,6 +130,8 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
           <span className="block text-[13px] font-semibold opacity-90">Hadiah dari belajarmu</span>
         </button>
       </div>
+      {home.parent_preview && <button type="button" onClick={() => nav("/parent/gerbang")} className="min-h-[48px] w-full rounded-pill bg-lav text-base font-extrabold text-brand-dark">Area orang tua</button>}
+      <button type="button" onClick={logout} className="min-h-[48px] w-full text-base font-extrabold text-muted">Keluar</button>
     </div>
   );
 }

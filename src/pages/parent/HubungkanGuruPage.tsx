@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Link as RLink } from "react-router-dom";
 import { api } from "../../lib/api";
 import { useChild } from "../../lib/useChild";
 import { Avatar, Btn, Card, Chip, Notice, Page, ScreenHead, Toggle } from "../../components/ui/ui";
@@ -83,7 +84,12 @@ export function HubungkanGuruPage() {
         </Card>
       )}
 
-      {link?.status === "rejected" && <Notice>Permintaan ditolak{link.reject_reason ? `: ${link.reject_reason}` : ""}. Coba kode guru lain.</Notice>}
+      {link?.status === "rejected" && (
+        <Notice>Permintaan ditolak{link.reject_reason ? `: ${link.reject_reason}` : ""}. <RLink className="underline" to="/parent/guru/ditolak">Lihat detail</RLink></Notice>
+      )}
+      {link?.status === "active" && link.overdue > 0 && (
+        <Notice>{link.overdue} setoran melewati target. <RLink className="underline" to="/parent/guru/menunggu">Lihat dan ingatkan guru</RLink></Notice>
+      )}
 
       {(!link || link.status === "rejected") && child && (
         <Card tone="plain">

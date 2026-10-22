@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, clearToken } from "../../lib/api";
+import { api } from "../../lib/api";
+import { useLogout } from "../../lib/auth";
 import { AuthenticatedAudio } from "../../components/AuthenticatedAudio";
 import { Avatar, Btn, Card, Chip, Notice, Page, ScreenHead, Segmented } from "../../components/ui/ui";
 import { friendlyError, useGameToast } from "../../components/game/GameToast";
@@ -52,11 +53,14 @@ export function GuruBerandaPage() {
   const toast = useGameToast();
   const qc = useQueryClient();
   const me = useTeacher().data!;
+  const [rejecting, setRejecting] = useState<string | null>(null);
+  const [reason, setReason] = useState("Kuota murid penuh");
+  const [note, setNote] = useState("");
   const queue = useQuery({ queryKey: ["t-queue"], queryFn: () => api<QItem[]>("/teacher/queue"), enabled: me.status === "verified" });
   const reqs = useQuery({ queryKey: ["t-req"], queryFn: () => api<{ link_id: string; member_name: string; family_name: string }[]>("/teacher/requests"), enabled: me.status === "verified" });
   const respond = useMutation({
-    mutationFn: (v: { id: string; accept: boolean }) => api(`/teacher/requests/${v.id}/respond`, { method: "POST", body: JSON.stringify({ accept: v.accept }) }),
-    onSuccess: () => { qc.invalidateQueries(); }, onError: (e) => toast(friendlyError(e), "error"),
+    mutationFn: (v: { id: string; accept: boolean; reason?: string }) => api(`/teacher/requests/${v.id}/respond`, { method: "POST", body: JSON.stringify({ accept: v.accept, reason: v.reason }) }),
+    onSuccess: () => { setRejecting(null); setNote(""); qc.invalidateQueries(); }, onError: (e) => toast(friendlyError(e), "error"),
   });
   if (me.status === "pending") return <Waiting kind={me.kind} />;
   if (me.status === "rejected") return <Page><ScreenHead back={false} title="Akun ditolak" /><Notice>Verifikasi akun ini ditolak. Hubungi instansi atau keluarga yang mengundang Anda.</Notice></Page>;
@@ -73,10 +77,27 @@ export function GuruBerandaPage() {
         <Card key={r.link_id} tone="cream">
           <p className="font-extrabold text-gold-ink">Permintaan murid baru</p>
           <p className="text-lg font-extrabold text-outline">{r.member_name} <span className="text-sm font-semibold text-muted">· keluarga {r.family_name}</span></p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <Btn variant="danger-outline" onClick={() => respond.mutate({ id: r.link_id, accept: false })}>Tolak</Btn>
-            <Btn variant="teal" onClick={() => respond.mutate({ id: r.link_id, accept: true })}>Terima</Btn>
-          </div>
+          {rejecting === r.link_id ? (
+            <div className="mt-2 space-y-2">
+              <p className="font-extrabold">Alasan penolakan</p>
+              <div className="flex flex-wrap gap-2">
+                {["Kuota murid penuh", "Di luar jadwal atau wilayah", "Level belum sesuai", "Lainnya"].map((x) => (
+                  <button key={x} type="button" onClick={() => setReason(x)} className={`min-h-[44px] rounded-pill px-3 font-extrabold ${reason === x ? "bg-brand text-white" : "bg-white text-brand-dark"}`}>{x}</button>
+                ))}
+              </div>
+              <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Catatan untuk orang tua (boleh kosong)" aria-label="Catatan" className="w-full rounded-[20px] border-[3px] border-line p-3 font-semibold outline-none focus:border-brand" />
+              <p className="rounded-2xl bg-white p-3 text-sm font-semibold">Pesan untuk orang tua {r.member_name}: Mohon maaf, saya belum bisa menerima {r.member_name} saat ini. Alasan: {reason.toLowerCase()}. {r.member_name} tetap bisa belajar dalam mode mandiri, dan Ayah atau Ibu bisa mencari guru lain.</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Btn variant="outline" onClick={() => setRejecting(null)}>Batal</Btn>
+                <Btn variant="danger" onClick={() => respond.mutate({ id: r.link_id, accept: false, reason: note.trim() ? `${reason}. ${note.trim()}` : reason })}>Kirim penolakan</Btn>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <Btn variant="danger-outline" onClick={() => setRejecting(r.link_id)}>Tolak</Btn>
+              <Btn variant="teal" onClick={() => respond.mutate({ id: r.link_id, accept: true })}>Terima</Btn>
+            </div>
+          )}
         </Card>
       ))}
       {q.length === 0 ? <Empty t="Tidak ada setoran" d="Setoran murid yang perlu dinilai akan muncul di sini." /> : q.slice(0, 3).map((x) => <QueueRow key={x.id} x={x} />)}
@@ -183,6 +204,11 @@ export function GuruMuridDetailPage() {
   const [msg, setMsg] = useState("");
   const ov = useQuery({ queryKey: ["t-points", id], queryFn: () => api<Overview>(`/teacher/students/${id}/points`) });
   const st = useQuery({ queryKey: ["t-set", id], queryFn: () => api<Settings>(`/teacher/students/${id}/settings`) });
+  const pl = useQuery({ queryKey: ["t-place", id], queryFn: () => api<{ placement: string | null }>(`/teacher/students/${id}/placement`) });
+  const setPlace = useMutation({
+    mutationFn: (level: string) => api(`/teacher/students/${id}/placement`, { method: "PUT", body: JSON.stringify({ level }) }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["t-place", id] }); toast("Tingkat awal tersimpan", "success"); }, onError: (e) => toast(friendlyError(e), "error"),
+  });
   const name = useQuery({ queryKey: ["t-students"], queryFn: () => api<Student[]>("/teacher/students") }).data?.find((s) => s.member_id === id)?.name ?? "Murid";
   const fail = (e: unknown) => toast(friendlyError(e), "error");
   const result = useMutation({
@@ -221,6 +247,12 @@ export function GuruMuridDetailPage() {
         </div>
         <p className="mt-2 text-xs font-semibold text-muted">* diluluskan guru di bawah ambang</p>
       </Card>
+      {pl.data && (
+        <Card tone="plain">
+          <p className="mb-2 text-lg font-extrabold">Tingkat bacaan awal</p>
+          <Segmented value={pl.data.placement ?? "none"} onChange={(v) => setPlace.mutate(v)} options={[{ id: "none", label: "Belum kenal" }, { id: "basic", label: "Kenal huruf" }, { id: "fluent", label: "Lancar" }]} />
+        </Card>
+      )}
       {st.data && (
         <Card tone="plain">
           <p className="mb-2 text-lg font-extrabold">Kecepatan hafalan</p>
@@ -239,7 +271,7 @@ export function GuruMuridDetailPage() {
 }
 
 export function GuruPengaturanPage() {
-  const nav = useNavigate();
+  const logout = useLogout();
   const toast = useGameToast();
   const qc = useQueryClient();
   const me = useTeacher().data!;
@@ -262,7 +294,28 @@ export function GuruPengaturanPage() {
         <p className="mb-1 text-lg font-extrabold">Pesan dari orang tua</p>
         {!inbox.data?.length ? <p className="text-sm font-semibold text-muted">Belum ada pesan.</p> : inbox.data.slice(0, 10).map((m) => <p key={m.id} className="mb-1 rounded-2xl bg-brand-light px-3 py-2 text-sm font-semibold">{m.kind === "reminder" && <Chip tone="coral">Pengingat</Chip>} {m.body}</p>)}
       </Card>
-      <Btn variant="danger-outline" onClick={() => { clearToken(); qc.clear(); nav("/guru/masuk", { replace: true }); }}>Keluar</Btn>
+      {!me.institution_name && <CreateInstitution />}
+      {me.is_admin && <Link to="/admin" className="block min-h-[48px] text-center text-lg font-extrabold leading-[48px] text-brand">Buka admin instansi</Link>}
+      <Btn variant="danger-outline" onClick={logout}>Keluar</Btn>
     </Page>
+  );
+}
+
+function CreateInstitution() {
+  const qc = useQueryClient();
+  const toast = useGameToast();
+  const nav = useNavigate();
+  const [name, setName] = useState("");
+  const make = useMutation({
+    mutationFn: () => api("/institution", { method: "POST", body: JSON.stringify({ name }) }),
+    onSuccess: () => { qc.invalidateQueries(); nav("/admin"); }, onError: (e) => toast(friendlyError(e), "error"),
+  });
+  return (
+    <Card tone="plain">
+      <p className="mb-1 text-lg font-extrabold">Punya sekolah atau lembaga?</p>
+      <p className="mb-2 text-sm font-semibold text-muted">Buat instansi untuk mengundang guru dan keluarga dengan satu kode.</p>
+      <input className="mb-2 min-h-[52px] w-full rounded-pill border-[3px] border-line px-4 font-bold outline-none focus:border-brand" placeholder="Nama instansi" aria-label="Nama instansi" value={name} onChange={(e) => setName(e.target.value)} />
+      <Btn variant="soft" disabled={!name.trim() || make.isPending} onClick={() => make.mutate()}>Buat instansi</Btn>
+    </Card>
   );
 }
