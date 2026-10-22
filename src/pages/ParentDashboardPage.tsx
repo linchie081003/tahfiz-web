@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, setToken } from "../lib/api";
 import { formatFamilyCodeDisplay } from "../lib/familyCode";
-import { Avatar, Btn, Card, Chip, Page, ScreenHead } from "../components/ui/ui";
+import { Card, Page, ScreenHead } from "../components/ui/ui";
+import { NavBook, NavDrop, NavFlame, NavMic, NavSprout, NavUser } from "../components/icons/NavIcons";
 
-type ChildSummary = { id: string; name: string; color: string; age_mode: string; tahsin_status: string; xp: number; streak_days: number; level: number; passed_surahs: number; pending_setor: number };
+type ChildSummary = { id: string; name: string; color: string; age_mode: string; tahsin_status: string; xp: number; streak_days: number; level: number; passed_surahs: number; pending_setor: number; tahsin_line: string; hafalan_line: string; murajaah_due: number; murajaah_surah: string };
 type Dashboard = { family_name: string; family_access_code: string; queue_total: number; active_member_id: string | null; children: ChildSummary[] };
 const TAHSIN: Record<string, string> = { not_started: "Belum mulai", in_progress: "Sedang berlatih", pending_eval: "Menunggu keputusan", passed: "Pulau 1–3 selesai" };
 
@@ -29,69 +30,73 @@ export function ParentDashboardPage() {
   const link = teacher.data?.link;
   const hasTeacher = link?.status === "active";
 
+  const attention: { key: string; icon: React.ReactNode; tone: string; body: React.ReactNode; action?: React.ReactNode }[] = [];
+  if (c) {
+    if (c.murajaah_due > 0) attention.push({ key: "mr", tone: "bg-coral", icon: <NavDrop size={22} />, body: <>Hafalan <b>{c.murajaah_surah || "surat"}</b> perlu diulang hari ini{c.murajaah_due > 1 ? ` (+${c.murajaah_due - 1} lainnya)` : ""}.</> });
+    if (c.pending_setor > 0) attention.push({ key: "ps", tone: "bg-teal", icon: <NavMic size={22} />, body: <>{c.pending_setor} keputusan menunggu {hasTeacher ? "guru" : "Anda"}: lanjut atau ulang.</>, action: !hasTeacher ? <Link to="/parent/queue" className="rounded-pill bg-brand px-4 py-2 text-sm font-extrabold text-white">Tinjau</Link> : undefined });
+    if (c.tahsin_status !== "passed" && !hasTeacher) attention.push({ key: "gt", tone: "bg-teal", icon: <NavMic size={22} />, body: <>Gerbang hafalan belum terbuka.</>, action: <Link to={`/parent/sahkan/${c.id}`} className="rounded-pill bg-teal px-4 py-2 text-sm font-extrabold text-white">Buka</Link> });
+    if (!hasTeacher) attention.push({ key: "gr", tone: "bg-gold", icon: <NavUser size={22} />, body: <>{link?.status === "requested" ? "Menunggu guru menerima permintaan." : "Belum ada guru. Penilaian dari AI dan keputusan ada pada Anda."}</>, action: <Link to="/parent/guru" className="rounded-pill bg-white px-4 py-2 text-sm font-extrabold text-brand">Guru</Link> });
+  }
+  const row = (icon: React.ReactNode, tone: string, label: string, text: string, to: string) => (
+    <Link to={to} className={`flex min-h-[52px] items-center gap-3 rounded-pill px-2.5 py-1.5 ${tone}`}>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-outline">{icon}</span>
+      <span className="min-w-0 flex-1 truncate text-[15px] font-semibold"><b className="font-extrabold">{label}</b> {text}</span>
+    </Link>
+  );
+
   return (
-    <Page>
-      <ScreenHead back={false} eyebrow="Area orang tua" title="Ringkasan hari ini" sub={data.family_name} />
-      {data.children.length === 0 ? (
-        <Card tone="lav"><p className="mb-2 font-extrabold">Belum ada profil anak.</p><Btn onClick={() => nav("/pilih-profil")}>Tambah anak</Btn></Card>
+    <div className="space-y-4 px-5 pb-6 pt-4">
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[13px] font-bold text-muted">Area orang tua</p>
+          <h1 className="text-[26px] font-extrabold leading-tight text-outline">Ringkasan hari ini</h1>
+        </div>
+        {c && <button type="button" onClick={() => void openAsChild(c.id)} className="flex shrink-0 items-center gap-2 rounded-pill bg-[#1672B5] px-4 py-3 text-[15px] font-extrabold text-white"><NavUser size={20} />Mode anak</button>}
+      </header>
+
+      <div className="flex gap-2 overflow-x-auto" role="tablist" aria-label="Pilih anak">
+        {data.children.map((k) => (
+          <button key={k.id} role="tab" aria-selected={k.id === c?.id} type="button" onClick={() => setSel(k.id)}
+            className={`flex shrink-0 items-center gap-2 rounded-pill px-3 py-2 text-lg font-extrabold ${k.id === c?.id ? "bg-teal text-white" : "bg-[#6B63C9] text-white"}`}>
+            <span className={`flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-extrabold ${k.id === c?.id ? "text-teal" : "text-[#6B63C9]"}`}>{k.name.charAt(0).toUpperCase()}</span>{k.name}
+          </button>
+        ))}
+        <button type="button" onClick={() => nav("/parent/tambah-anak")} className="flex shrink-0 items-center gap-1 rounded-pill bg-lav px-4 py-2 text-lg font-extrabold text-brand-dark">+ Anak</button>
+      </div>
+
+      {!c ? (
+        <Card tone="lav"><p className="font-extrabold">Belum ada profil anak.</p><p className="text-sm font-semibold text-muted">Ketuk "+ Anak" untuk menambah.</p></Card>
       ) : (
         <>
-          <div className="flex gap-2 overflow-x-auto" role="tablist" aria-label="Pilih anak">
-            {data.children.map((k) => (
-              <button key={k.id} role="tab" aria-selected={k.id === c?.id} type="button" onClick={() => setSel(k.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-pill px-3 py-1.5 font-extrabold ${k.id === c?.id ? "bg-brand text-white" : "bg-lav text-brand-dark"}`}>
-                <Avatar name={k.name} color={k.color} size={28} />{k.name}
-              </button>
-            ))}
-          </div>
-          {c && (
-            <>
-              {!hasTeacher && (
-                <Card tone="cream">
-                  <p className="font-extrabold text-gold-ink">{link?.status === "requested" ? "Menunggu guru" : "Belum ada guru"}</p>
-                  <p className="mb-2 text-sm font-semibold text-gold-ink">Penilaian saat ini dari AI saja dan keputusan ada pada Anda. Hubungkan guru agar bacaan {c.name} diperiksa.</p>
-                  <Btn variant="outline" onClick={() => nav("/parent/guru")}>Hubungkan guru</Btn>
-                </Card>
-              )}
-              <Card tone="lav">
-                <p className="mb-2 text-lg font-extrabold">Belajar hari ini</p>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div><p className="text-2xl font-extrabold text-brand-dark">{c.streak_days}</p><p className="text-xs font-bold text-muted">hari beruntun</p></div>
-                  <div><p className="text-2xl font-extrabold text-brand-dark">{c.xp}</p><p className="text-xs font-bold text-muted">bintang</p></div>
-                  <div><p className="text-2xl font-extrabold text-brand-dark">{c.passed_surahs}</p><p className="text-xs font-bold text-muted">surat lulus</p></div>
+          <section className="space-y-3 rounded-[32px] bg-brand p-4 text-white">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-extrabold">Belajar hari ini</h2>
+              <span className="flex items-center gap-1 rounded-pill bg-gold px-3 py-1 text-sm font-extrabold text-gold-ink"><NavFlame size={16} />{c.streak_days} hari</span>
+            </div>
+            {row(<NavMic size={20} />, "bg-teal text-white", "Tahsin", c.tahsin_line || TAHSIN[c.tahsin_status] || "", "/parent/laporan")}
+            {row(<NavSprout size={20} />, "bg-[#6B63C9] text-white", "Hafalan", c.hafalan_line || "Belum dimulai", "/parent/laporan")}
+            {row(<NavBook size={20} />, "bg-coral text-gold-ink", "Tilawah", "Baca bersama anak", "/quran")}
+          </section>
+
+          {attention.length > 0 && (
+            <section className="space-y-3 rounded-[28px] border-2 border-gold bg-cream p-4">
+              <h2 className="text-lg font-extrabold text-gold-ink">Perlu perhatian</h2>
+              {attention.map((a) => (
+                <div key={a.key} className="flex items-center gap-3">
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white ${a.tone}`}>{a.icon}</span>
+                  <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug text-outline">{a.body}</p>
+                  {a.action}
                 </div>
-              </Card>
-              <Card tone="plain" className="space-y-2">
-                <div className="flex items-center justify-between"><p className="font-extrabold">Tahsin</p><Chip tone={c.tahsin_status === "passed" ? "teal" : "lav"}>{TAHSIN[c.tahsin_status] ?? c.tahsin_status}</Chip></div>
-                <p className="text-sm font-semibold text-muted">Level {c.level}</p>
-              </Card>
-              {(c.pending_setor > 0 || c.tahsin_status !== "passed") && (
-                <Card tone="cream">
-                  <p className="mb-2 text-lg font-extrabold text-gold-ink">Perlu perhatian</p>
-                  {c.pending_setor > 0 && (
-                    <div className="mb-2 flex items-center gap-2">
-                      <p className="min-w-0 flex-1 font-bold">{c.pending_setor} keputusan menunggu {hasTeacher ? "guru" : "Anda"}: lanjut atau ulang.</p>
-                      {!hasTeacher && <Link to="/parent/queue" className="rounded-pill bg-brand px-4 py-2 font-extrabold text-white">Tinjau</Link>}
-                    </div>
-                  )}
-                  {c.tahsin_status !== "passed" && !hasTeacher && (
-                    <div className="flex items-center gap-2">
-                      <p className="min-w-0 flex-1 font-bold">Gerbang hafalan belum terbuka.</p>
-                      <Link to={`/parent/sahkan/${c.id}`} className="rounded-pill bg-teal px-4 py-2 font-extrabold text-white">Buka</Link>
-                    </div>
-                  )}
-                </Card>
-              )}
-              <Btn variant="soft" onClick={() => void openAsChild(c.id)}>Buka tampilan {c.name}</Btn>
-            </>
+              ))}
+            </section>
           )}
-          <Link to="/parent/laporan" className="block min-h-[48px] text-center text-lg font-extrabold leading-[48px] text-brand">Lihat laporan lengkap</Link>
-          <Card tone="plain">
-            <p className="text-sm font-bold text-muted">Kode login anak</p>
-            <p className="font-mono text-2xl font-extrabold tracking-[0.3em]">{formatFamilyCodeDisplay(data.family_access_code)}</p>
-          </Card>
         </>
       )}
-    </Page>
+
+      <Link to="/parent/laporan" className="flex min-h-[56px] items-center justify-between rounded-pill bg-teal px-5 text-base font-extrabold text-white">
+        <span>Lihat laporan lengkap</span><span aria-hidden>›</span>
+      </Link>
+      <p className="text-center text-xs font-semibold text-muted">Kode keluarga untuk anak: <span className="font-mono font-extrabold tracking-widest">{formatFamilyCodeDisplay(data.family_access_code)}</span></p>
+    </div>
   );
 }

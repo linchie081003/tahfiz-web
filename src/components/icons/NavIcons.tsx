@@ -40,3 +40,6 @@ export const NavUser = ({ size, className }: P) => (
 export const NavLock = ({ size, className }: P) => (
   <svg {...base(size)} className={className}><rect x="5" y="11" width="14" height="10" rx="3" /><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" strokeWidth="2.400" strokeLinecap="round" /></svg>
 );
+export const NavChat = ({ size, className }: P) => (
+  <svg {...base(size)} className={className}><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" /></svg>
+);
