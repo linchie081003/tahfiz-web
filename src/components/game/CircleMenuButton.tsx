@@ -40,7 +40,7 @@ export function CircleMenuButton({
       aria-label={locked ? `${label} (terkunci)` : label}
     >
       <span
-        className="relative flex h-[68px] w-[68px] items-center justify-center rounded-full border-[3.5px] border-outline transition-transform group-active:translate-y-[3px]"
+        className="relative flex h-[68px] w-[68px] items-center justify-center rounded-full border-[3.5px] border-line transition-transform group-active:translate-y-[3px]"
         style={{
           background: `linear-gradient(180deg, ${t.top}, ${t.bottom})`,
           boxShadow: `0 5px 0 ${t.lip}, 0 5px 0 3.5px #2B1B5E`,

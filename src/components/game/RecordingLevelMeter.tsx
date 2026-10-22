@@ -19,7 +19,7 @@ export function RecordingLevelMeter({ level, active, hasVoice, micLive, captured
   });
 
   let status = "Siap rekam";
-  let tone = "border-outline/30 bg-white/90 text-outline/80";
+  let tone = "border-line bg-white/90 text-outline/80";
 
   if (active && hasVoice) {
     status = "Suara masuk — lanjutkan bacaan";
@@ -42,12 +42,12 @@ export function RecordingLevelMeter({ level, active, hasVoice, micLive, captured
   }
 
   return (
-    <div className={`rounded-card border-[3px] p-4 shadow-game-sm ${tone}`} role="status" aria-live="polite">
+    <div className={`rounded-card border-2 p-4 shadow-game-sm ${tone}`} role="status" aria-live="polite">
       <div className="flex items-end justify-center gap-1.5" aria-hidden>
         {bars.map((h, i) => (
           <div
             key={i}
-            className={`w-2.5 rounded-full border border-outline/20 transition-[height] duration-75 ${
+            className={`w-2.5 rounded-full border border-line transition-[height] duration-75 ${
               active && hasVoice
                 ? "bg-gradient-to-t from-game-green-end to-game-green-start"
                 : active

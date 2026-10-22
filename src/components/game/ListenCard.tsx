@@ -46,12 +46,12 @@ export function ListenCard({ urls, caption }: { urls: string[]; caption: string 
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-[22px] border-[4px] border-outline bg-white p-3 shadow-game">
+    <div className="flex items-center gap-3 rounded-[22px] border-[4px] border-line bg-white p-3 shadow-game">
       <button
         type="button"
         onClick={toggle}
         aria-label={playing ? "Jeda contoh bacaan" : "Putar contoh bacaan"}
-        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-4 border-outline bg-gradient-to-b from-game-green-start to-game-green-end shadow-game-sm active:translate-y-[2px]"
+        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-4 border-line bg-gradient-to-b from-game-green-start to-game-green-end shadow-game-sm active:translate-y-[2px]"
       >
         {playing ? (
           <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
@@ -71,7 +71,7 @@ export function ListenCard({ urls, caption }: { urls: string[]; caption: string 
         type="button"
         onClick={cycle}
         aria-label={`Kecepatan ${rate} kali`}
-        className="rounded-game border-[3px] border-outline bg-[#EAF6FF] px-2.5 py-1 text-sm font-extrabold text-outline"
+        className="rounded-game border-2 border-line bg-[#EAF6FF] px-2.5 py-1 text-sm font-extrabold text-outline"
       >
         {rate}×
       </button>

@@ -13,14 +13,14 @@ export function StarRating({ label, value, onChange }: Props) {
             aria-checked={value === n}
             aria-label={`${label} ${n} dari 5`}
             onClick={() => onChange(value === n ? 0 : n)}
-            className="flex h-9 w-9 items-center justify-center"
+            className="flex h-11 w-11 items-center justify-center"
           >
-            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">
               <path
                 d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"
-                fill={n <= value ? "#FFC933" : "#E4E7F0"}
-                stroke="#2B1B5E"
-                strokeWidth="1.8"
+                fill={n <= value ? "#F2B01E" : "#E6E4F8"}
+                stroke={n <= value ? "#C98A00" : "#CFCBEF"}
+                strokeWidth="1.4"
                 strokeLinejoin="round"
               />
             </svg>

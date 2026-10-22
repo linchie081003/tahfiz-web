@@ -132,7 +132,7 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
       </div>
       <ArabicAyahText textUthmani={s.reference_text} textTajweed={s.reference_text_tajweed} />
       {s.recording_url && (
-        <AuthenticatedAudio url={s.recording_url} className="w-full rounded-game border-2 border-outline" />
+        <AuthenticatedAudio url={s.recording_url} className="w-full rounded-game border-2 border-line" />
       )}
 
       <div className="flex flex-wrap items-center gap-2">
@@ -143,14 +143,14 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
       </div>
 
       {insights && insights.available === false && (
-        <div className="rounded-game border-2 border-outline bg-brand-light/60 p-2 text-xs font-semibold text-outline">
+        <div className="rounded-game border-2 border-line bg-brand-light/60 p-2 text-xs font-semibold text-outline">
           <p>{precheckHint(insights.reason)}</p>
         </div>
       )}
       {insights && insights.available !== false && (
-        <details className="rounded-game border-2 border-outline bg-brand-light/60 p-2 text-sm text-outline" open>
+        <details className="rounded-game border-2 border-line bg-brand-light/60 p-2 text-sm text-outline" open>
           <summary className="cursor-pointer font-bold">
-            <span className="mr-2 rounded-pill border-2 border-outline bg-[#FFE08A] px-2 py-0.5 text-xs font-extrabold">
+            <span className="mr-2 rounded-pill border-2 border-line bg-cream px-2 py-0.5 text-xs font-extrabold">
               Pra-cek (saran)
             </span>
             Kata terdengar sesuai: {insights.summaryPercent ?? "—"}%
@@ -171,7 +171,7 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
           {insights.tajwidFlags?.length ? (
             <div className="mt-2 flex flex-wrap gap-1">
               {insights.tajwidFlags.map((f, i) => (
-                <span key={i} className="rounded-pill border border-outline bg-white px-2 py-0.5 text-xs font-semibold">
+                <span key={i} className="rounded-pill border border-line bg-white px-2 py-0.5 text-xs font-semibold">
                   {f.note}
                 </span>
               ))}
@@ -180,7 +180,7 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
         </details>
       )}
 
-      <div className="space-y-1 rounded-game border-2 border-outline bg-white p-3">
+      <div className="space-y-1 rounded-game border-2 border-line bg-white p-3">
         {RUBRIC.map((r) => (
           <StarRating
             key={r.key}
@@ -198,7 +198,7 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
           onChange={(e) => setNotes(e.target.value)}
           maxLength={500}
           rows={2}
-          className="mt-1 w-full rounded-game border-[3px] border-outline p-2 text-sm font-semibold"
+          className="mt-1 w-full rounded-game border-2 border-line p-2 text-sm font-semibold"
           placeholder="Contoh: bagus, perhatikan huruf ع"
         />
       </label>

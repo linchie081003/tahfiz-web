@@ -14,23 +14,23 @@ export function GameInput({
   return (
     <div className={`relative ${className}`}>
       {leftIcon === "mail" && (
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-brand">
           <IconMail size={22} decorative />
         </span>
       )}
       <input
         {...rest}
         type={inputType}
-        className={`w-full rounded-game border-[3px] border-outline bg-white py-3 ${leftIcon === "mail" ? "pl-12" : "pl-4"} ${isPassword ? "pr-12" : "pr-4"} font-semibold text-outline shadow-game-sm focus-visible:outline focus-visible:outline-4 focus-visible:outline-brand-light`}
+        className={`h-[52px] w-full rounded-pill border-0 bg-brand-light ${leftIcon === "mail" ? "pl-12" : "pl-5"} ${isPassword ? "pr-14" : "pr-5"} text-base font-semibold text-outline placeholder:text-muted/70`}
       />
       {isPassword && (
         <button
           type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+          className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-muted"
           onClick={() => setShow((s) => !s)}
           aria-label={show ? "Sembunyikan sandi" : "Tampilkan sandi"}
         >
-          {show ? <IconEyeOff size={28} /> : <IconEye size={28} />}
+          {show ? <IconEyeOff size={26} /> : <IconEye size={26} />}
         </button>
       )}
     </div>

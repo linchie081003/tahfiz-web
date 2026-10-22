@@ -3,7 +3,7 @@ import { IconLogout } from "./icons/GameIcons";
 import { useLogout } from "../lib/auth";
 
 const btnBase =
-  "fixed left-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-outline bg-white/95 shadow-game-sm transition active:translate-y-0.5";
+  "fixed left-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full border-2 border-line bg-white/95 shadow-game-sm transition active:translate-y-0.5";
 
 /** Tombol keluar pojok kiri atas — gaya sama dengan pengaturan kanan atas. */
 export function LogoutCornerButton() {

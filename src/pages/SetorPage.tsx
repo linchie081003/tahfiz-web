@@ -4,6 +4,8 @@ import { RecordingLevelMeter } from "../components/game/RecordingLevelMeter";
 import { useAudioLevelMonitor } from "../hooks/useAudioLevelMonitor";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArabicAyahText } from "../components/ArabicAyahText";
+import { GameHeader } from "../components/game/GameHeader";
+import { NavMic } from "../components/icons/NavIcons";
 import { GameButton } from "../components/game/GameButton";
 import { GameCard } from "../components/game/GameCard";
 import { friendlyError, useGameToast } from "../components/game/GameToast";
@@ -156,17 +158,7 @@ export function SetorPage() {
 
   return (
     <div className="px-4 pb-28 pt-2">
-      <div className="relative flex min-h-[48px] items-center justify-center">
-        <button
-          type="button"
-          onClick={() => nav(-1)}
-          aria-label="Kembali"
-          className="absolute left-0 flex h-11 w-11 items-center justify-center rounded-full border-[3px] border-outline bg-[#FF7A59] shadow-game-sm active:translate-y-[2px]"
-        >
-          <IconBack size={26} decorative />
-        </button>
-        <h1 className="game-text-stroke text-2xl font-extrabold">Setor Ayat</h1>
-      </div>
+      <GameHeader title="Setor Ayat" />
 
       {needsProfile && (
         <GameCard className="mt-3 space-y-2 bg-brand-light">
@@ -179,7 +171,7 @@ export function SetorPage() {
         </GameCard>
       )}
 
-      <div className="mt-3 flex min-h-[40px] items-center justify-center rounded-pill border-[3px] border-outline bg-gradient-to-b from-game-gold-start to-game-gold-end px-3 text-sm font-extrabold text-outline shadow-game-sm">
+      <div className="mt-3 flex min-h-[40px] items-center justify-center rounded-pill border-2 border-line bg-gradient-to-b from-game-gold-start to-game-gold-end px-3 text-sm font-extrabold text-outline shadow-game-sm">
         {context === "tahsin" ? "Tahsin" : surahId ? `Surat ${surahId}` : "Setoran"} · {ayahLabel}
         {totalAyahs ? ` dari ${totalAyahs}` : ""}
       </div>
@@ -188,7 +180,7 @@ export function SetorPage() {
           {Array.from({ length: totalAyahs }, (_, i) => i + 1).map((n) => (
             <span
               key={n}
-              className={`h-3 rounded-full border-[2.5px] border-outline ${
+              className={`h-3 rounded-full border-[2.5px] border-line ${
                 n >= ayahStart && n <= ayahEnd ? "w-6 bg-game-gold-end" : n < ayahStart ? "w-3 bg-game-green-end" : "w-3 bg-white"
               }`}
             />
@@ -233,17 +225,17 @@ export function SetorPage() {
           disabled={needsProfile}
           onClick={() => (recording ? stop() : void start())}
           aria-label={recording ? "Berhenti merekam" : "Mulai merekam"}
-          className={`flex h-[112px] w-[112px] items-center justify-center rounded-full border-[5px] border-outline shadow-[0_7px_0_#2B1B5E] transition-transform active:translate-y-[4px] active:shadow-[0_3px_0_#2B1B5E] disabled:opacity-50 ${
-            recording ? "bg-gradient-to-b from-game-gold-start to-game-gold-end" : "bg-gradient-to-b from-[#FF8FA3] to-[#FF4D6D]"
+          className={`flex h-[112px] w-[112px] items-center justify-center rounded-full text-white ring-8 ring-lav disabled:opacity-50 ${
+            recording ? "bg-gold" : "bg-coral"
           }`}
         >
           {recording ? (
-            <span className="h-11 w-11 rounded-lg border-[4px] border-outline bg-white" />
+            <span className="h-11 w-11 rounded-lg bg-gold-ink" />
           ) : (
-            <MenuGlyph name="tahsin" size={60} />
+            <NavMic size={56} />
           )}
         </button>
-        <p className="game-text-stroke text-xl font-extrabold">{recording ? "Tekan untuk berhenti" : "Tekan untuk merekam"}</p>
+        <p className="text-xl font-extrabold text-outline">{recording ? "Tekan untuk berhenti" : "Tekan untuk merekam"}</p>
         <p className="text-sm font-bold text-outline">
           {ayahLabel.replace(/^./, (c) => c.toUpperCase())} · {fmtTime(recording ? elapsed : durationSec)}
         </p>
@@ -251,7 +243,7 @@ export function SetorPage() {
 
       {blob && (
         <div className="mt-3 space-y-3">
-          <audio controls src={blobUrl ?? undefined} className="w-full rounded-game border-[3px] border-outline" />
+          <audio controls src={blobUrl ?? undefined} className="w-full rounded-game border-2 border-line" />
           <GameCard className="space-y-1 bg-brand-light text-sm font-bold text-outline">
             <p>Cek rekaman</p>
             <p className="font-semibold">
@@ -265,7 +257,7 @@ export function SetorPage() {
         </div>
       )}
 
-      <p className="mt-4 rounded-card border-[3px] border-outline bg-white px-3 py-2 text-center text-xs font-bold text-outline">
+      <p className="mt-4 rounded-card border-2 border-line bg-white px-3 py-2 text-center text-xs font-bold text-outline">
         Rekaman hanya dikirim ke orang tuamu. Penilaian dilakukan orang tua.
       </p>
     </div>

@@ -72,7 +72,7 @@ export function RemindersAndAiSection({ isParent, reminderHour }: { isParent: bo
   return (
     <>
       <hr />
-      <h2 className="font-bold text-purple-800">Pengingat murojaah</h2>
+      <h2 className="font-bold text-brand-dark">Pengingat murojaah</h2>
       <p className="text-xs text-gray-600">{STATE_TEXT[state]}</p>
       {canToggle && (
         <GameButton size="md" variant={state === "on" ? "gold" : "primary"} disabled={busy} onClick={() => void togglePush()}>
@@ -88,7 +88,7 @@ export function RemindersAndAiSection({ isParent, reminderHour }: { isParent: bo
             id="reminder-hour"
             value={hour}
             onChange={(e) => void saveHour(Number(e.target.value))}
-            className="w-full rounded-game border-2 border-outline/30 p-2 font-semibold"
+            className="w-full rounded-game border-2 border-line p-2 font-semibold"
           >
             {Array.from({ length: 17 }, (_, i) => i + 6).map((h) => (
               <option key={h} value={h}>
@@ -99,7 +99,7 @@ export function RemindersAndAiSection({ isParent, reminderHour }: { isParent: bo
           <p className="text-xs text-gray-600">Pengingat hanya dikirim bila ada murojaah yang jatuh tempo.</p>
 
           <hr />
-          <h2 className="font-bold text-purple-800">Pra-cek AI (opsional)</h2>
+          <h2 className="font-bold text-brand-dark">Pra-cek AI (opsional)</h2>
           {consent.data?.available ? (
             <>
               <p className="text-xs text-gray-600">

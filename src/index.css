@@ -6,8 +6,9 @@
 
 body {
   margin: 0;
-  font-family: Switzer, "Hanken Grotesk", system-ui, sans-serif;
-  background: var(--game-sky-mid);
+  font-family: Nunito, system-ui, sans-serif;
+  color: #1f2a28;
+  background: #ffffff;
 }
 
 .app-shell {
@@ -15,11 +16,11 @@ body {
 }
 
 .card-surface {
-  @apply game-card rounded-card border-[3px] border-outline bg-white text-gray-900 shadow-game;
+  @apply rounded-card bg-brand-light p-0 text-outline;
 }
 
 .btn-cta {
-  @apply flex w-full min-h-[44px] items-center justify-center gap-2 rounded-pill border-[3px] border-outline bg-gradient-to-b from-game-green-start to-game-green-end py-3 font-extrabold uppercase text-white shadow-game active:translate-y-0.5 active:shadow-game-press;
+  @apply flex min-h-[56px] w-full items-center justify-center gap-2 rounded-pill bg-brand text-lg font-extrabold text-white active:bg-brand-dark disabled:bg-lav disabled:text-muted;
 }
 
 .quran-ayah {
@@ -87,4 +88,30 @@ body {
   .animate-peta-bounce {
     animation: none;
   }
+}
+
+:focus-visible {
+  outline: 3px solid #4f46b5;
+  outline-offset: 2px;
+}
+
+/* Kolom isian dan pilihan: pill lavender sesuai desain */
+.app-page select,
+.app-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]) {
+  min-height: 48px;
+  border: 0 !important;
+  border-radius: 26px !important;
+  background-color: #f4f3fd !important;
+  padding-left: 18px;
+  padding-right: 18px;
+  font-weight: 600;
+  color: #1f2a28;
+}
+.app-page input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #4f46b5;
+}
+.app-page input[type="range"] {
+  accent-color: #4f46b5;
 }

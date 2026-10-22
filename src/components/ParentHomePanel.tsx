@@ -27,12 +27,12 @@ export function ParentQueueBanner({ count, className = "" }: { count: number; cl
   return (
     <Link
       to="/parent/queue"
-      className={`mx-0 mb-3 flex items-center gap-3 rounded-card border-[3px] px-4 py-3 shadow-game-sm transition active:scale-[0.99] ${
-        pending ? "border-game-coral bg-gradient-to-r from-game-coral/25 to-white" : "border-outline/30 bg-white/90"
+      className={`mx-0 mb-3 flex items-center gap-3 rounded-card border-2 px-4 py-3 shadow-game-sm transition active:scale-[0.99] ${
+        pending ? "border-game-coral bg-gradient-to-r from-game-coral/25 to-white" : "border-line bg-white/90"
       } ${className}`}
     >
       <span
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-outline ${
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-line ${
           pending ? "bg-game-coral/30" : "bg-brand-light"
         }`}
       >
@@ -45,7 +45,7 @@ export function ParentQueueBanner({ count, className = "" }: { count: number; cl
         </span>
       </span>
       <span
-        className={`flex h-9 min-w-9 items-center justify-center rounded-full border-2 border-outline px-2 text-sm font-extrabold ${
+        className={`flex h-9 min-w-9 items-center justify-center rounded-full border-2 border-line px-2 text-sm font-extrabold ${
           pending ? "bg-game-coral text-white" : "bg-game-locked text-outline/70"
         }`}
         aria-label={`${count} antrean`}
@@ -84,7 +84,7 @@ export function ParentHomeDashboard({ onCollapse }: { onCollapse?: () => void })
         <button
           type="button"
           onClick={onCollapse}
-          className="flex shrink-0 flex-col items-center gap-0.5 rounded-game border-2 border-outline bg-white px-2 py-1.5 text-[10px] font-extrabold text-outline shadow-game-sm active:scale-95"
+          className="flex shrink-0 flex-col items-center gap-0.5 rounded-game border-2 border-line bg-white px-2 py-1.5 text-[10px] font-extrabold text-outline shadow-game-sm active:scale-95"
           aria-expanded
           aria-label="Sembunyikan dashboard"
         >
@@ -102,10 +102,10 @@ export function ParentHomeDashboard({ onCollapse }: { onCollapse?: () => void })
           {data.children.map((c) => (
             <li
               key={c.id}
-              className="flex items-center gap-3 rounded-game border-2 border-outline/15 bg-brand-light/30 px-3 py-2"
+              className="flex items-center gap-3 rounded-game border-2 border-line bg-brand-light/30 px-3 py-2"
             >
               <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-outline text-sm font-bold text-white"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-line text-sm font-bold text-white"
                 style={{ backgroundColor: c.color }}
               >
                 {c.name.charAt(0)}

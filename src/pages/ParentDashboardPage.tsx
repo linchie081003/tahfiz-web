@@ -96,18 +96,18 @@ export function ParentDashboardPage() {
         <div className="flex flex-wrap gap-2 pt-1">
           <Link
             to="/parent/queue"
-            className="rounded-pill border-2 border-outline bg-brand-light px-3 py-1 text-xs font-bold text-outline"
+            className="rounded-pill border-2 border-line bg-brand-light px-3 py-1 text-xs font-bold text-outline"
           >
             Antrean penilaian
             {data.queue_total > 0 ? ` (${data.queue_total})` : ""}
           </Link>
-          <Link to="/parent/laporan" className="rounded-pill border-2 border-outline px-3 py-1 text-xs font-bold text-outline">
+          <Link to="/parent/laporan" className="rounded-pill border-2 border-line px-3 py-1 text-xs font-bold text-outline">
             Laporan mingguan
           </Link>
-          <Link to="/pilih-profil" className="rounded-pill border-2 border-outline px-3 py-1 text-xs font-bold text-outline">
+          <Link to="/pilih-profil" className="rounded-pill border-2 border-line px-3 py-1 text-xs font-bold text-outline">
             Kelola profil
           </Link>
-          <Link to="/settings" className="rounded-pill border-2 border-outline px-3 py-1 text-xs font-bold text-outline">
+          <Link to="/settings" className="rounded-pill border-2 border-line px-3 py-1 text-xs font-bold text-outline">
             Pengaturan
           </Link>
         </div>
@@ -127,7 +127,7 @@ export function ParentDashboardPage() {
           <GameCard key={c.id} className="space-y-3">
             <div className="flex items-center gap-3">
               <span
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-outline text-xl font-extrabold text-white"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-line text-xl font-extrabold text-white"
                 style={{ backgroundColor: c.color }}
               >
                 {c.name.charAt(0).toUpperCase()}

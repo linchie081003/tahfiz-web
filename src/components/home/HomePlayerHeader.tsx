@@ -59,7 +59,7 @@ export function HomePlayerHeader({
           >
             {modeBadgeLabel(ageMode)}
           </span>
-          <div className="home-rank-badge flex min-w-0 flex-1 items-center gap-1.5 rounded-pill border-2 border-outline/35 bg-brand-light/35 px-2 py-1">
+          <div className="home-rank-badge flex min-w-0 flex-1 items-center gap-1.5 rounded-pill border-2 border-line bg-brand-light/35 px-2 py-1">
             <span className="text-base leading-none" aria-hidden>
               {emoji}
             </span>
@@ -73,7 +73,7 @@ export function HomePlayerHeader({
         <XpBar level={level} progress={levelProgress} xp={xp} xpNext={xpNext} compact />
       </div>
 
-      <div className="border-t border-outline/10 pt-2">
+      <div className="border-t border-line pt-2">
         <MissionCardContent home={home} compact />
       </div>
     </GameCard>

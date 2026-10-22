@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-/** Ikon SVG orisinal — outline #2B1B5E, tanpa pustaka pihak ketiga */
+/** Ikon SVG orisinal — outline #1F2A28, tanpa pustaka pihak ketiga */
 
-const O = "#2B1B5E";
+const O = "#1F2A28";
 
 type P = { size?: number; className?: string; label?: string; decorative?: boolean };
 

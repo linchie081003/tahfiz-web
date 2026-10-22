@@ -65,7 +65,7 @@ export function QuranSurahPage() {
     return (
       <AppPage>
         <GameHeader title="Al-Quran" to="/quran" />
-        <p className="text-center text-white">Nomor surat tidak valid.</p>
+        <p className="text-center text-outline">Nomor surat tidak valid.</p>
       </AppPage>
     );
   }
@@ -103,12 +103,12 @@ export function QuranSurahPage() {
       )}
 
       {ayahs.isLoading && (
-        <p className="text-center text-sm text-white/90">
+        <p className="text-center text-sm text-muted">
           Memuat ayat… (pertama kali mungkin beberapa detik, data diambil dari Quran.com)
         </p>
       )}
       {ayahs.isError && (
-        <p className="rounded-2xl bg-red-500/20 p-4 text-sm text-white">
+        <p className="rounded-2xl bg-coral/15 p-4 text-sm text-outline">
           {ayahs.error instanceof Error ? ayahs.error.message : "Gagal memuat ayat"}
         </p>
       )}

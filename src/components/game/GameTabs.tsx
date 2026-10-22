@@ -8,15 +8,15 @@ export function GameTabs<T extends string>({
   onChange: (id: T) => void;
 }) {
   return (
-    <div className="flex rounded-pill border-[3px] border-outline bg-brand-light p-1 shadow-game-sm" role="tablist">
+    <div className="flex rounded-pill bg-brand-light p-1" role="tablist">
       {tabs.map((t) => (
         <button
           key={t.id}
           type="button"
           role="tab"
           aria-selected={value === t.id}
-          className={`flex-1 rounded-pill px-2 py-2 text-xs font-extrabold sm:text-sm ${
-            value === t.id ? "bg-brand text-white shadow-game-sm" : "text-outline"
+          className={`min-h-[44px] flex-1 rounded-pill px-2 text-sm font-extrabold ${
+            value === t.id ? "bg-brand text-white" : "text-brand-dark"
           }`}
           onClick={() => onChange(t.id)}
         >

@@ -2,7 +2,7 @@ import { Mascot } from "../game/Mascot";
 import { IconCheck, IconLock } from "../icons/GameIcons";
 import { PetaSurahIcon, petaNodeAccent } from "./PetaSurahIcons";
 
-const O = "#2B1B5E";
+const O = "#1F2A28";
 
 export type PetaMapNode = {
   surah_id: number;
@@ -47,13 +47,13 @@ export function PetaPathMap({ nodes, onOpen }: Props) {
 
   return (
     <div
-      className="relative mx-auto mt-3 max-w-sm overflow-hidden rounded-card border-[4px] border-outline shadow-game"
+      className="relative mx-auto mt-3 max-w-sm overflow-hidden rounded-card border-[4px] border-line shadow-game"
       style={{ height: h }}
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-[#9edfff]/90 via-[#d8f4ff]/80 to-[#8be36b]/70" aria-hidden />
+      <div className="absolute inset-0 bg-brand-light" aria-hidden />
       <svg className="absolute bottom-0 w-full" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden>
-        <path d="M0 40V28c40-8 80 8 120 0s80-8 120 0v12H0z" fill="#5ccb4e" opacity="0.85" />
-        <path d="M0 40V32c50 6 100-6 150 2s50 6 50 6v0H0z" fill="#8be36b" />
+        <path d="M0 40V28c40-8 80 8 120 0s80-8 120 0v12H0z" fill="#E6E4F8" />
+        <path d="M0 40V32c50 6 100-6 150 2s50 6 50 6v0H0z" fill="#D9D6F3" />
       </svg>
 
       {/* awan dekoratif */}
@@ -64,8 +64,8 @@ export function PetaPathMap({ nodes, onOpen }: Props) {
         <path
           d={pathD}
           fill="none"
-          stroke="#2B1B5E"
-          strokeWidth="8"
+          stroke="#E6E4F8"
+          strokeWidth="10"
           strokeLinecap="round"
           strokeLinejoin="round"
           opacity="0.25"
@@ -81,12 +81,12 @@ export function PetaPathMap({ nodes, onOpen }: Props) {
         />
         <defs>
           <linearGradient id="petaPathGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#4DB8FF" />
-            <stop offset="100%" stopColor="#8CF07A" />
+            <stop offset="0%" stopColor="#4F46B5" />
+            <stop offset="100%" stopColor="#0F766E" />
           </linearGradient>
         </defs>
         {points.map((pt, i) => (
-          <circle key={i} cx={pt.x} cy={pt.y} r="4" fill="#FFC933" stroke={O} strokeWidth="2" />
+          <circle key={i} cx={pt.x} cy={pt.y} r="4" fill="#F2B01E" stroke="#fff" strokeWidth="2" />
         ))}
       </svg>
 
@@ -113,7 +113,7 @@ export function PetaPathMap({ nodes, onOpen }: Props) {
             >
               <div className="relative">
                 <div
-                  className={`flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-game border-[3px] border-outline bg-gradient-to-br shadow-game transition group-active:scale-95 ${
+                  className={`flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-game border-2 border-line bg-gradient-to-br shadow-game transition group-active:scale-95 ${
                     isPassed
                       ? "from-game-green-start to-game-green-end"
                       : isLocked
@@ -129,7 +129,7 @@ export function PetaPathMap({ nodes, onOpen }: Props) {
                     <PetaSurahIcon surahId={n.surah_id} size={30} />
                   )}
                 </div>
-                <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-outline bg-white px-1 text-[10px] font-extrabold text-outline">
+                <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-line bg-white px-1 text-[10px] font-extrabold text-outline">
                   {n.surah_id}
                 </span>
                 {isPrimary && (
@@ -150,7 +150,7 @@ export function PetaPathMap({ nodes, onOpen }: Props) {
       })}
 
       <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center opacity-80">
-        <div className="flex h-11 w-11 items-center justify-center rounded-game border-[3px] border-outline bg-game-locked shadow-game-sm">
+        <div className="flex h-11 w-11 items-center justify-center rounded-game border-2 border-line bg-game-locked shadow-game-sm">
           <IconLock size={22} decorative />
         </div>
         <p className="mt-0.5 text-[9px] font-extrabold text-outline">Ujian Juz</p>

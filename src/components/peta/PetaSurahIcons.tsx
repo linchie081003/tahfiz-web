@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-const O = "#2B1B5E";
+const O = "#1F2A28";
 
 type P = { size?: number; className?: string };
 

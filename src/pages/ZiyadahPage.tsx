@@ -33,7 +33,7 @@ export function ZiyadahPage() {
   });
   return (
     <AppPage>
-      <GameHeader title="Ziyadah" to="/" />
+      <GameHeader title="Hafalan baru" to="/" />
       <TajweedLegend tone="dark" />
       {first && (
         <>

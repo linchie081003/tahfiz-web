@@ -26,7 +26,7 @@ export function QuranAyahBlock({
     >
       <div className="flex items-start gap-3">
         <span
-          className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-extrabold text-purple-900"
+          className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-extrabold text-brand-dark"
           aria-hidden
         >
           {ayah.ayah_number}

@@ -28,7 +28,7 @@ export function FamilyParents({ myId }: { myId?: string }) {
 
   return (
     <>
-      <h2 className="font-bold text-purple-800">Orang tua dalam keluarga</h2>
+      <h2 className="font-bold text-brand-dark">Orang tua dalam keluarga</h2>
       <ul className="text-sm">
         {data.map((p) => (
           <li key={p.id}>

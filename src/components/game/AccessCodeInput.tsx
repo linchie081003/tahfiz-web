@@ -20,7 +20,7 @@ export function AccessCodeInput({ value, onChange }: { value: string; onChange: 
         {chars.map((c, i) => (
           <div
             key={i}
-            className="flex h-11 w-9 items-center justify-center rounded-game border-[3px] border-outline bg-white text-lg font-extrabold text-outline shadow-game-sm sm:h-12 sm:w-10"
+            className="flex h-11 w-9 items-center justify-center rounded-game border-2 border-line bg-white text-lg font-extrabold text-outline shadow-game-sm sm:h-12 sm:w-10"
           >
             {c.trim() || ""}
           </div>
@@ -31,7 +31,7 @@ export function AccessCodeInput({ value, onChange }: { value: string; onChange: 
           <button
             key={k}
             type="button"
-            className="min-h-[44px] rounded-game border-[3px] border-outline bg-white text-sm font-extrabold text-outline shadow-game-sm active:translate-y-0.5 active:shadow-game-press"
+            className="min-h-[44px] rounded-game border-2 border-line bg-white text-sm font-extrabold text-outline shadow-game-sm active:translate-y-0.5 active:shadow-game-press"
             onClick={() => push(k)}
           >
             {k}
@@ -39,7 +39,7 @@ export function AccessCodeInput({ value, onChange }: { value: string; onChange: 
         ))}
         <button
           type="button"
-          className="col-span-2 flex min-h-[44px] items-center justify-center rounded-game border-[3px] border-outline bg-game-locked shadow-game-sm"
+          className="col-span-2 flex min-h-[44px] items-center justify-center rounded-game border-2 border-line bg-game-locked shadow-game-sm"
           onClick={back}
           aria-label="Hapus satu"
         >
@@ -48,7 +48,7 @@ export function AccessCodeInput({ value, onChange }: { value: string; onChange: 
         <button
           type="button"
           disabled={!value.length}
-          className="col-span-4 min-h-[44px] rounded-game border-[3px] border-outline bg-brand-light/80 text-xs font-extrabold uppercase tracking-wide text-outline shadow-game-sm disabled:opacity-40 active:translate-y-0.5"
+          className="col-span-4 min-h-[44px] rounded-game border-2 border-line bg-brand-light/80 text-xs font-extrabold uppercase tracking-wide text-outline shadow-game-sm disabled:opacity-40 active:translate-y-0.5"
           onClick={() => onChange("")}
           aria-label="Hapus semua"
         >

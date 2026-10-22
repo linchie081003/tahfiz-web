@@ -39,7 +39,7 @@ export function NumericPinPad({
         {slots.map((c, i) => (
           <div
             key={i}
-            className="flex h-14 w-11 items-center justify-center rounded-game border-[3px] border-outline bg-white text-2xl font-extrabold text-outline shadow-game-sm sm:h-16 sm:w-12"
+            className="flex h-14 w-11 items-center justify-center rounded-game border-2 border-line bg-white text-2xl font-extrabold text-outline shadow-game-sm sm:h-16 sm:w-12"
           >
             {c ? (mask ? "•" : c) : ""}
           </div>
@@ -50,7 +50,7 @@ export function NumericPinPad({
           <button
             key={d}
             type="button"
-            className="min-h-[56px] rounded-game border-[3px] border-outline bg-white text-xl font-extrabold text-outline shadow-game-sm active:translate-y-0.5"
+            className="min-h-[56px] rounded-game border-2 border-line bg-white text-xl font-extrabold text-outline shadow-game-sm active:translate-y-0.5"
             onClick={() => push(d)}
           >
             {d}
@@ -58,7 +58,7 @@ export function NumericPinPad({
         ))}
         <button
           type="button"
-          className="flex min-h-[56px] items-center justify-center rounded-game border-[3px] border-outline bg-game-locked shadow-game-sm"
+          className="flex min-h-[56px] items-center justify-center rounded-game border-2 border-line bg-game-locked shadow-game-sm"
           onClick={back}
           aria-label="Hapus"
         >
@@ -66,7 +66,7 @@ export function NumericPinPad({
         </button>
         <button
           type="button"
-          className="min-h-[56px] rounded-game border-[3px] border-outline bg-white text-xl font-extrabold text-outline shadow-game-sm active:translate-y-0.5"
+          className="min-h-[56px] rounded-game border-2 border-line bg-white text-xl font-extrabold text-outline shadow-game-sm active:translate-y-0.5"
           onClick={() => push("0")}
         >
           0
@@ -75,7 +75,7 @@ export function NumericPinPad({
           <button
             type="button"
             disabled={value.length === 0}
-            className="min-h-[56px] rounded-game border-[3px] border-outline bg-brand-light/80 text-xs font-extrabold uppercase tracking-wide text-outline shadow-game-sm disabled:opacity-40 active:translate-y-0.5"
+            className="min-h-[56px] rounded-game border-2 border-line bg-brand-light/80 text-xs font-extrabold uppercase tracking-wide text-outline shadow-game-sm disabled:opacity-40 active:translate-y-0.5"
             onClick={() => onChange("")}
             aria-label="Hapus semua"
           >

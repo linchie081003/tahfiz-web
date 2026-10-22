@@ -47,7 +47,7 @@ export function GameDialogProvider({ children }: { children: React.ReactNode }) 
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="gd-title"
-            className="game-card w-full max-w-[340px] rounded-card border-[3px] border-outline bg-white p-5 text-center shadow-game"
+            className="game-card w-full max-w-[340px] rounded-card bg-white p-5 text-center"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 id="gd-title" className="text-xl font-extrabold text-outline">
@@ -59,7 +59,7 @@ export function GameDialogProvider({ children }: { children: React.ReactNode }) 
                 ref={cancelRef}
                 type="button"
                 onClick={() => close(false)}
-                className="min-h-[44px] flex-1 rounded-pill border-[3px] border-outline bg-gradient-to-b from-[#E4E7F0] to-[#C9CEDC] text-sm font-extrabold uppercase text-outline shadow-game-sm active:translate-y-[2px]"
+                className="min-h-[44px] flex-1 rounded-pill bg-lav text-base font-extrabold text-brand-dark"
               >
                 {pending.cancelLabel ?? "Batal"}
               </button>

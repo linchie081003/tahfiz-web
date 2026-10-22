@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.error) {
       return (
-        <div className="app-shell p-6 text-white">
+        <div className="app-shell p-6 text-outline">
           <h1 className="text-xl font-bold">Terjadi kesalahan</h1>
           <p className="mt-2 text-sm opacity-90">{this.state.error.message}</p>
           <button

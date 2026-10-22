@@ -32,7 +32,7 @@ export function MemberLearningSettings({ memberId, name }: { memberId: string; n
 
   return (
     <>
-      <h2 className="font-bold text-purple-800">Belajar {name ?? "anak"}</h2>
+      <h2 className="font-bold text-brand-dark">Belajar {name ?? "anak"}</h2>
       <p className="text-xs text-gray-600">Berlaku untuk profil anak ini saja. Kedua orang tua boleh mengubahnya.</p>
       <label className="block text-sm font-semibold" htmlFor="cakupan">Cakupan hafalan</label>
       <select id="cakupan" className="w-full rounded-xl border p-2" disabled={busy} value={data.coverage}

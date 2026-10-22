@@ -7,9 +7,9 @@ type Show = (msg: string, kind?: ToastKind) => void;
 const ToastCtx = createContext<Show>(() => {});
 
 const KIND_CLASS: Record<ToastKind, string> = {
-  info: "from-[#4DB8FF] to-[#2D8CFF]",
-  success: "from-game-green-start to-game-green-end",
-  error: "from-[#FF7A8C] to-[#FF4D6D]",
+  info: "bg-brand",
+  success: "bg-teal",
+  error: "bg-coral",
 };
 
 export function GameToastProvider({ children }: { children: React.ReactNode }) {
@@ -31,7 +31,7 @@ export function GameToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex min-h-[48px] items-center justify-center rounded-pill border-[3px] border-outline bg-gradient-to-b px-4 py-2 text-center text-sm font-extrabold text-white shadow-game game-text-stroke ${KIND_CLASS[t.kind]}`}
+            className={`pointer-events-auto flex min-h-[48px] items-center justify-center rounded-pill px-4 py-2 text-center text-sm font-extrabold text-white ${KIND_CLASS[t.kind]}`}
           >
             {t.message}
           </div>

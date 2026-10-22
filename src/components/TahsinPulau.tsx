@@ -51,7 +51,7 @@ export function TahsinPulau({ memberId, isParent }: { memberId?: string | null; 
 
   return (
     <div className="card-surface space-y-3 p-4 text-gray-800">
-      <h2 className="font-bold text-purple-800">Sembilan Pulau Tahsin</h2>
+      <h2 className="font-bold text-brand-dark">Sembilan Pulau Tahsin</h2>
       <p className="text-xs text-gray-600">
         {data.gate_open
           ? "Pulau 1–3 sudah lulus. Hafalan baru terbuka."

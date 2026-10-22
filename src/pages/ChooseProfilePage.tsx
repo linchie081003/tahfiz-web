@@ -129,11 +129,11 @@ export function ChooseProfilePage() {
     <div className="app-shell min-h-dvh px-6 pb-24 pt-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-extrabold">Pilih profil anak</h1>
-        <Link to="/parent" className="rounded-pill border-2 border-white/40 bg-white/15 px-3 py-1 text-sm font-bold text-white">
+        <Link to="/parent" className="rounded-pill bg-lav px-3 py-1 text-sm font-bold text-brand-dark">
           Dashboard keluarga
         </Link>
       </div>
-      <p className="mt-1 text-sm text-white/90">
+      <p className="mt-1 text-sm text-muted">
         Keluarga <strong>{session.data?.family_name ?? "…"}</strong>
       </p>
       {session.data?.family_access_code && (
@@ -150,7 +150,7 @@ export function ChooseProfilePage() {
       )}
 
       <div className="mt-4 space-y-3">
-        {members.isLoading && <p className="text-white/90">Memuat profil…</p>}
+        {members.isLoading && <p className="text-muted">Memuat profil…</p>}
         {list.map((m) => (
           <div key={m.id} className="card-surface space-y-3 p-4">
             <div className="flex items-start gap-3">
@@ -194,13 +194,13 @@ export function ChooseProfilePage() {
         ))}
 
         {!members.isLoading && list.length === 0 && (
-          <p className="text-sm text-white/90">Belum ada profil anak. Buat profil pertama di bawah.</p>
+          <p className="text-sm text-muted">Belum ada profil anak. Buat profil pertama di bawah.</p>
         )}
 
         {!showAdd ? (
           <button
             type="button"
-            className="w-full rounded-2xl border-2 border-dashed border-white/40 py-3 font-bold text-white"
+            className="w-full rounded-2xl border-2 border-dashed border-line py-3 font-bold text-brand-dark"
             onClick={() => setShowAdd(true)}
           >
             + Tambah profil anak
@@ -225,7 +225,7 @@ export function ChooseProfilePage() {
         )}
       </div>
 
-      <button type="button" className="mt-8 w-full text-sm text-white/80 underline" onClick={logout}>
+      <button type="button" className="mt-8 w-full text-sm text-muted underline" onClick={logout}>
         Ganti akun orang tua
       </button>
     </div>

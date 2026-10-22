@@ -44,7 +44,7 @@ export function StatusCard({ kind, code, hint }: { kind: StatusKind; code: strin
   const meta = getStatusMeta(kind, code);
 
   return (
-    <div className={`rounded-card border-[3px] p-4 shadow-game-sm ${statusToneClass[meta.tone]}`}>
+    <div className={`rounded-card border-2 p-4 shadow-game-sm ${statusToneClass[meta.tone]}`}>
       <p className="text-[10px] font-extrabold uppercase tracking-wide text-outline/70">Status kamu</p>
       <p className="mt-1 flex items-center gap-2 text-lg font-extrabold text-outline">
         <span aria-hidden>{meta.emoji}</span>

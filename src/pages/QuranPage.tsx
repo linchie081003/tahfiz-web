@@ -37,7 +37,7 @@ export function QuranPage() {
   return (
     <AppPage>
       <GameHeader title="Al-Quran" to="/" />
-      <p className="text-sm text-white/90">114 surat · audio qori lewat ikon pengaturan kanan atas</p>
+      <p className="text-sm text-muted">114 surat · audio qori lewat ikon pengaturan kanan atas</p>
 
       <TajweedLegend tone="dark" />
 
@@ -65,9 +65,9 @@ export function QuranPage() {
         </select>
       </div>
 
-      {surahs.isLoading && <p className="text-center text-white">Memuat daftar surat…</p>}
+      {surahs.isLoading && <p className="text-center text-outline">Memuat daftar surat…</p>}
       {surahs.isError && (
-        <p className="rounded-2xl bg-red-500/20 p-4 text-sm text-white">
+        <p className="rounded-2xl bg-coral/15 p-4 text-sm text-outline">
           {surahs.error instanceof Error ? surahs.error.message : "Gagal memuat surat"}
         </p>
       )}
@@ -79,7 +79,7 @@ export function QuranPage() {
               to={`/quran/${s.id}`}
               className="card-surface flex items-center gap-3 p-4 transition hover:ring-2 hover:ring-purple-300"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-600 text-lg font-extrabold text-white">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-lg font-extrabold text-white">
                 {s.id}
               </span>
               <div className="min-w-0 flex-1">
@@ -99,7 +99,7 @@ export function QuranPage() {
         ))}
       </ul>
       {!surahs.isLoading && filtered.length === 0 && (
-        <p className="text-center text-sm text-white/90">Tidak ada surat yang cocok.</p>
+        <p className="text-center text-sm text-muted">Tidak ada surat yang cocok.</p>
       )}
     </AppPage>
   );

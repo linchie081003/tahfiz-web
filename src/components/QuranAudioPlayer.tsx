@@ -42,8 +42,8 @@ export function QuranAudioPlayer({ src, sources, label, tone = "dark", onTrackIn
   if (!current) return null;
 
   const multi = playlist.length > 1;
-  const metaClass = tone === "light" ? "text-gray-600" : "text-white/80";
-  const labelClass = tone === "light" ? "text-gray-900" : "text-white";
+  const metaClass = tone === "light" ? "text-gray-600" : "text-muted";
+  const labelClass = tone === "light" ? "text-gray-900" : "text-outline";
 
   const advance = () => {
     if (index + 1 >= playlist.length) return;

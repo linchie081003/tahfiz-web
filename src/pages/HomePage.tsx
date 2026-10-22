@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { setAgeMode, useAgeMode, type AgeMode } from "../context/AgeModeContext";
-import { HomeChildScene, HomeMissionCta } from "../components/home/HomeChildScene";
+import { HomeChildScene } from "../components/home/HomeChildScene";
 import { HomeParentHeader } from "../components/home/HomeParentHeader";
 import { BeautyRewardCard } from "../components/BeautyRewardCard";
-import { MenuGrid9 } from "../components/MenuGrid9";
 import { api, type HomeData } from "../lib/api";
 import { useParentDashboardOpen } from "../context/ParentDashboardOpenContext";
 
@@ -54,7 +53,7 @@ export function HomePage() {
   if (isError) {
     return (
       <div className="space-y-2 p-8 text-center">
-        <p className="game-text-stroke font-bold">Tidak bisa memuat Home</p>
+        <p className="font-bold text-outline">Tidak bisa memuat Home</p>
         <p className="text-sm font-semibold text-outline">{error instanceof Error ? error.message : String(error)}</p>
       </div>
     );
@@ -81,8 +80,6 @@ export function HomePage() {
 
       {data.beauty_reward && !isParent && <BeautyRewardCard reward={data.beauty_reward} />}
 
-      <MenuGrid9 home={data} isParent={isParent} />
-      {!isParent && <HomeMissionCta home={data} />}
     </div>
   );
 }

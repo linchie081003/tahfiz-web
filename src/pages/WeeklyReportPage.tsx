@@ -23,7 +23,7 @@ const fmt = (d: string) => new Date(d).toLocaleDateString("id-ID", { day: "numer
 
 function Stat({ n, label, bg }: { n: number; label: string; bg: string }) {
   return (
-    <div className={`flex-1 rounded-card border-[3px] border-outline px-1 py-2 text-center shadow-game-sm ${bg}`}>
+    <div className={`flex-1 rounded-card border-2 border-line px-1 py-2 text-center shadow-game-sm ${bg}`}>
       <div className="text-2xl font-extrabold text-outline">{n}</div>
       <div className="text-[11px] font-bold text-outline">{label}</div>
     </div>
@@ -56,7 +56,7 @@ export function WeeklyReportPage() {
               key={k.id}
               type="button"
               onClick={() => setPicked(k.id)}
-              className={`rounded-pill border-[3px] border-outline px-3 py-1 text-sm font-extrabold text-outline ${
+              className={`rounded-pill border-2 border-line px-3 py-1 text-sm font-extrabold text-outline ${
                 k.id === memberId ? "bg-gradient-to-b from-game-gold-start to-game-gold-end" : "bg-white"
               }`}
             >
@@ -76,7 +76,7 @@ export function WeeklyReportPage() {
           </p>
           <div className="flex gap-2">
             <Stat n={r.ayat_total} label="ayat baru" bg="bg-[#CFF5C6]" />
-            <Stat n={r.active_days} label="hari aktif" bg="bg-[#FFF3A0]" />
+            <Stat n={r.active_days} label="hari aktif" bg="bg-cream" />
             <Stat n={r.surahs_finished} label="surat lulus" bg="bg-[#D8F4FF]" />
           </div>
           <GameCard>
@@ -85,7 +85,7 @@ export function WeeklyReportPage() {
               {r.daily.map((d) => (
                 <div key={d.date} className="flex h-full flex-1 flex-col items-center justify-end">
                   <div
-                    className={`w-full max-w-[28px] rounded-t-lg border-[3px] border-outline ${
+                    className={`w-full max-w-[28px] rounded-t-lg border-2 border-line ${
                       d.ayat ? "bg-gradient-to-b from-game-green-start to-game-green-end" : "bg-[#E4E7F0]"
                     }`}
                     style={{ height: d.ayat ? `${Math.max(12, (d.ayat / max) * 100)}%` : 6 }}
@@ -96,7 +96,7 @@ export function WeeklyReportPage() {
             </div>
           </GameCard>
           <GameCard className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-game border-[3px] border-outline bg-[#FFE0D6] text-2xl font-extrabold text-outline">
+            <div className="flex h-14 w-14 items-center justify-center rounded-game border-2 border-line bg-coral/15 text-2xl font-extrabold text-outline">
               {r.overdue_murojaah_count}
             </div>
             <div>

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChildFamilyCodeInput } from "../components/game/ChildFamilyCodeInput";
 import { GameButton } from "../components/game/GameButton";
-import { GameCard } from "../components/game/GameCard";
 import { GameInput } from "../components/game/GameInput";
 import { GameScene } from "../components/game/GameScene";
 import { GameTabs } from "../components/game/GameTabs";
@@ -163,12 +162,15 @@ export function LoginPage() {
   return (
     <div className="app-shell">
       <GameScene className="flex min-h-dvh flex-col px-4 pb-8 pt-6">
-        <div className="flex flex-col items-center">
-          <h1 className="game-text-stroke text-4xl font-extrabold">Hafiz</h1>
-          <Mascot mood="happy" size={100} className="mt-2" />
+        <div className="flex items-center gap-3">
+          <Mascot mood="happy" size={64} className="shrink-0" />
+          <div>
+            <h1 className="text-[28px] font-extrabold leading-tight text-outline">Hafiz</h1>
+            <p className="text-sm font-medium text-muted">Belajar Al-Qur'an bersama keluarga</p>
+          </div>
         </div>
 
-        <GameCard className="mt-4 space-y-4">
+        <div className="mt-5 space-y-4">
           <GameTabs
             tabs={[
               { id: "parent" as const, label: "Orang Tua" },
@@ -217,7 +219,7 @@ export function LoginPage() {
                   </GameButton>
                   <button
                     type="button"
-                    className="text-sm font-bold text-brand underline"
+                    className="flex min-h-[44px] items-center text-sm font-extrabold text-brand"
                     onClick={() => setParentStep("login")}
                   >
                     ← Kembali ke masuk
@@ -230,7 +232,7 @@ export function LoginPage() {
                   {tab === "parent" && (
                     <button
                       type="button"
-                      className="text-left text-xs font-semibold text-brand underline"
+                      className="flex min-h-[44px] items-center self-end text-sm font-extrabold text-brand"
                       onClick={() => setParentStep("forgot")}
                     >
                       Lupa kata sandi?
@@ -251,7 +253,7 @@ export function LoginPage() {
               ) : (
                 <>
                   {savedFamilyName && accessCode && (
-                    <p className="rounded-card border-2 border-brand/30 bg-brand-light/50 p-3 text-center text-sm font-semibold text-outline">
+                    <p className="rounded-card bg-lav p-3 text-center text-sm font-semibold text-outline">
                       Perangkat ini mengenali keluarga <strong>{savedFamilyName}</strong>
                       <br />
                       <span className="font-mono text-lg tracking-widest">{formatFamilyCodeDisplay(accessCode)}</span>
@@ -290,7 +292,7 @@ export function LoginPage() {
                     <button
                       key={c.id}
                       type="button"
-                      className={`flex w-full items-center gap-3 rounded-card border-[3px] border-outline bg-white p-3 shadow-game-sm active:translate-y-0.5 ${
+                      className={`flex min-h-[56px] w-full items-center gap-3 rounded-pill bg-brand-light p-2 pr-4 ${
                         c.id === lastChildId ? "ring-2 ring-brand" : ""
                       }`}
                       onClick={() => {
@@ -302,7 +304,7 @@ export function LoginPage() {
                       }}
                     >
                       <span
-                        className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-outline font-bold text-white"
+                        className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-white"
                         style={{ backgroundColor: c.color }}
                       >
                         {c.name.charAt(0)}
@@ -316,7 +318,7 @@ export function LoginPage() {
               </div>
               <button
                 type="button"
-                className="text-sm font-bold text-brand underline"
+                className="flex min-h-[44px] items-center text-sm font-extrabold text-brand"
                 onClick={() => {
                   setFamilyPreview(null);
                   setChildStep("code");
@@ -342,12 +344,12 @@ export function LoginPage() {
               >
                 Masuk
               </GameButton>
-              <button type="button" className="text-sm font-bold text-brand underline" onClick={() => setChildStep("pick")}>
+              <button type="button" className="flex min-h-[44px] items-center text-sm font-extrabold text-brand" onClick={() => setChildStep("pick")}>
                 Pilih profil lain
               </button>
             </>
           )}
-        </GameCard>
+        </div>
       </GameScene>
     </div>
   );

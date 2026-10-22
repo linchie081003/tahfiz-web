@@ -51,7 +51,7 @@ export function PetaPage() {
   return (
     <div className="min-h-dvh px-4 pb-28 pt-1">
       <div className="flex min-h-10 items-center gap-2">
-        <Link to="/" className="rounded-full border-[3px] border-outline bg-white p-2 shadow-game-sm" aria-label="Kembali">
+        <Link to="/" className="rounded-full border-2 border-line bg-white p-2 shadow-game-sm" aria-label="Kembali">
           <IconBack size={24} decorative />
         </Link>
         <div>
@@ -97,8 +97,8 @@ export function PetaPage() {
             return (
               <li key={n.surah_id}>
                 {locked ? (
-                  <div className="flex items-center gap-3 rounded-card border-2 border-outline/20 bg-white/60 px-4 py-3 opacity-90">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-game border-2 border-outline bg-game-locked/50">
+                  <div className="flex items-center gap-3 rounded-card border-2 border-line bg-white/60 px-4 py-3 opacity-90">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-game border-2 border-line bg-game-locked/50">
                       <PetaSurahIcon surahId={n.surah_id} size={22} />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -110,10 +110,10 @@ export function PetaPage() {
                 ) : (
                   <button
                     type="button"
-                    className="flex w-full items-center gap-3 rounded-card border-[3px] border-outline bg-white px-4 py-3 text-left shadow-game-sm active:translate-y-0.5"
+                    className="flex w-full items-center gap-3 rounded-card border-2 border-line bg-white px-4 py-3 text-left shadow-game-sm active:translate-y-0.5"
                     onClick={() => nav(`/quran/${n.surah_id}`)}
                   >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-game border-2 border-outline bg-white shadow-game-sm">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-game border-2 border-line bg-white shadow-game-sm">
                       <PetaSurahIcon surahId={n.surah_id} size={24} />
                     </span>
                     <div className="min-w-0 flex-1">

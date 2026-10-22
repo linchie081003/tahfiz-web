@@ -174,13 +174,13 @@ export function SettingsPage() {
   return (
     <AppPage>
       <GameHeader title="Pengaturan" to="/" />
-      <p className="text-sm text-white/90">
+      <p className="text-sm text-muted">
         Qari, tajwid, dan tampilan Arab berlaku untuk profil yang sedang aktif. Orang tua bisa memakai Tahsin, Ziyadah,
         Murojaah, dan Alquran seperti anak setelah memilih profil.
       </p>
 
       <div className="card-surface space-y-4 p-4 text-gray-800">
-        <h2 className="font-bold text-purple-800">Mode usia</h2>
+        <h2 className="font-bold text-brand-dark">Mode usia</h2>
         {isChild ? (
           <p className="text-xs text-gray-600">
             Mode saat ini: <strong>{ageModeLabel(sessionAge)}</strong>. Qari dan tampilan mengikuti mode ini. Minta orang tua
@@ -217,7 +217,7 @@ export function SettingsPage() {
 
         <hr />
 
-        <h2 className="font-bold text-purple-800">Suara (Qari)</h2>
+        <h2 className="font-bold text-brand-dark">Suara (Qari)</h2>
         <p className="text-xs text-gray-600">
           Mode usia aktif: <strong>{ageModeLabel(ageMode)}</strong>
         </p>
@@ -269,7 +269,7 @@ export function SettingsPage() {
           className="w-full"
         />
 
-        <h2 className="pt-2 font-bold text-purple-800">Tampilan Arab</h2>
+        <h2 className="pt-2 font-bold text-brand-dark">Tampilan Arab</h2>
         <label className="block text-sm font-semibold">Ukuran huruf</label>
         <select
           className="w-full rounded-xl border p-2"
@@ -307,7 +307,7 @@ export function SettingsPage() {
             <hr />
             <FamilyParents />
             <hr />
-            <h2 className="font-bold text-purple-800">Batas murojaah harian (keluarga)</h2>
+            <h2 className="font-bold text-brand-dark">Batas murojaah harian (keluarga)</h2>
             <p className="text-xs text-gray-600">
               Berlaku untuk semua profil anak. Kecepatan hafalan baru diatur per anak di bagian "Belajar".
             </p>
@@ -320,7 +320,7 @@ export function SettingsPage() {
               min={1}
               max={30}
               disabled={missionBusy}
-              className="w-full rounded-game border-2 border-outline/30 p-2 font-semibold"
+              className="w-full rounded-game border-2 border-line p-2 font-semibold"
               value={murojaahCap}
               onChange={(e) => setMurojaahCap(Number(e.target.value))}
               onBlur={() => {

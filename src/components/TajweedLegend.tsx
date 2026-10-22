@@ -21,8 +21,8 @@ export function TajweedLegend({ tone = "light", defaultOpen = false }: Props) {
 
   if (!prefs.showTajweed) return null;
 
-  const titleClass = tone === "light" ? "text-purple-900" : "text-white";
-  const textClass = tone === "light" ? "text-gray-700" : "text-white/90";
+  const titleClass = tone === "light" ? "text-brand-dark" : "text-outline";
+  const textClass = tone === "light" ? "text-gray-700" : "text-muted";
 
   return (
     <details className={tone === "light" ? "card-surface p-4" : "rounded-2xl bg-white/10 p-4"} open={defaultOpen}>
@@ -39,7 +39,7 @@ export function TajweedLegend({ tone = "light", defaultOpen = false }: Props) {
           </li>
         ))}
       </ul>
-      <p className={`mt-2 text-xs ${tone === "light" ? "text-gray-500" : "text-white/70"}`}>
+      <p className={`mt-2 text-xs ${tone === "light" ? "text-gray-500" : "text-muted"}`}>
         Warna mengikuti markup Quran.com. Matikan di Pengaturan jika ingin teks polos.
       </p>
     </details>

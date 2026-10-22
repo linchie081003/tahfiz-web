@@ -82,9 +82,9 @@ export function getStatusMeta(kind: StatusKind, code: string): StatusMeta {
 }
 
 export const statusToneClass: Record<Tone, string> = {
-  success: "border-game-green-end/50 bg-gradient-to-r from-game-green-start/40 to-white text-outline",
-  info: "border-brand/40 bg-gradient-to-r from-brand-light to-white text-outline",
-  wait: "border-game-orange/50 bg-gradient-to-r from-game-gold-start/50 to-white text-outline",
-  warn: "border-game-coral/50 bg-gradient-to-r from-game-coral/25 to-white text-outline",
-  muted: "border-outline/25 bg-white/80 text-outline/80",
+  success: "border-teal/30 bg-teal/10 text-teal-dark",
+  info: "border-brand/20 bg-brand-light text-brand-dark",
+  wait: "border-gold/40 bg-cream text-gold-ink",
+  warn: "border-coral/30 bg-coral/15 text-outline",
+  muted: "border-line bg-lav/60 text-muted",
 };

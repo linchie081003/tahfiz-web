@@ -1,13 +1,12 @@
-import { useAgeMode } from "../../context/AgeModeContext";
-
-type Variant = "primary" | "gold" | "danger" | "locked";
+type Variant = "primary" | "gold" | "danger" | "locked" | "outline";
 type Size = "lg" | "md" | "sm";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-gradient-to-b from-game-green-start to-game-green-end text-white",
-  gold: "bg-gradient-to-b from-game-gold-start to-game-gold-end text-outline",
-  danger: "bg-gradient-to-b from-game-coral to-[#e85a40] text-white",
-  locked: "bg-game-locked text-outline/60 cursor-not-allowed",
+  primary: "bg-brand text-white active:bg-brand-dark",
+  gold: "bg-gold text-gold-ink",
+  danger: "bg-coral text-white",
+  outline: "border-[3px] border-brand bg-white text-brand-dark",
+  locked: "bg-lav text-muted cursor-not-allowed",
 };
 
 export function GameButton({
@@ -18,20 +17,19 @@ export function GameButton({
   disabled,
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size }) {
-  const { isCalm } = useAgeMode();
-  const h = size === "lg" ? "min-h-[56px]" : size === "md" ? "min-h-[44px]" : "min-h-[36px]";
-  const text = size === "lg" ? "text-base" : size === "md" ? "text-sm" : "text-xs";
+  const h = size === "lg" ? "min-h-[56px]" : size === "md" ? "min-h-[48px]" : "min-h-[44px]";
+  const text = size === "lg" ? "text-lg" : "text-base";
   const locked = variant === "locked" || disabled;
-  const shadow = isCalm ? "shadow-game-sm active:shadow-game-press" : "shadow-game active:shadow-game-press";
-
   return (
     <button
       type="button"
       disabled={locked}
-      className={`game-btn-shadow w-full rounded-pill border-[3px] border-outline font-extrabold uppercase tracking-wide ${h} ${text} ${variants[variant]} ${shadow} transition-transform active:translate-y-[3px] focus-visible:outline focus-visible:outline-4 focus-visible:outline-brand-light ${className}`}
+      className={`flex w-full items-center justify-center gap-2 rounded-pill font-extrabold ${h} ${text} ${
+        locked && variant !== "locked" ? variants.locked : variants[variant]
+      } ${className}`}
       {...rest}
     >
-      <span className={variant === "gold" ? "game-text-stroke" : ""}>{children}</span>
+      {children}
     </button>
   );
 }
