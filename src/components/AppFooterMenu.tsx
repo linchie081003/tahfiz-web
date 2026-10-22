@@ -42,7 +42,7 @@ export function AppFooterMenu() {
             <FooterLink to="/parent/laporan" label="Laporan" icon={NavChart} />
             <FooterLink to="/quran" label="Tilawah" icon={NavBook} />
             <FooterLink to="/parent/pesan" label="Pesan" icon={NavChat} />
-            <FooterLink to="/parent/pengaturan" label="Pengaturan" icon={NavSliders} also="/parent/keluarga" />
+            <FooterLink to="/parent/pengaturan" label="Pengaturan" icon={NavSliders} also="/parent/anak" />
           </>
         ) : (
           <>

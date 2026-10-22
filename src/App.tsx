@@ -18,6 +18,7 @@ import { LatihanTahsinPage } from "./pages/LatihanTahsinPage";
 import { QuranHome, QuranPage } from "./pages/QuranPage";
 import { QuranSurahPage } from "./pages/QuranSurahPage";
 import { OrtuPengaturanPage } from "./pages/parent/OrtuPengaturanPage";
+import { OrtuAnakPage } from "./pages/parent/OrtuAnakPage";
 import { OrtuHubPage } from "./pages/parent/OrtuHubPage";
 import { HubungkanGuruPage } from "./pages/parent/HubungkanGuruPage";
 import { PrivasiSuaraPage } from "./pages/parent/PrivasiSuaraPage";
@@ -102,6 +103,7 @@ export default function App() {
       <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
       <Route path="/parent" element={<RequireAuth><ParentDashboardPage /></RequireAuth>} />
       <Route path="/parent/queue" element={<RequireAuth><ParentQueuePage /></RequireAuth>} />
+      <Route path="/parent/anak/:id" element={<RequireAuth><OrtuAnakPage /></RequireAuth>} />
       <Route path="/parent/pengaturan" element={<RequireAuth><OrtuPengaturanPage /></RequireAuth>} />
       <Route path="/parent/keluarga" element={<RequireAuth><OrtuHubPage /></RequireAuth>} />
       <Route path="/parent/guru" element={<RequireAuth><HubungkanGuruPage /></RequireAuth>} />
