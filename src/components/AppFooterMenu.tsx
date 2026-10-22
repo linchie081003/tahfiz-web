@@ -26,13 +26,8 @@ export function AppFooterMenu() {
     queryFn: () => api<{ role: string; member_id?: string | null }>("/auth/session"),
     staleTime: 60_000,
   });
-<<<<<<< HEAD
-  const isParent = session.data?.role === "parent";
-  if (["/login", "/gabung", "/onboarding", "/parent/gerbang", "/parent/persetujuan"].includes(pathname) || /^\/tahsin\/\d/.test(pathname)) return null;
-=======
   const isParent = session.data?.role === "parent" && !session.data?.member_id;
-  if (["/login", "/gabung", "/onboarding", "/parent/gerbang"].includes(pathname) || /^\/tahsin\/\d/.test(pathname)) return null;
->>>>>>> fix/beranda-ortu
+  if (["/login", "/gabung", "/onboarding", "/parent/gerbang", "/parent/persetujuan"].includes(pathname) || /^\/tahsin\/\d/.test(pathname)) return null;
 
   return (
     <nav
