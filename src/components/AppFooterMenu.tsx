@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router-dom";
 import { api } from "../lib/api";
-import { NavBook, NavChart, NavHome, NavMic, NavSliders, NavSprout } from "./icons/NavIcons";
+import { NavBook, NavChart, NavChat, NavHome, NavMic, NavSliders, NavSprout } from "./icons/NavIcons";
 
 type IconC = typeof NavHome;
 
@@ -23,10 +23,10 @@ export function AppFooterMenu() {
   const { pathname } = useLocation();
   const session = useQuery({
     queryKey: ["session"],
-    queryFn: () => api<{ role: string }>("/auth/session"),
+    queryFn: () => api<{ role: string; member_id?: string | null }>("/auth/session"),
     staleTime: 60_000,
   });
-  const isParent = session.data?.role === "parent";
+  const isParent = session.data?.role === "parent" && !session.data?.member_id;
   if (["/login", "/gabung", "/onboarding", "/parent/gerbang"].includes(pathname) || /^\/tahsin\/\d/.test(pathname)) return null;
 
   return (
@@ -40,7 +40,8 @@ export function AppFooterMenu() {
             <FooterLink to="/" label="Ringkasan" icon={NavHome} end />
             <FooterLink to="/parent/laporan" label="Laporan" icon={NavChart} />
             <FooterLink to="/quran" label="Tilawah" icon={NavBook} />
-            <FooterLink to="/parent/keluarga" label="Keluarga" icon={NavSliders} />
+            <FooterLink to="/parent/pesan" label="Pesan" icon={NavChat} />
+            <FooterLink to="/parent/keluarga" label="Pengaturan" icon={NavSliders} />
           </>
         ) : (
           <>

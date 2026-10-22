@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { setAgeMode, useAgeMode, type AgeMode } from "../context/AgeModeContext";
 import { HomeChildScene } from "../components/home/HomeChildScene";
-import { HomeParentHeader } from "../components/home/HomeParentHeader";
+import { ParentDashboardPage } from "./ParentDashboardPage";
 import { BeautyRewardCard } from "../components/BeautyRewardCard";
 import { api, type HomeData } from "../lib/api";
 import { useParentDashboardOpen } from "../context/ParentDashboardOpenContext";
@@ -57,6 +57,7 @@ export function HomePage() {
         ? data.age_mode
         : ageMode;
 
+  if (isParent && !session.data?.member_id) return <ParentDashboardPage />;
   if (session.data?.member_id && placement.data && placement.data.placement === null) return <Navigate to="/onboarding" replace />;
 
   if (isError) {
@@ -73,19 +74,7 @@ export function HomePage() {
 
   return (
     <div className="px-4 pb-6 pt-1">
-      {!isParent ? (
-        <HomeChildScene home={data} ageMode={effectiveAge} />
-      ) : (
-        <HomeParentHeader
-          name={data.greeting_name}
-          memberId={session.data?.member_id}
-          memberName={session.data?.member_name}
-          dashOpen={dashOpen}
-          onOpenDash={() => setDashOpen(true)}
-          onCloseDash={() => setDashOpen(false)}
-          queueTotal={queueTotal}
-        />
-      )}
+      <HomeChildScene home={data} ageMode={effectiveAge} />
 
       {data.beauty_reward && !isParent && <BeautyRewardCard reward={data.beauty_reward} />}
 
