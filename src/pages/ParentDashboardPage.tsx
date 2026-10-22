@@ -6,7 +6,7 @@ import { formatFamilyCodeDisplay } from "../lib/familyCode";
 import { Card, Page, ScreenHead } from "../components/ui/ui";
 import { NavBook, NavDrop, NavFlame, NavMic, NavSprout, NavUser } from "../components/icons/NavIcons";
 
-type ChildSummary = { id: string; name: string; color: string; age_mode: string; tahsin_status: string; xp: number; streak_days: number; level: number; passed_surahs: number; pending_setor: number; tahsin_line: string; hafalan_line: string; murajaah_due: number; murajaah_surah: string };
+type ChildSummary = { id: string; name: string; color: string; age_mode: string; tahsin_status: string; xp: number; streak_days: number; level: number; passed_surahs: number; pending_setor: number; tahsin_line: string; hafalan_line: string; murajaah_due: number; murajaah_surah: string; hafalan_open?: boolean; mandatory_passed?: number };
 type Dashboard = { family_name: string; family_access_code: string; queue_total: number; active_member_id: string | null; children: ChildSummary[] };
 const TAHSIN: Record<string, string> = { not_started: "Belum mulai", in_progress: "Sedang berlatih", pending_eval: "Menunggu keputusan", passed: "Pulau 1–3 selesai" };
 
@@ -34,7 +34,8 @@ export function ParentDashboardPage() {
   if (c) {
     if (c.murajaah_due > 0) attention.push({ key: "mr", tone: "bg-coral", icon: <NavDrop size={22} />, body: <>Hafalan <b>{c.murajaah_surah || "surat"}</b> perlu diulang hari ini{c.murajaah_due > 1 ? ` (+${c.murajaah_due - 1} lainnya)` : ""}.</> });
     if (c.pending_setor > 0) attention.push({ key: "ps", tone: "bg-teal", icon: <NavMic size={22} />, body: <>{c.pending_setor} keputusan menunggu {hasTeacher ? "guru" : "Anda"}: lanjut atau ulang.</>, action: !hasTeacher ? <Link to="/parent/queue" className="rounded-pill bg-brand px-4 py-2 text-sm font-extrabold text-white">Tinjau</Link> : undefined });
-    if (c.tahsin_status !== "passed" && !hasTeacher) attention.push({ key: "gt", tone: "bg-teal", icon: <NavMic size={22} />, body: <>Gerbang hafalan belum terbuka.</>, action: <Link to={`/parent/sahkan/${c.id}`} className="rounded-pill bg-teal px-4 py-2 text-sm font-extrabold text-white">Buka</Link> });
+    // Banner hanya bila hafalan memang masih terkunci. Mode paralel membukanya, jadi banner hilang.
+    if (c.hafalan_open === false && c.tahsin_status !== "passed" && !hasTeacher) attention.push({ key: "gt", tone: "bg-teal", icon: <NavMic size={22} />, body: <>Gerbang hafalan belum terbuka. Pulau 1 sampai 3 lulus dulu ({c.mandatory_passed ?? 0} dari 3).</>, action: <Link to={`/parent/sahkan/${c.id}`} className="rounded-pill bg-teal px-4 py-2 text-sm font-extrabold text-white">Nilai</Link> });
   }
   const row = (icon: React.ReactNode, tone: string, label: string, text: string, to: string) => (
     <Link to={to} className={`flex min-h-[52px] items-center gap-3 rounded-pill px-2.5 py-1.5 ${tone}`}>
