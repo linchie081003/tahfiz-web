@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { clearToken, getToken } from "./api";
+import { api, clearToken, getToken, setToken } from "./api";
 
 /** Peran dari payload JWT (tanpa verifikasi; hanya untuk mengarahkan layar). */
 export function tokenRole(): string | null {
@@ -11,6 +11,24 @@ export function tokenRole(): string | null {
   } catch {
     return null;
   }
+}
+
+/** True bila orang tua sedang masuk lewat "Mode anak" (token orang tua yang membawa profil anak). */
+export function inChildModeAsParent(): boolean {
+  try {
+    const part = (getToken() ?? "").split(".")[1];
+    const p = JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
+    return p.role === "parent" && !!p.member_id;
+  } catch {
+    return false;
+  }
+}
+
+/** Keluar dari Mode anak kembali ke area orang tua. Tanpa PIN, karena orang tua sudah masuk dengan akunnya. */
+export async function exitChildMode(): Promise<void> {
+  const t = await api<{ access_token: string }>("/members/exit-impersonate", { method: "POST" });
+  setToken(t.access_token);
+  window.location.replace("/parent");
 }
 
 export function loginPathFor(role: string | null): string {

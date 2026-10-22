@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import type { AgeMode } from "../../context/AgeModeContext";
 import type { HomeData } from "../../lib/api";
-import { useLogout } from "../../lib/auth";
+import { exitChildMode, inChildModeAsParent, useLogout } from "../../lib/auth";
 import { Mascot } from "../game/Mascot";
 import { NavBook, NavCheck, NavDrop, NavFlame, NavMic, NavPlay, NavSprout, NavStar } from "../icons/NavIcons";
 
@@ -175,7 +175,9 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
           </button>
         )}
       </div>
-      <button type="button" onClick={logout} className="min-h-[44px] w-full text-sm font-extrabold text-muted">Keluar</button>
+      {inChildModeAsParent()
+        ? <button type="button" onClick={() => void exitChildMode()} className="min-h-[52px] w-full rounded-pill border-[3px] border-brand bg-white text-base font-extrabold text-brand-dark">Keluar dari mode anak</button>
+        : <button type="button" onClick={logout} className="min-h-[44px] w-full text-sm font-extrabold text-muted">Keluar</button>}
     </div>
   );
 }

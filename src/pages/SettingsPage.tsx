@@ -1,3 +1,4 @@
+import { exitChildMode, inChildModeAsParent } from "../lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -336,7 +337,9 @@ export function SettingsPage() {
           </>
         )}
 
-        <LogoutButton label="Keluar" className="flex min-h-[56px] w-full items-center justify-center rounded-pill border-[3px] border-brand bg-white text-lg font-extrabold text-brand-dark" />
+        {inChildModeAsParent()
+          ? <button type="button" onClick={() => void exitChildMode()} className="flex min-h-[56px] w-full items-center justify-center rounded-pill border-[3px] border-brand bg-white text-lg font-extrabold text-brand-dark">Keluar dari mode anak</button>
+          : <LogoutButton label="Keluar" className="flex min-h-[56px] w-full items-center justify-center rounded-pill border-[3px] border-brand bg-white text-lg font-extrabold text-brand-dark" />}
       </div>
     </Page>
   );
