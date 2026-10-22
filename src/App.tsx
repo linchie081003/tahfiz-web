@@ -6,6 +6,7 @@ import { HomePage } from "./pages/HomePage";
 import { LencanaPage } from "./pages/LencanaPage";
 import { JoinFamilyPage } from "./pages/JoinFamilyPage";
 import { LoginPage } from "./pages/LoginPage";
+import { DaftarAkunPage, DaftarOrtuPage } from "./pages/DaftarAkunPage";
 import { MurojaahPage } from "./pages/MurojaahPage";
 import { ParentDashboardPage } from "./pages/ParentDashboardPage";
 import { ParentQueuePage } from "./pages/ParentQueuePage";
@@ -62,6 +63,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/daftar" element={<DaftarAkunPage />} />
+      <Route path="/daftar/orang-tua" element={<DaftarOrtuPage />} />
       <Route path="/guru/masuk" element={<GuruMasukPage mode="masuk" />} />
       <Route path="/guru/daftar" element={<GuruMasukPage mode="daftar" />} />
       <Route path="/guru" element={<GuruShell />}>

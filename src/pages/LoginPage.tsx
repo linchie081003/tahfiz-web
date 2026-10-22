@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { LoginChooser } from "./LoginChooser";
 import { ChildFamilyCodeInput } from "../components/game/ChildFamilyCodeInput";
 import { GameButton } from "../components/game/GameButton";
@@ -26,8 +26,8 @@ export function LoginPage() {
   const toast = useGameToast();
   const [sp] = useSearchParams();
   const initial = sp.get("tab");
-  const [chosen, setChosen] = useState<boolean>(initial === "parent" || initial === "child" || initial === "register");
-  const [tab, setTab] = useState<Tab>(initial === "child" ? "child" : initial === "register" ? "register" : "parent");
+  const [chosen, setChosen] = useState<boolean>(initial === "parent" || initial === "child");
+  const [tab, setTab] = useState<Tab>(initial === "child" ? "child" : "parent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [familyName, setFamilyName] = useState("");
@@ -163,8 +163,9 @@ export function LoginPage() {
   const savedFamilyName = localStorage.getItem(FAMILY_NAME_KEY);
   const lastChildId = localStorage.getItem(LAST_CHILD_KEY);
 
+  if (initial === "register") return <Navigate to="/daftar" replace />;
   if (!chosen) {
-    return <LoginChooser onChild={() => { setTab("child"); setChosen(true); }} onParent={() => { setTab("parent"); setChosen(true); }} onRegister={() => { setTab("register"); setChosen(true); }} />;
+    return <LoginChooser onChild={() => { setTab("child"); setChosen(true); }} onParent={() => { setTab("parent"); setChosen(true); }} onRegister={() => nav("/daftar")} />;
   }
 
   return (
@@ -186,7 +187,7 @@ export function LoginPage() {
               { id: "register" as const, label: "Daftar" },
             ]}
             value={tab}
-            onChange={setTab}
+            onChange={(t) => (t === "register" ? nav("/daftar") : setTab(t))}
           />
 
           {(tab === "parent" || tab === "register") && (
