@@ -15,6 +15,14 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { TahsinPage } from "./pages/TahsinPage";
 import { QuranPage } from "./pages/QuranPage";
 import { QuranSurahPage } from "./pages/QuranSurahPage";
+import { OrtuHubPage } from "./pages/parent/OrtuHubPage";
+import { HubungkanGuruPage } from "./pages/parent/HubungkanGuruPage";
+import { PrivasiSuaraPage } from "./pages/parent/PrivasiSuaraPage";
+import { PesanGuruPage } from "./pages/parent/PesanGuruPage";
+import { PindahInstansiPage } from "./pages/parent/PindahInstansiPage";
+import { GuruShell } from "./pages/guru/GuruShell";
+import { GuruMasukPage } from "./pages/guru/GuruMasukPage";
+import { GuruAntreanPage, GuruBerandaPage, GuruEvaluasiPage, GuruMuridDetailPage, GuruMuridPage, GuruPengaturanPage } from "./pages/guru/GuruPages";
 import { ZiyadahPage } from "./pages/ZiyadahPage";
 
 import { GameScene } from "./components/game/GameScene";
@@ -32,8 +40,17 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function tokenRole(): string | null {
+  try {
+    return JSON.parse(atob((getToken() ?? "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!getToken()) return <Navigate to="/login" replace />;
+  if (tokenRole() === "teacher") return <Navigate to="/guru" replace />;
   return <Shell>{children}</Shell>;
 }
 
@@ -41,6 +58,16 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/guru/masuk" element={<GuruMasukPage mode="masuk" />} />
+      <Route path="/guru/daftar" element={<GuruMasukPage mode="daftar" />} />
+      <Route path="/guru" element={<GuruShell />}>
+        <Route index element={<GuruBerandaPage />} />
+        <Route path="setoran" element={<GuruAntreanPage />} />
+        <Route path="setoran/:id" element={<GuruEvaluasiPage />} />
+        <Route path="murid" element={<GuruMuridPage />} />
+        <Route path="murid/:id" element={<GuruMuridDetailPage />} />
+        <Route path="pengaturan" element={<GuruPengaturanPage />} />
+      </Route>
       <Route path="/gabung" element={<JoinFamilyPage />} />
       <Route
         path="/pilih-profil"
@@ -61,6 +88,11 @@ export default function App() {
       <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
       <Route path="/parent" element={<RequireAuth><ParentDashboardPage /></RequireAuth>} />
       <Route path="/parent/queue" element={<RequireAuth><ParentQueuePage /></RequireAuth>} />
+      <Route path="/parent/keluarga" element={<RequireAuth><OrtuHubPage /></RequireAuth>} />
+      <Route path="/parent/guru" element={<RequireAuth><HubungkanGuruPage /></RequireAuth>} />
+      <Route path="/parent/privasi" element={<RequireAuth><PrivasiSuaraPage /></RequireAuth>} />
+      <Route path="/parent/pesan" element={<RequireAuth><PesanGuruPage /></RequireAuth>} />
+      <Route path="/parent/instansi" element={<RequireAuth><PindahInstansiPage /></RequireAuth>} />
       <Route path="/parent/laporan" element={<RequireAuth><WeeklyReportPage /></RequireAuth>} />
       <Route
         path="/ujian"

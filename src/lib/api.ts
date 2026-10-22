@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_BASE ?? "http://localhost:8010";
+export const API = import.meta.env.VITE_API_BASE ?? "http://localhost:8010";
 
 export function getToken() {
   return localStorage.getItem("hafiz_token");
@@ -85,3 +85,18 @@ export type Submission = {
   created_at: string;
   member_name: string | null;
 };
+
+/** Unduh berkas (dengan token login bila ada) lalu simpan lewat browser. */
+export async function downloadFile(url: string, filename: string, auth = true) {
+  const headers = new Headers();
+  const token = getToken();
+  if (auth && token) headers.set("Authorization", `Bearer ${token}`);
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error("Tautan unduhan tidak valid atau sudah kedaluwarsa");
+  const blob = await res.blob();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
