@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { surahName } from "../../lib/surahInfo";
+import { loadTilawah, useTilawahSync, resumePoint } from "../../lib/tilawahProgress";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
@@ -117,9 +119,11 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
   const list = rows(home);
   const done = list.filter((r) => r.state === "done").length;
   const next = ACTION_LABEL[home.mission_action];
-  let lastSurah = "";
-  try { lastSurah = localStorage.getItem("hafiz_last_surah") || ""; } catch { /* abaikan */ }
-  const lastName = surahName(Number(lastSurah || 1));
+  useTilawahSync();
+  const [, bump] = useState(0);
+  useEffect(() => { const f = () => bump((n) => n + 1); window.addEventListener("hafiz_tilawah_changed", f); return () => window.removeEventListener("hafiz_tilawah_changed", f); }, []);
+  const resume = resumePoint(loadTilawah());
+  const lastName = resume ? `${surahName(resume.surah)}, ayat ${resume.ayah}` : "";
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -155,7 +159,7 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <button type="button" onClick={() => nav("/quran")} className="min-h-[112px] rounded-[28px] bg-[#6B63C9] p-4 text-left text-white">
+        <button type="button" onClick={() => nav(resume ? `/quran/${resume.surah}?ayat=${resume.ayah}` : "/quran/1")} className="min-h-[112px] rounded-[28px] bg-[#6B63C9] p-4 text-left text-white">
           <span className="flex items-center gap-2 text-lg font-extrabold"><NavBook size={22} /> Tilawah</span>
           <span className="mt-1 block text-[13px] font-semibold opacity-95">{lastName ? `Lanjut ${lastName}` : "Mulai membaca Al-Qur'an"}</span>
         </button>
