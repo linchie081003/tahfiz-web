@@ -1,4 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../lib/api";
 import type { AgeMode } from "../../context/AgeModeContext";
 import type { HomeData } from "../../lib/api";
 import { useLogout } from "../../lib/auth";
@@ -116,6 +118,8 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
   const next = ACTION_LABEL[home.mission_action];
   let lastSurah = "";
   try { lastSurah = localStorage.getItem("hafiz_last_surah") || ""; } catch { /* abaikan */ }
+  const surahs = useQuery({ queryKey: ["quran", "surahs", "all"], queryFn: () => api<{ id: number; name_id: string }[]>("/quran/surahs"), staleTime: 3600_000, retry: false });
+  const lastName = surahs.data?.find((x) => String(x.id) === (lastSurah || "1"))?.name_id;
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -153,7 +157,7 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
       <div className="grid grid-cols-2 gap-3">
         <button type="button" onClick={() => nav("/quran")} className="min-h-[112px] rounded-[28px] bg-[#6B63C9] p-4 text-left text-white">
           <span className="flex items-center gap-2 text-lg font-extrabold"><NavBook size={22} /> Tilawah</span>
-          <span className="mt-1 block text-[13px] font-semibold opacity-95">{lastSurah ? "Lanjut bacaan terakhir" : "Mulai membaca Al-Qur'an"}</span>
+          <span className="mt-1 block text-[13px] font-semibold opacity-95">{lastName ? `Lanjut ${lastName}` : "Mulai membaca Al-Qur'an"}</span>
         </button>
         {home.parent_preview ? (
           <button type="button" onClick={() => nav("/parent/gerbang")} className="min-h-[112px] rounded-[28px] bg-teal p-4 text-left text-white">
