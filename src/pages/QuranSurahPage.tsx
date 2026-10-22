@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { api, type HomeData } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
 import { surahKind, surahName } from "../lib/surahInfo";
-import { loadTilawah, pagesRead, recordAyah, toggleBookmark } from "../lib/tilawahProgress";
+import { loadTilawah, useTilawahSync, pagesRead, recordAyah, toggleBookmark } from "../lib/tilawahProgress";
 import { NavPlay, NavStar } from "../components/icons/NavIcons";
 import { Toggle } from "../components/ui/ui";
 import { QuranWords } from "../components/QuranWords";
@@ -44,6 +44,7 @@ export function QuranSurahPage() {
   useEffect(() => { const a = Number(sp.get("ayat")); setIdx(a > 1 ? a - 1 : 0); setPlaying(false); audio.current?.pause(); }, [surahId, sp]);
   useEffect(() => { const f = () => bump((n) => n + 1); window.addEventListener("hafiz_tilawah_changed", f); return () => window.removeEventListener("hafiz_tilawah_changed", f); }, []);
   const offset = (meta.data ?? []).filter((s) => s.id < surahId).reduce((a, s) => a + s.ayah_count, 0);
+  useTilawahSync();
   const bm = loadTilawah().bookmark;
   const marked = bm?.surah === surahId ? bm.ayah : 0;
   const curAyah = list[idx]?.ayah_number ?? 0;

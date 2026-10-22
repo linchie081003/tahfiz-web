@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { surahName } from "../../lib/surahInfo";
-import { AYAH_PER_PAGE, TOTAL_PAGES, loadTilawah, pagesRead, resumePoint, setTarget, streak, weekDots, type TilawahState } from "../../lib/tilawahProgress";
+import { AYAH_PER_PAGE, TOTAL_PAGES, loadTilawah, useTilawahSync, pagesRead, resumePoint, setTarget, streak, weekDots, type TilawahState } from "../../lib/tilawahProgress";
 import { Page, ScreenHead } from "../../components/ui/ui";
 
 type Surah = { id: number; ayah_count: number; juz_number: number };
@@ -12,6 +12,7 @@ const QARI = "Al-Husary, murattal";
 
 /** Orang tua: Tilawah saya (menuju khatam, target harian, terakhir dibaca). */
 export function OrtuTilawahPage() {
+  useTilawahSync();
   const [st, setSt] = useState<TilawahState>(() => loadTilawah(2));
   useEffect(() => { const f = () => setSt(loadTilawah(2)); window.addEventListener("hafiz_tilawah_changed", f); return () => window.removeEventListener("hafiz_tilawah_changed", f); }, []);
   const surahs = useQuery({ queryKey: ["quran", "surahs", "all"], queryFn: () => api<Surah[]>("/quran/surahs") });

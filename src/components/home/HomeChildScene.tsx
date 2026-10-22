@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { surahName } from "../../lib/surahInfo";
-import { loadTilawah, resumePoint } from "../../lib/tilawahProgress";
+import { loadTilawah, useTilawahSync, resumePoint } from "../../lib/tilawahProgress";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
@@ -119,6 +119,7 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
   const list = rows(home);
   const done = list.filter((r) => r.state === "done").length;
   const next = ACTION_LABEL[home.mission_action];
+  useTilawahSync();
   const [, bump] = useState(0);
   useEffect(() => { const f = () => bump((n) => n + 1); window.addEventListener("hafiz_tilawah_changed", f); return () => window.removeEventListener("hafiz_tilawah_changed", f); }, []);
   const resume = resumePoint(loadTilawah());
