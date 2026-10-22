@@ -19,3 +19,26 @@ export function prepareTajweedHtml(raw: string): string {
 export function looksLikeTajweedMarkup(text: string): boolean {
   return text.includes("<tajweed") || text.includes('class="tjw') || text.includes("tjw-");
 }
+
+/** Pecah HTML tajwid menjadi kata (spasi di luar tag). */
+export function tajweedWords(raw: string): string[] {
+  const html = prepareTajweedHtml(raw);
+  const out: string[] = [];
+  let cur = "";
+  let depth = 0;
+  for (let i = 0; i < html.length; i++) {
+    const ch = html[i]!;
+    if (ch === "<") {
+      const end = html.indexOf(">", i);
+      const tag = html.slice(i, end + 1);
+      depth += tag.startsWith("</") ? -1 : tag.endsWith("/>") ? 0 : 1;
+      cur += tag;
+      i = end;
+    } else if (/\s/.test(ch) && depth <= 0) {
+      if (cur.trim()) out.push(cur);
+      cur = "";
+    } else cur += ch;
+  }
+  if (cur.trim()) out.push(cur);
+  return out;
+}

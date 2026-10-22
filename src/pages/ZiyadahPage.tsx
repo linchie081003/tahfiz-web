@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, Page } from "../components/ui/ui";
+import { QuranWords } from "../components/QuranWords";
+import { TajweedLegend } from "../components/TajweedLegend";
 import { NavMic, NavPlay } from "../components/icons/NavIcons";
 import { StateScreen } from "../components/ui/StateScreen";
 import { api, type HomeData } from "../lib/api";
@@ -83,13 +85,11 @@ export function ZiyadahPage() {
       {first && (
         <>
           <Card tone="lav" className="min-h-[200px] text-center">
-            <p dir="rtl" lang="ar" className="font-quran text-[2.4rem] leading-[2.4]">
-              {words.map((w, i) => hideIdx.has(i) && !peek
-                ? <span key={i} aria-hidden="true" className="mx-1.5 inline-block h-[52px] w-[84px] rounded-2xl border-2 border-dashed border-brand/60 bg-lav align-middle" />
-                : <span key={i} className="mx-1.5">{w}</span>)}
-            </p>
+            <p className="block"><QuranWords textUthmani={first.text_uthmani} textTajweed={first.text_tajweed} hidden={hideIdx} peek={peek} className="text-[2.9rem] leading-[2.5]" /></p>
             {hidden > 0 && <p className="mt-2 text-[15px] font-semibold text-muted">{hideIdx.size} dari {words.length} kata disembunyikan. Coba sebut semuanya!</p>}
           </Card>
+
+          <TajweedLegend tone="dark" />
 
           <div className="text-center">
             <div className="flex justify-center gap-2" role="img" aria-label={`Ulangan ${count} dari ${GOAL}`}>

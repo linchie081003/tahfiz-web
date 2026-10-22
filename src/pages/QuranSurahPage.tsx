@@ -7,6 +7,8 @@ import { surahKind, surahName } from "../lib/surahInfo";
 import { loadTilawah, pagesRead, recordAyah } from "../lib/tilawahProgress";
 import { NavPlay, NavStar } from "../components/icons/NavIcons";
 import { Toggle } from "../components/ui/ui";
+import { QuranWords } from "../components/QuranWords";
+import { TajweedLegend } from "../components/TajweedLegend";
 
 type SurahMeta = { id: number; name_ar: string; name_id: string; ayah_count: number; juz_number: number };
 type Ayah = { ayah_number: number; text_uthmani: string; text_tajweed?: string | null; audio_url: string | null };
@@ -104,12 +106,14 @@ export function QuranSurahPage() {
         {ayahs.isError && <p className="p-4 text-center font-bold text-[#B3261E]">Gagal memuat ayat. Periksa koneksi.</p>}
         {list.map((a, i) => (
           <button key={a.ayah_number} id={`ay-${i}`} type="button" onClick={() => play(i)} aria-label={`Putar ayat ${a.ayah_number}`} dir="rtl" lang="ar"
-            className={`w-full rounded-[14px] px-2 text-right font-quran text-[1.5rem] leading-[2.1] text-outline ${follow && i === idx ? "bg-cream" : ""}`}>
-            {a.text_uthmani}{" "}
+            className={`w-full rounded-[14px] px-2 text-right text-outline ${follow && i === idx ? "bg-cream" : ""}`}>
+            <QuranWords textUthmani={a.text_uthmani} textTajweed={a.text_tajweed} className="text-[2rem] leading-[2.5]" />{" "}
             <span className="inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] border-brand align-middle text-[13px] leading-none text-brand" aria-hidden="true">{arabicDigits(a.ayah_number)}</span>
           </button>
         ))}
       </div>
+
+      <div className="mx-4 mt-3"><TajweedLegend tone="dark" /></div>
 
       <div className="fixed bottom-[76px] left-1/2 z-30 w-full max-w-game -translate-x-1/2 px-4">
         <div className="flex items-center gap-3 rounded-pill bg-brand p-2 pr-4 text-white">

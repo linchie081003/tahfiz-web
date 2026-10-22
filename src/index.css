@@ -27,7 +27,9 @@ body {
   font-family: "Amiri Quran", "Scheherazade New", "Traditional Arabic", serif;
   text-align: right;
   color: #1a1a2e;
-  word-spacing: 0.15em;
+  word-spacing: 0.2em;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
   font-feature-settings: "liga" 1;
 }
 
