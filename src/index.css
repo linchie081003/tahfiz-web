@@ -33,6 +33,15 @@ body {
   font-feature-settings: "liga" 1;
 }
 
+/* Kata Arab satu per satu (tombol, chip): huruf yang sama dengan tampilan hafalan, tanpa warna paksa. */
+.quran-word {
+  font-family: "Amiri Quran", "Scheherazade New", "Traditional Arabic", serif;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" 1;
+  line-height: 2.1;
+}
+
 .card-surface .quran-ayah {
   padding: 0.25rem 0;
 }

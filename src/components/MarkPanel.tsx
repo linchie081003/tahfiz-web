@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "../lib/api";
+import { useQuranPrefs } from "../lib/quranPrefs";
 
 export type Mark = {
   id: string; surah_id: number; ayah_number: number; word_start: number | null; word_end: number | null;
@@ -16,6 +17,8 @@ export function useMarks(surahId: number) {
 export function MarkPanel({ surahId, ayahNo, text }: { surahId: number; ayahNo: number; text: string }) {
   const qc = useQueryClient();
   const { data } = useMarks(surahId);
+  const prefs = useQuranPrefs();
+  const wordSize = ({ medium: "text-2xl", large: "text-3xl", xlarge: "text-4xl" } as const)[prefs.arabicFontSize] ?? "text-3xl"; // ikut ukuran huruf di pengaturan, sama dengan tampilan hafalan
   const [pick, setPick] = useState(false);
   const [sel, setSel] = useState<[number, number] | null>(null);
   const [error, setError] = useState("");
@@ -54,7 +57,7 @@ export function MarkPanel({ surahId, ayahNo, text }: { surahId: number; ayahNo: 
         <ul className="flex flex-wrap gap-2" aria-label="Kata sulit di ayat ini">
           {wordMarks.map((m) => (
             <li key={m.id} className="flex items-center gap-1 rounded-pill bg-cream px-3 py-1 text-sm font-extrabold text-gold-ink">
-              <span dir="rtl" lang="ar" className="text-lg">{m.word_text}</span>
+              <span dir="rtl" lang="ar" className="quran-word text-2xl">{m.word_text}</span>
               {m.created_by_role === "child" && <button type="button" aria-label="Hapus tanda kata" onClick={() => remove.mutate(m.id)} className="px-1">×</button>}
             </li>
           ))}
@@ -66,7 +69,7 @@ export function MarkPanel({ surahId, ayahNo, text }: { surahId: number; ayahNo: 
           <div dir="rtl" lang="ar" className="flex flex-wrap gap-2">
             {words.map((w, i) => {
               const on = sel ? i >= sel[0] && i <= sel[1] : false;
-              return <button key={i} type="button" aria-pressed={on} onClick={() => tapWord(i)} className={`min-h-[44px] rounded-2xl px-3 text-2xl ${on ? "bg-brand text-white" : "bg-white text-outline"}`}>{w}</button>;
+              return <button key={i} type="button" aria-pressed={on} onClick={() => tapWord(i)} className={`quran-word min-h-[56px] rounded-2xl px-3 ${wordSize} ${on ? "bg-brand text-white" : "bg-white text-outline"}`}>{w}</button>;
             })}
           </div>
           <button type="button" disabled={!sel || add.isPending} onClick={() => sel && add.mutate({ word_start: sel[0], word_end: sel[1] })} className="min-h-[44px] w-full rounded-pill bg-brand text-sm font-extrabold text-white disabled:opacity-50">Simpan tanda kata</button>
