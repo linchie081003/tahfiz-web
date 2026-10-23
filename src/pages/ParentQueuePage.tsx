@@ -105,6 +105,40 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
     }
   };
 
+  // Penilaian per ayat: hanya ayat yang belum dinilai yang bisa dipilih; sisanya tetap menunggu.
+  const pending = (s.ranges ?? []).filter((r) => r.status === "pending_eval").flatMap((r) => Array.from({ length: r.ayah_end - r.ayah_start + 1 }, (_, i) => r.ayah_start + i));
+  const canPartial = s.context === "ziyadah" && (s.ayah_end ?? 0) > (s.ayah_start ?? 0) && pending.length > 1;
+  const [partial, setPartial] = useState(false);
+  const [pick, setPick] = useState<Record<number, "passed" | "needs_retry">>({});
+  const picked = Object.keys(pick).length;
+  const hasPass = Object.values(pick).includes("passed");
+
+  const sendPartial = async () => {
+    if (!picked) { toast("Pilih ayat yang dinilai dulu.", "error"); return; }
+    if (hasPass && !canPass) { toast(`Lulus butuh minimal ${MIN_STAR_PASS} bintang di setiap penilaian.`, "error"); return; }
+    const nums = Object.keys(pick).map(Number).sort((a, b) => a - b);
+    const parts: { ayah_start: number; ayah_end: number; status: string }[] = [];
+    for (const n of nums) {
+      const last = parts[parts.length - 1];
+      if (last && last.ayah_end === n - 1 && last.status === pick[n]) last.ayah_end = n;
+      else parts.push({ ayah_start: n, ayah_end: n, status: pick[n] });
+    }
+    setBusy(true);
+    try {
+      await api(`/setor/${s.id}/evaluate`, {
+        method: "POST",
+        body: JSON.stringify({ parts, rubric_scores: allRated ? scores : undefined, evaluator_notes: notes.trim() || undefined }),
+      });
+      toast(picked < pending.length ? "Tersimpan. Ayat lain masih menunggu penilaian." : "Penilaian tersimpan.", "success");
+      setPick({});
+      onDone();
+    } catch (e) {
+      toast(friendlyError(e), "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const send = async (status: "passed" | "needs_retry") => {
     if (status === "passed" && !canPass) {
       toast(`Lulus butuh minimal ${MIN_STAR_PASS} bintang di setiap penilaian.`, "error");
@@ -138,6 +172,11 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
         </p>
       </div>
       <ArabicAyahText textUthmani={s.reference_text} textTajweed={s.reference_text_tajweed} />
+      {s.ranges && s.ranges.some((r) => r.status !== "pending_eval") && (
+        <p className="rounded-[18px] bg-cream p-2 text-xs font-bold text-outline">
+          Sudah dinilai: {s.ranges.filter((r) => r.status !== "pending_eval").map((r) => `ayat ${r.ayah_start}–${r.ayah_end} ${r.status === "passed" ? "lulus" : "perlu diulang"}`).join(", ")}. Sisanya menunggu.
+        </p>
+      )}
       {s.recording_url ? (
         <AuthenticatedAudio url={s.recording_url} className="w-full rounded-game border-2 border-line" />
       ) : (
@@ -214,14 +253,53 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
         />
       </label>
 
-      <div className="grid grid-cols-2 gap-3">
-        <GameButton size="md" variant="gold" disabled={busy} onClick={() => void send("needs_retry")}>
-          Ulangi
-        </GameButton>
-        <GameButton size="md" disabled={busy || !canPass} onClick={() => void send("passed")}>
-          Lulus
-        </GameButton>
-      </div>
+      {canPartial && (
+        <label className="flex items-center gap-2 text-sm font-bold text-outline">
+          <input type="checkbox" checked={partial} onChange={(e) => setPartial(e.target.checked)} />
+          Nilai sebagian ayat saja
+        </label>
+      )}
+      {partial && canPartial ? (
+        <div className="space-y-2 rounded-game border-2 border-line bg-white p-3">
+          <p className="text-xs font-semibold text-outline/80">Ketuk ayat untuk memberi hasil: kosong → lulus → ulangi. Ayat yang dibiarkan kosong tetap menunggu dan tidak berubah.</p>
+          <div className="flex flex-wrap gap-2">
+            {pending.map((n) => {
+              const v = pick[n];
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() =>
+                    setPick((p) => {
+                      const next = { ...p };
+                      if (!v) next[n] = "passed";
+                      else if (v === "passed") next[n] = "needs_retry";
+                      else delete next[n];
+                      return next;
+                    })
+                  }
+                  className={`h-10 min-w-10 rounded-pill border-2 px-3 text-sm font-extrabold ${v === "passed" ? "border-game-green-start bg-game-green-start/40" : v === "needs_retry" ? "border-game-coral bg-game-coral/40" : "border-line bg-cream"}`}
+                >
+                  {n}
+                  {v === "passed" ? " ✓" : v === "needs_retry" ? " ↻" : ""}
+                </button>
+              );
+            })}
+          </div>
+          <GameButton size="md" disabled={busy || !picked || (hasPass && !canPass)} onClick={() => void sendPartial()}>
+            Simpan penilaian ({picked} ayat)
+          </GameButton>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <GameButton size="md" variant="gold" disabled={busy} onClick={() => void send("needs_retry")}>
+            Ulangi
+          </GameButton>
+          <GameButton size="md" disabled={busy || !canPass} onClick={() => void send("passed")}>
+            Lulus
+          </GameButton>
+        </div>
+      )}
       <p className="text-center text-xs font-semibold text-outline/70">{canPass ? "Lulus membuka ayat berikutnya dan menambah bintang." : `Tombol Lulus aktif bila setiap penilaian minimal ${MIN_STAR_PASS} bintang.`}</p>
     </GameCard>
   );

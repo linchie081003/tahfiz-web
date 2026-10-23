@@ -1,3 +1,4 @@
+import { SesiHarianCard } from "../components/SesiHarianCard";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -88,6 +89,8 @@ export function ParentDashboardPage() {
             {row(<NavSprout size={20} />, "bg-[#6B63C9] text-white", "Hafalan", c.hafalan_line || "Belum dimulai", "/parent/laporan")}
             {row(<NavBook size={20} />, "bg-coral text-gold-ink", "Tilawah", "Baca bersama anak", "/quran")}
           </section>
+
+          <SesiHarianCard memberId={c.id} />
 
           {attention.length > 0 && (
             <section className="space-y-3 rounded-[28px] border-2 border-gold bg-cream p-4">

@@ -89,8 +89,13 @@ export type PetaData = {
   plan?: { surah_id: number; name_id: string; ayah_count: number; ayah_start: number; ayah_end: number; mode: "seluruh_surat" | "target_harian"; done_ayahs: number } | null;
 };
 
+export type RangeStatus = { ayah_start: number; ayah_end: number; status: string; evaluation_id: string | null };
+
 export type Submission = {
   tahsin_point?: number | null;
+  ayah_start?: number | null;
+  ayah_end?: number | null;
+  ranges?: RangeStatus[] | null;
   id: string;
   context: string;
   surah_id: number | null;
