@@ -8,6 +8,7 @@ import { JoinFamilyPage } from "./pages/JoinFamilyPage";
 import { LoginPage } from "./pages/LoginPage";
 import { DaftarAkunPage, DaftarOrtuPage } from "./pages/DaftarAkunPage";
 import { MurojaahPage } from "./pages/MurojaahPage";
+import { Sesi3Page } from "./pages/Sesi3Page";
 import { ParentDashboardPage } from "./pages/ParentDashboardPage";
 import { ParentQueuePage } from "./pages/ParentQueuePage";
 import { WeeklyReportPage } from "./pages/WeeklyReportPage";
@@ -99,6 +100,7 @@ export default function App() {
       <Route path="/tahsin/:point" element={<RequireAuth><LatihanTahsinPage /></RequireAuth>} />
       <Route path="/ziyadah" element={<RequireAuth><ZiyadahPage /></RequireAuth>} />
       <Route path="/murojaah" element={<RequireAuth><MurojaahPage /></RequireAuth>} />
+      <Route path="/sesi3" element={<RequireAuth><Sesi3Page /></RequireAuth>} />
       <Route path="/setor" element={<RequireAuth><SetorPage /></RequireAuth>} />
       <Route path="/hasil/:id" element={<RequireAuth><HasilPage /></RequireAuth>} />
       <Route path="/sertifikat/:point" element={<RequireAuth><SertifikatPage /></RequireAuth>} />
