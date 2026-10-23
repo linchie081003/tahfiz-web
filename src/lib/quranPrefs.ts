@@ -6,6 +6,8 @@ export type QuranPrefs = {
   arabicFontSize: "medium" | "large" | "xlarge";
   showTajweed: boolean;
   voiceGender: "all" | "male" | "female";
+  tilawahReciterId?: string; // qari khusus mendengarkan Tilawah ("" = ikut qari belajar)
+  tilawahMaqam?: "" | "rast" | "bayati"; // saringan irama pada daftar qari Tilawah
 };
 
 const KEY = "hafiz_quran_prefs";
@@ -17,6 +19,8 @@ export const defaultPrefs: QuranPrefs = {
   arabicFontSize: "large",
   showTajweed: true,
   voiceGender: "all",
+  tilawahReciterId: "",
+  tilawahMaqam: "",
 };
 
 let snapshotCache: { raw: string; value: QuranPrefs } | null = null;

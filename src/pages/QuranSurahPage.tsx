@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, type HomeData } from "../lib/api";
-import { loadQuranPrefs } from "../lib/quranPrefs";
+import { loadQuranPrefs, saveQuranPrefs } from "../lib/quranPrefs";
+import type { ReciterOption } from "../lib/reciters";
 import { surahKind, surahName } from "../lib/surahInfo";
 import { loadTilawah, useTilawahSync, pagesRead, recordAyah, toggleBookmark } from "../lib/tilawahProgress";
 import { NavPlay, NavStar } from "../components/icons/NavIcons";
@@ -26,6 +27,9 @@ export function QuranSurahPage() {
   const surahId = Number(p);
   const valid = Number.isFinite(surahId) && surahId >= 1 && surahId <= 114;
   const prefs = loadQuranPrefs();
+  const tilawahReciter = prefs.tilawahReciterId || prefs.reciterId; // Tilawah boleh memakai qari mujawwad; belajar tetap qari belajar
+  const maqam = prefs.tilawahMaqam ?? "";
+  const [showQari, setShowQari] = useState(false);
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [follow, setFollow] = useState(true);
@@ -36,7 +40,11 @@ export function QuranSurahPage() {
   const isParent = session.data?.role === "parent" && !session.data?.member_id;
   const home = useQuery({ queryKey: ["home"], queryFn: () => api<HomeData>("/home"), enabled: session.isSuccess && !isParent });
   const meta = useQuery({ queryKey: ["quran", "surahs", "all"], queryFn: () => api<SurahMeta[]>("/quran/surahs"), enabled: valid });
-  const ayahs = useQuery({ queryKey: ["quran", "ayahs", surahId, prefs.reciterId], queryFn: () => api<Ayah[]>(`/quran/surahs/${surahId}/ayahs?reciter_id=${encodeURIComponent(prefs.reciterId)}`), enabled: valid });
+  const ayahs = useQuery({ queryKey: ["quran", "ayahs", surahId, "tilawah", tilawahReciter], queryFn: () => api<Ayah[]>(`/quran/surahs/${surahId}/ayahs?purpose=tilawah&reciter_id=${encodeURIComponent(tilawahReciter)}`), enabled: valid });
+  const qariList = useQuery({ queryKey: ["reciters", "tilawah", maqam], queryFn: () => api<(ReciterOption & { maqam?: string[] })[]>(`/quran/reciters?purpose=tilawah${maqam ? `&maqam=${maqam}` : ""}`), enabled: showQari });
+  const qariAll = useQuery({ queryKey: ["reciters", "tilawah", ""], queryFn: () => api<ReciterOption[]>(`/quran/reciters?purpose=tilawah`), staleTime: 300_000 });
+  const qariLabel = qariAll.data?.find((r) => r.id === tilawahReciter)?.label ?? QARI[tilawahReciter] ?? tilawahReciter.replace(/_/g, " ");
+  const setQari = (patch: Partial<ReturnType<typeof loadQuranPrefs>>) => { saveQuranPrefs({ ...loadQuranPrefs(), ...patch }); audio.current?.pause(); setPlaying(false); bump((n) => n + 1); };
   const surah = meta.data?.find((s) => s.id === surahId);
   const list = ayahs.data ?? [];
 
@@ -120,13 +128,41 @@ export function QuranSurahPage() {
 
       <div className="mx-4 mt-3"><TajweedLegend tone="dark" /></div>
 
+      {showQari && (
+        <div className="fixed bottom-[148px] left-1/2 z-40 w-full max-w-game -translate-x-1/2 px-4">
+          <section aria-label="Pilih qari dan irama" className="max-h-[50dvh] overflow-y-auto rounded-[24px] border-[3px] border-line bg-white p-4 shadow-lg">
+            <p className="font-extrabold text-outline">Irama bacaan</p>
+            <div className="mt-2 flex gap-2" role="group" aria-label="Irama">
+              {([["", "Semua"], ["rast", "Rast"], ["bayati", "Bayati"]] as const).map(([v, t]) => (
+                <button key={v} type="button" aria-pressed={maqam === v} onClick={() => setQari({ tilawahMaqam: v })}
+                  className={`min-h-[44px] flex-1 rounded-pill px-3 font-extrabold ${maqam === v ? "bg-brand text-white" : "bg-lav text-brand-dark"}`}>{t}</button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs font-semibold text-muted">Penandaan irama hanya perkiraan umum. Satu qari bisa berganti irama antar surat dan ayat.</p>
+            <ul className="mt-3 space-y-2">
+              {(qariList.data ?? []).map((r) => (
+                <li key={r.id}>
+                  <button type="button" aria-pressed={tilawahReciter === r.id} onClick={() => setQari({ tilawahReciterId: r.id })}
+                    className={`w-full rounded-[18px] border-2 px-3 py-2 text-left ${tilawahReciter === r.id ? "border-brand bg-lav" : "border-line bg-white"}`}>
+                    <span className="block font-extrabold text-outline">{r.label}</span>
+                    <span className="block text-xs font-semibold text-muted">{r.description}{r.maqam?.length ? ` · umumnya ${r.maqam.map((m) => m[0].toUpperCase() + m.slice(1)).join(", ")}` : ""}</span>
+                  </button>
+                </li>
+              ))}
+              {qariList.isSuccess && !qariList.data?.length && <li className="text-sm font-semibold text-muted">Belum ada qari untuk irama ini.</li>}
+            </ul>
+          </section>
+        </div>
+      )}
+
       <div className="fixed bottom-[76px] left-1/2 z-30 w-full max-w-game -translate-x-1/2 px-4">
         <div className="flex items-center gap-3 rounded-pill bg-brand p-2 pr-4 text-white">
           <button type="button" onClick={toggle} aria-label={playing ? "Jeda" : "Putar"} disabled={!list.length}
             className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-brand disabled:opacity-50">
             {playing ? <span className="flex gap-1" aria-hidden="true"><i className="h-5 w-1.5 rounded bg-brand" /><i className="h-5 w-1.5 rounded bg-brand" /></span> : <NavPlay size={26} />}
           </button>
-          <div className="min-w-0 flex-1"><p className="font-extrabold">Ayat {list[idx]?.ayah_number ?? 1} dari {list.length || surah?.ayah_count || "…"}</p><p className="truncate text-sm font-semibold opacity-90">Qari: {QARI[prefs.reciterId] ?? prefs.reciterId.replace(/_/g, " ")}</p></div>
+          <div className="min-w-0 flex-1"><p className="font-extrabold">Ayat {list[idx]?.ayah_number ?? 1} dari {list.length || surah?.ayah_count || "…"}</p><p className="truncate text-sm font-semibold opacity-90">Qari: {qariLabel}</p></div>
+          <button type="button" onClick={() => setShowQari((v) => !v)} aria-expanded={showQari} className="min-h-[40px] rounded-pill bg-white px-3 font-extrabold text-brand">Qari</button>
           <button type="button" onClick={() => curAyah && toggleBookmark(surahId, curAyah)} disabled={!curAyah} aria-pressed={marked === curAyah && !!curAyah} aria-label={marked === curAyah ? "Lepas tanda ayat" : "Tandai ayat terakhir"}
             className={`flex min-h-[40px] items-center gap-1 rounded-pill px-3 font-extrabold ${marked === curAyah && curAyah ? "bg-gold text-gold-ink" : "bg-white text-brand"}`}>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z" fill={marked === curAyah && curAyah ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" /></svg>Tandai
