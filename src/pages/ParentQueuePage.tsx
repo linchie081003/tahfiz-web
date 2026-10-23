@@ -10,6 +10,7 @@ import { StarRating } from "../components/game/StarRating";
 import { AppPage } from "../components/layout/AppPage";
 import { AuthenticatedAudio } from "../components/AuthenticatedAudio";
 import { PermintaanCek } from "../components/PermintaanCek";
+import { RiwayatPenilaian } from "../components/RiwayatPenilaian";
 import { NotifikasiPenilaian } from "../components/NotifikasiPenilaian";
 import { api, type Submission } from "../lib/api";
 
@@ -242,6 +243,7 @@ export function ParentQueuePage() {
       {data?.map((s) => (
         <EvaluateCard key={s.id} s={s} onDone={refresh} />
       ))}
+      <RiwayatPenilaian />
     </AppPage>
   );
 }
