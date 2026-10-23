@@ -1,6 +1,8 @@
 import { apiErrorMessage } from "./apiError";
 
-export const API = import.meta.env.VITE_API_BASE ?? "http://localhost:8010";
+// Alamat backend. Produksi WAJIB memakai VITE_API_BASE saat build (build gagal bila kosong atau menunjuk localhost,
+// lihat vite.config.ts). Fallback localhost hanya untuk `npm run dev`.
+export const API: string = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/+$/, "") || (import.meta.env.DEV ? "http://localhost:8010" : "");
 
 export function getToken() {
   return localStorage.getItem("hafiz_token");
