@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { api, type HomeData } from "../lib/api";
+import { api } from "../lib/api";
 import { surahKind, surahName } from "../lib/surahInfo";
 import { loadTilawah, useTilawahSync, pagesRead, recordAyah, toggleBookmark } from "../lib/tilawahProgress";
-import { NavPlay, NavStar } from "../components/icons/NavIcons";
+import { NavPlay } from "../components/icons/NavIcons";
 import { Toggle } from "../components/ui/ui";
 import { QuranWords } from "../components/QuranWords";
 import { TajweedLegend } from "../components/TajweedLegend";
@@ -31,7 +31,6 @@ export function QuranSurahPage() {
 
   const session = useQuery({ queryKey: ["session"], queryFn: () => api<{ role: string; member_id?: string | null }>("/auth/session"), staleTime: 60_000 });
   const isParent = session.data?.role === "parent" && !session.data?.member_id;
-  const home = useQuery({ queryKey: ["home"], queryFn: () => api<HomeData>("/home"), enabled: session.isSuccess && !isParent });
   const meta = useQuery({ queryKey: ["quran", "surahs", "all"], queryFn: () => api<SurahMeta[]>("/quran/surahs"), enabled: valid });
   const ayahs = useQuery({ queryKey: ["quran", "ayahs", surahId, "tilawah"], queryFn: () => api<Ayah[]>(`/quran/surahs/${surahId}/ayahs?purpose=tilawah`), enabled: valid });
   const surah = meta.data?.find((s) => s.id === surahId);
@@ -68,16 +67,8 @@ export function QuranSurahPage() {
   const ts = loadTilawah(isParent ? 2 : 1);
   const tgt = ts.target;
   const tpct = Math.min(100, Math.round((pagesRead(ts) / tgt) * 100));
-  const pct = Math.min(100, Math.max(0, (home.data?.level_progress ?? 0) * 100));
   return (
     <div className="pb-44">
-      {!isParent && (
-        <div className="flex items-center gap-3 px-4 pt-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal text-lg font-extrabold text-white">{home.data?.level ?? 1}</span>
-          <div className="h-3.5 flex-1 overflow-hidden rounded-pill bg-lav" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} aria-label="Kemajuan level"><div className="h-full rounded-pill bg-teal" style={{ width: `${pct}%` }} /></div>
-          <span className="flex items-center gap-1 text-lg font-extrabold"><NavStar size={26} className="text-gold" />{home.data?.xp ?? 0}</span>
-        </div>
-      )}
       <div className="flex items-center gap-2 px-4 pt-3">
         <button type="button" aria-label="Kembali" onClick={() => nav("/")} className="-ml-2 flex h-11 w-11 items-center justify-center text-brand">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
