@@ -148,7 +148,7 @@ export function LatihanTahsinPage() {
   const go = () => {
     token.current++;
     audio.current?.pause();
-    const p = new URLSearchParams({ context: "tahsin", text: it.arabic, focus: focusOf(it), next: nextPath });
+    const p = new URLSearchParams({ context: "tahsin", text: it.arabic, focus: focusOf(it), next: nextPath, point: String(point ?? "") });
     nav(`/setor?${p}`);
   };
   return (
