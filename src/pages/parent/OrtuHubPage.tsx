@@ -1,3 +1,4 @@
+import { NotifikasiPenilaian } from "../../components/NotifikasiPenilaian";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
@@ -20,6 +21,7 @@ export function OrtuHubPage() {
   return (
     <Page>
       <ScreenHead back={false} eyebrow="Area orang tua" title="Keluarga" />
+      <NotifikasiPenilaian role="parent" />
       <Card tone="plain"><FamilyParents /></Card>
       <div className="space-y-2">
         {ROWS.map((r) => (
