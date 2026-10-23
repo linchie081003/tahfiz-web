@@ -1,3 +1,4 @@
+import { PermintaanCek } from "../../components/PermintaanCek";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -126,6 +127,7 @@ export function GuruAntreanPage() {
   return (
     <Page>
       <ScreenHead back={false} eyebrow="Guru" title="Setoran" />
+      <PermintaanCek />
       {!data?.length ? <Empty t="Tidak ada setoran" d="Semua sudah dinilai. Terima kasih, Ustaz/ustazah." /> : data.map((x) => <QueueRow key={x.id} x={x} />)}
     </Page>
   );

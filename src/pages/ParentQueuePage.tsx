@@ -9,6 +9,7 @@ import { friendlyError, useGameToast } from "../components/game/GameToast";
 import { StarRating } from "../components/game/StarRating";
 import { AppPage } from "../components/layout/AppPage";
 import { AuthenticatedAudio } from "../components/AuthenticatedAudio";
+import { PermintaanCek } from "../components/PermintaanCek";
 import { api, type Submission } from "../lib/api";
 
 const RUBRIC: { key: string; label: string }[] = [
@@ -234,6 +235,7 @@ export function ParentQueuePage() {
     <AppPage className="pb-8">
       <GameHeader title="Antrean penilaian" to="/parent" />
       <p className="text-xs font-semibold text-outline/90">Keputusan akhir ada pada Anda.</p>
+      <PermintaanCek />
       {!data?.length && <GameCard>Tidak ada setoran menunggu.</GameCard>}
       {data?.map((s) => (
         <EvaluateCard key={s.id} s={s} onDone={refresh} />

@@ -35,6 +35,7 @@ export function MurojaahPage() {
   const qc = useQueryClient();
   const prefs = loadQuranPrefs();
   const home = useQuery({ queryKey: ["home"], queryFn: () => api<HomeData>("/home") });
+  const sesi3 = useQuery({ queryKey: ["sesi3-aktif"], queryFn: () => api<{ active: boolean }>("/sesi3") });
   const sesi = useQuery({ queryKey: ["murojaah-sesi"], queryFn: () => api<Sesi>("/murojaah/sesi") });
   const [started, setStarted] = useState(false);
   const [pos, setPos] = useState(0);
@@ -144,6 +145,7 @@ export function MurojaahPage() {
         ))}
         <p className="text-center text-sm font-bold text-muted">Ini penilaianmu sendiri untuk latihan. Guru atau orang tua yang memutuskan kelulusan hafalan.</p>
         <Btn onClick={() => setSambung(true)}>Main sambung ayat (bonus XP)</Btn>
+        {sesi3.data?.active && <Btn onClick={() => nav("/sesi3")}>Lanjut Sesi 3: penguatan ayat baru</Btn>}
         <Btn onClick={() => nav("/")}>Kembali ke beranda</Btn>
       </Page>
     );
@@ -212,6 +214,9 @@ export function MurojaahPage() {
       )}
       {sesi.data?.active && blocks.length === 0 && (
         <Card tone="lav"><p className="text-base font-extrabold">Tidak ada murajaah hari ini</p><p className="text-sm font-semibold text-muted">Hebat, sampai jumpa besok!</p></Card>
+      )}
+      {sesi3.data?.active && (
+        <button type="button" onClick={() => nav("/sesi3")} className="flex min-h-[56px] w-full items-center justify-between rounded-[22px] bg-lav px-4 text-left font-extrabold text-brand-dark"><span>Sesi 3: penguatan ayat baru</span><span aria-hidden="true">›</span></button>
       )}
       {blocks.length > 0 && (
         <section className="space-y-2.5 rounded-[28px] bg-brand p-4 text-white">
