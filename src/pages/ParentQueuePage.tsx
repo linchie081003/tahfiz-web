@@ -10,6 +10,7 @@ import { StarRating } from "../components/game/StarRating";
 import { AppPage } from "../components/layout/AppPage";
 import { AuthenticatedAudio } from "../components/AuthenticatedAudio";
 import { PermintaanCek } from "../components/PermintaanCek";
+import { NotifikasiPenilaian } from "../components/NotifikasiPenilaian";
 import { api, type Submission } from "../lib/api";
 
 const RUBRIC: { key: string; label: string }[] = [
@@ -235,6 +236,7 @@ export function ParentQueuePage() {
     <AppPage className="pb-8">
       <GameHeader title="Antrean penilaian" to="/parent" />
       <p className="text-xs font-semibold text-outline/90">Keputusan akhir ada pada Anda.</p>
+      <NotifikasiPenilaian role="parent" />
       <PermintaanCek />
       {!data?.length && <GameCard>Tidak ada setoran menunggu.</GameCard>}
       {data?.map((s) => (

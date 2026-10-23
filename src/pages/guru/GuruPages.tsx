@@ -1,4 +1,5 @@
 import { PermintaanCek } from "../../components/PermintaanCek";
+import { NotifikasiPenilaian } from "../../components/NotifikasiPenilaian";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -74,6 +75,7 @@ export function GuruBerandaPage() {
         <Card tone="lav"><p className="text-3xl font-extrabold text-brand-dark">{q.length}</p><p className="text-sm font-bold text-muted">Setoran menunggu</p></Card>
         <Card tone={overdue ? "cream" : "mint"}><p className="text-3xl font-extrabold">{overdue}</p><p className="text-sm font-bold text-muted">Lewat target {me.grading_target_hours} jam</p></Card>
       </div>
+      <NotifikasiPenilaian role="teacher" />
       {(reqs.data ?? []).map((r) => (
         <Card key={r.link_id} tone="cream">
           <p className="font-extrabold text-gold-ink">Permintaan murid baru</p>
@@ -127,6 +129,7 @@ export function GuruAntreanPage() {
   return (
     <Page>
       <ScreenHead back={false} eyebrow="Guru" title="Setoran" />
+      <NotifikasiPenilaian role="teacher" />
       <PermintaanCek />
       {!data?.length ? <Empty t="Tidak ada setoran" d="Semua sudah dinilai. Terima kasih, Ustaz/ustazah." /> : data.map((x) => <QueueRow key={x.id} x={x} />)}
     </Page>
