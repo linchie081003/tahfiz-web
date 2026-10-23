@@ -7,7 +7,7 @@ import { useLogout } from "../../lib/auth";
 import { loadQuranPrefs } from "../../lib/quranPrefs";
 
 type Child = { id: string; name: string };
-type Fam = { reminder_hour?: number; daily_murojaah_cap?: number };
+type Fam = { reminder_hour?: number; daily_murojaah_cap?: number; parent_can_evaluate?: boolean };
 const QARI: Record<string, string> = { husary_muallim: "Al-Husary, Mu'allim", husary: "Al-Husary, murattal", minshawi: "Al-Minshawi, murattal", minshawi_mujawwad: "Al-Minshawi, mujawwad" };
 const sel = "min-h-[52px] w-full rounded-pill border-[3px] border-line bg-white px-4 font-bold text-outline outline-none focus:border-brand";
 
@@ -63,6 +63,13 @@ export function OrtuPengaturanPage() {
         <select id="cap" className={sel} value={fam.data?.daily_murojaah_cap ?? 5} onChange={(e) => void patch({ daily_murojaah_cap: Number(e.target.value) }, "Batas murajaah tersimpan.")}>
           {[3, 5, 8, 10, 15, 20].map((n) => <option key={n} value={n}>{n} item</option>)}
         </select>
+      </Group>
+
+      <Group title="Penilaian setoran">
+        <label className="flex min-h-[56px] items-center gap-3 rounded-[20px] bg-white px-4 font-extrabold text-outline" htmlFor="pce">
+          <input id="pce" type="checkbox" className="h-6 w-6" checked={fam.data?.parent_can_evaluate ?? true} onChange={(e) => void patch({ parent_can_evaluate: e.target.checked }, "Pengaturan penilaian tersimpan.")} />
+          <span className="flex-1">Orang tua boleh menilai setoran<span className="block text-sm font-semibold text-muted">Jika dimatikan, hanya guru yang terhubung yang menilai. Penilaian lama tetap tersimpan.</span></span>
+        </label>
       </Group>
 
       <Group title="Suara dan tampilan">
