@@ -8,9 +8,10 @@ import { useLogout } from "../../lib/auth";
 import { AuthenticatedAudio } from "../../components/AuthenticatedAudio";
 import { Avatar, Btn, Card, Chip, Notice, Page, ScreenHead, Segmented, Toggle } from "../../components/ui/ui";
 import { friendlyError, useGameToast } from "../../components/game/GameToast";
+import { contextLabel } from "../../lib/tahsinLabel";
 import { useTeacher } from "./GuruShell";
 
-type QItem = { id: string; context: string; member_id: string; member_name: string; reference_text: string; ai_insights: { available?: boolean; summaryPercent?: number; reason?: string } | null; created_at: string; due_at: string; overdue: boolean; can_hear: boolean };
+type QItem = { id: string; context: string; tahsin_point?: number | null; member_id: string; member_name: string; reference_text: string; ai_insights: { available?: boolean; summaryPercent?: number; reason?: string } | null; created_at: string; due_at: string; overdue: boolean; can_hear: boolean };
 type Student = { member_id: string; name: string; tahsin_status: string; recording_consent: boolean; pending: number; overdue: number };
 
 const fmt = (d: string) => new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
@@ -115,7 +116,7 @@ function QueueRow({ x }: { x: QItem }) {
     <Link to={`/guru/setoran/${x.id}`} className={`flex items-center gap-3 rounded-[24px] p-4 ${x.overdue ? "border-2 border-gold bg-cream" : "bg-brand-light"}`}>
       <Avatar name={x.member_name} />
       <div className="min-w-0 flex-1">
-        <p className="font-extrabold text-outline">{x.member_name} <span className="text-sm font-semibold text-muted">· {x.context}</span></p>
+        <p className="font-extrabold text-outline">{x.member_name} <span className="text-sm font-semibold text-muted">· {contextLabel(x.context, x.tahsin_point)}</span></p>
         <p className="truncate text-sm font-semibold text-muted">{fmt(x.created_at)} · target {fmt(x.due_at)}</p>
       </div>
       {x.overdue && <Chip tone="coral">Terlambat</Chip>}
@@ -158,7 +159,7 @@ export function GuruEvaluasiPage() {
   const ai = x.ai_insights;
   return (
     <Page>
-      <ScreenHead to="/guru/setoran" eyebrow={x.context} title={x.member_name} sub={`Disetor ${fmt(x.created_at)}`} />
+      <ScreenHead to="/guru/setoran" eyebrow={contextLabel(x.context, x.tahsin_point)} title={x.member_name} sub={`Disetor ${fmt(x.created_at)}`} />
       <Card tone="plain"><p className="text-right font-quran text-3xl leading-[2.2]" dir="rtl" lang="ar">{x.reference_text}</p></Card>
       {x.can_hear
         ? <Card tone="lav"><p className="mb-2 font-extrabold">Rekaman</p><AuthenticatedAudio url={`/teacher/media/${x.id}`} className="w-full" /><p className="mt-1 text-xs font-semibold text-muted">Pemutaran ini tercatat dan terlihat oleh orang tua.</p></Card>

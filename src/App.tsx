@@ -17,6 +17,7 @@ import { PetaTahsinPage } from "./pages/PetaTahsinPage";
 import { SetorPage } from "./pages/SetorPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { LatihanTahsinPage } from "./pages/LatihanTahsinPage";
+import { UjianTahsinPage } from "./pages/UjianTahsinPage";
 import { QuranHome, QuranPage } from "./pages/QuranPage";
 import { QuranSurahPage } from "./pages/QuranSurahPage";
 import { OrtuPengaturanPage } from "./pages/parent/OrtuPengaturanPage";
@@ -97,6 +98,7 @@ export default function App() {
       <Route path="/peta" element={<RequireAuth><PetaTahsinPage /></RequireAuth>} />
       <Route path="/peta/hafalan" element={<RequireAuth><PetaPage /></RequireAuth>} />
       <Route path="/tahsin" element={<RequireAuth><PetaTahsinPage /></RequireAuth>} />
+      <Route path="/tahsin/:point/ujian" element={<RequireAuth><UjianTahsinPage /></RequireAuth>} />
       <Route path="/tahsin/:point" element={<RequireAuth><LatihanTahsinPage /></RequireAuth>} />
       <Route path="/ziyadah" element={<RequireAuth><ZiyadahPage /></RequireAuth>} />
       <Route path="/murojaah" element={<RequireAuth><MurojaahPage /></RequireAuth>} />
