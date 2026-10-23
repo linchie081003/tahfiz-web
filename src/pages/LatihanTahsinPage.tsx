@@ -55,7 +55,18 @@ const focusOf = (it: Item) => it.focus ?? [...it.title].filter((c) => /[\u0621-\
 const arabSize = (t: string, small = false) => { const n = [...t].filter((c) => !/\p{M}/u.test(c)).length; const big = n <= 3 ? 6.5 : n <= 8 ? 4.5 : 3.4; return `${small ? big * 0.45 : big}rem`; };
 const shuffle = <T,>(a: T[]) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
-/** Satu Pulau: pilih huruf (atau acak), lalu wizard Dengar, Tirukan, nilai. Pra-cek AI membantu; keputusan lulus ada pada guru atau orang tua. */
+function UjianCard({ point, passed, onStart }: { point: number; passed: boolean; onStart: () => void }) {
+  return (
+    <section className="rounded-[28px] bg-gold p-4 text-gold-ink" aria-label={`Ujian Pulau ${point}`}>
+      <p className="text-xs font-extrabold uppercase tracking-wide">{passed ? "Sudah lulus" : "Yang dinilai"}</p>
+      <p className="text-xl font-extrabold">Ujian Pulau {point}</p>
+      <p className="mt-1 text-sm font-bold">{passed ? "Boleh mengulang ujian kapan saja." : "Baca 3 soal berurutan dalam satu rekaman. Guru atau orang tua yang menilai."}</p>
+      <button type="button" onClick={onStart} className="mt-3 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-pill bg-white px-4 font-extrabold text-brand-dark"><NavMic size={22} /> {passed ? "Ulangi ujian" : "Mulai ujian"}</button>
+    </section>
+  );
+}
+
+/** Satu Pulau: latihan (Dengar dan Tirukan, tidak dikirim) dan ujian (direkam dan dinilai guru atau orang tua). */
 export function LatihanTahsinPage() {
   const { point } = useParams();
   const [sp] = useSearchParams();
@@ -65,7 +76,7 @@ export function LatihanTahsinPage() {
   const [playing, setPlaying] = useState(false);
   const audio = useRef<HTMLAudioElement | null>(null);
   const token = useRef(0);
-  const pts = useQuery({ queryKey: ["tahsin-points"], queryFn: () => api<{ gate_open: boolean }>("/tahsin/points"), retry: false });
+  const pts = useQuery({ queryKey: ["tahsin-points"], queryFn: () => api<{ gate_open: boolean; points: { point: number; passed: boolean }[] }>("/tahsin/points"), retry: false });
   const q = useQuery({ queryKey: ["tahsin-cur", point, prefs.reciterId], queryFn: () => api<Cur>(`/tahsin/curriculum/${point}?reciter_id=${encodeURIComponent(prefs.reciterId)}`) });
   const items = q.data?.items ?? [];
   const total = items.length;
@@ -95,6 +106,8 @@ export function LatihanTahsinPage() {
           <Mascot mood="happy" size={64} />
           <p className="flex-1 rounded-[24px] bg-brand p-4 text-lg font-extrabold text-white">Pilih huruf yang mau dilatih, atau biarkan acak.</p>
         </div>
+        <UjianCard point={Number(point)} passed={!!pts.data?.points.find((x) => x.point === Number(point))?.passed} onStart={() => nav(`/tahsin/${point}/ujian`)} />
+        <p className="text-sm font-extrabold text-brand-dark">Latihan (tidak dikirim ke penilai)</p>
         <button type="button" onClick={() => start()} className="btn-cta">🎲 Acak latihan</button>
         <ul className={`grid gap-3 ${total > 10 ? "grid-cols-3" : "grid-cols-2"}`}>
           {items.map((x) => (
@@ -140,16 +153,13 @@ export function LatihanTahsinPage() {
     };
     playList(0);
   };
-  const nextPoint = Number(point) + 1;
-  const gateOpen = pts.data?.gate_open ?? false;
-  // Selesai semua latihan Pulau ini: lanjut ke Pulau berikutnya. Pulau 4 dst. menunggu Pulau 1-3 lulus.
-  const canNext = nextPoint <= 9 && (nextPoint <= 3 || gateOpen);
-  const nextPath = pos + 1 < steps ? `/tahsin/${point}?o=${order.join(",")}&n=${pos + 1}` : canNext ? `/tahsin/${nextPoint}` : "/tahsin";
+  const last = pos + 1 >= steps;
+  // Latihan tidak dikirim ke penilai. Setelah latihan terakhir, kembali ke Pulau ini untuk ujiannya.
+  const nextPath = last ? `/tahsin/${point}` : `/tahsin/${point}?o=${order.join(",")}&n=${pos + 1}`;
   const go = () => {
     token.current++;
     audio.current?.pause();
-    const p = new URLSearchParams({ context: "tahsin", text: it.arabic, focus: focusOf(it), next: nextPath, point: String(point ?? "") });
-    nav(`/setor?${p}`);
+    nav(nextPath);
   };
   return (
     <div className="space-y-4 px-4 pb-10 pt-3">
@@ -167,7 +177,7 @@ export function LatihanTahsinPage() {
 
       <div className="flex items-center gap-3">
         <Mascot mood="happy" size={64} />
-        <p className="flex-1 rounded-[24px] bg-brand p-4 text-lg font-extrabold text-white">Dengarkan dulu, lalu tirukan ya!</p>
+        <p className="flex-1 rounded-[24px] bg-brand p-4 text-lg font-extrabold text-white">Dengarkan dulu, lalu tirukan ya! Ini latihan.</p>
       </div>
 
       <div className="rounded-[32px] bg-teal px-4 py-8 text-center text-white">
@@ -186,14 +196,14 @@ export function LatihanTahsinPage() {
         <button type="button" onClick={() => { setSlow(false); listen(1); }} className="flex flex-col items-center gap-1 font-extrabold text-brand-dark" aria-label="Dengar contoh bacaan">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-lav text-brand">{playing && !slow ? "…" : <NavPlay size={28} />}</span>Dengar
         </button>
-        <button type="button" onClick={go} className="flex flex-col items-center gap-1 font-extrabold text-brand-dark" aria-label="Ketuk, lalu baca">
-          <span className="flex h-28 w-28 items-center justify-center rounded-full bg-brand text-white ring-8 ring-lav"><NavMic size={52} /></span>Ketuk, lalu baca
+        <button type="button" onClick={go} className="flex flex-col items-center gap-1 font-extrabold text-brand-dark" aria-label={last ? "Selesai latihan" : "Latihan berikutnya"}>
+          <span className="flex h-28 w-28 items-center justify-center rounded-full bg-brand text-white ring-8 ring-lav"><NavPlay size={52} /></span>{last ? "Selesai latihan" : "Lanjut"}
         </button>
         <button type="button" onClick={() => { setSlow(true); listen(0.6); }} className="flex flex-col items-center gap-1 font-extrabold text-brand-dark" aria-label="Dengar pelan">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-lav text-brand">{playing && slow ? "…" : "🐢"}</span>Pelan
         </button>
       </div>
-      <p className="text-center text-xs font-bold text-muted">Contoh bacaan berupa kata dari Al-Qur'an yang memuat huruf atau hukum ini. Pra-cek AI hanya membantu; guru atau orang tua yang memutuskan.</p>
+      <p className="text-center text-xs font-bold text-muted">Ini hanya latihan: tirukan sambil mendengar, tidak ada yang dikirim. Setelah selesai, ikuti ujian Pulau untuk dinilai guru atau orang tua.</p>
     </div>
   );
 }

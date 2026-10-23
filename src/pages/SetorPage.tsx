@@ -178,7 +178,7 @@ export function SetorPage() {
 
   const totalAyahs = ayahsQ.data?.length ?? 0;
   const isLetterDrill = context === "tahsin" && (surahId == null || Number.isNaN(surahId));
-  const ayahLabel = isLetterDrill ? "latihan huruf" : ayahStart === ayahEnd ? `ayat ${ayahStart}` : `ayat ${ayahStart}–${ayahEnd}`;
+  const ayahLabel = isLetterDrill ? (params.get("point") ? `ujian Pulau ${params.get("point")}` : "latihan huruf") : ayahStart === ayahEnd ? `ayat ${ayahStart}` : `ayat ${ayahStart}–${ayahEnd}`;
 
   if (micDenied) {
     return (
@@ -257,7 +257,7 @@ export function SetorPage() {
         {ayahsQ.isLoading && surahId ? (
           <p className="text-sm font-semibold text-outline">Memuat teks ayat…</p>
         ) : isLetterDrill && focusParam ? (
-          <FocusArabic text={referenceText} focus={focusParam} color="#C98A00" className="block text-[4rem]" />
+          <FocusArabic text={referenceText} focus={focusParam} color="#C98A00" className={params.get("point") ? "block text-[2.4rem] leading-[2.3]" : "block text-[4rem]"} />
         ) : (
           <ArabicAyahText textUthmani={referenceText} textTajweed={display.textTajweed} className="!text-[2.6rem] !leading-[2.2]" />
         )}

@@ -90,6 +90,7 @@ export type PetaData = {
 };
 
 export type Submission = {
+  tahsin_point?: number | null;
   id: string;
   context: string;
   surah_id: number | null;

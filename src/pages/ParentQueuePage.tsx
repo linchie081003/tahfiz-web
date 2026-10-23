@@ -13,6 +13,7 @@ import { PermintaanCek } from "../components/PermintaanCek";
 import { RiwayatPenilaian } from "../components/RiwayatPenilaian";
 import { NotifikasiPenilaian } from "../components/NotifikasiPenilaian";
 import { api, type Submission } from "../lib/api";
+import { contextLabel } from "../lib/tahsinLabel";
 
 /** Bintang minimal di tiap penilaian agar boleh diluluskan (skala 1-5). */
 const MIN_STAR_PASS = 3;
@@ -133,7 +134,7 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
       <div>
         <p className="font-extrabold text-outline">{s.member_name ?? "Anak"}</p>
         <p className="text-xs font-semibold text-outline/70">
-          {s.context} · disetor {new Date(s.created_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
+          {contextLabel(s.context, s.tahsin_point)} · disetor {new Date(s.created_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
         </p>
       </div>
       <ArabicAyahText textUthmani={s.reference_text} textTajweed={s.reference_text_tajweed} />
