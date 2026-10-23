@@ -18,7 +18,7 @@ export function ZiyadahPage() {
   const prefs = loadQuranPrefs();
   const home = useQuery({ queryKey: ["home"], queryFn: () => api<HomeData>("/home") });
   const peta = useQuery({ queryKey: ["peta"], queryFn: () => api<{ active_surah_id: number | null; active_surah_name?: string }>("/peta/juz/30") });
-  const surahId = peta.data?.active_surah_id ?? 114;
+  const surahId = peta.data?.active_surah_id ?? 0; // tidak menebak surat: setoran hanya untuk surat aktif di peta
   const ayahs = useQuery({ queryKey: ["ayahs", surahId, prefs.reciterId], queryFn: () => api<Ayah[]>(`/quran/surahs/${surahId}/ayahs?reciter_id=${prefs.reciterId}`), enabled: Boolean(surahId) });
   const first = ayahs.data?.[0];
   const key = `hafiz_ulang_${surahId}_${first?.ayah_number ?? 1}`;
@@ -33,6 +33,9 @@ export function ZiyadahPage() {
   const words = useMemo(() => (first?.text_uthmani ?? "").split(/\s+/).filter(Boolean), [first]);
   const hideIdx = useMemo(() => new Set(words.map((_, i) => i).filter((i) => i % 2 === 1).slice(0, hidden)), [words, hidden]);
 
+  if (peta.isSuccess && !peta.data?.active_surah_id && !home.data?.menu_locks.ziyadah) {
+    return <StateScreen title="Belum ada surat aktif" lead="Buka peta hafalan untuk melihat jalur dan surat yang sedang dipelajari." actions={[{ label: "Buka peta hafalan", onClick: () => nav("/peta") }]} />;
+  }
   if (home.data?.menu_locks.ziyadah) {
     const waiting = home.data.tahsin_status === "pending_eval";
     return (
