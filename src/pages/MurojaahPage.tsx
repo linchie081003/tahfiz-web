@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Btn, Card, Chip, Page, ScreenHead } from "../components/ui/ui";
 import { QuranWords } from "../components/QuranWords";
+import { MarkPanel, useMarks } from "../components/MarkPanel";
+import { SambungAyat } from "../components/SambungAyat";
 import { NavPlay } from "../components/icons/NavIcons";
 import { api, type HomeData } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
@@ -39,6 +41,8 @@ export function MurojaahPage() {
   const [peek, setPeek] = useState(false);
   const [results, setResults] = useState<Record<string, Rating>>({}); // kunci "surat:ayat"
   const [saved, setSaved] = useState<{ name: string; range: string; rating: Rating }[] | null>(null);
+  const [sambung, setSambung] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [mode, setMode] = useState<Mode>(home.data?.age_mode === "paud" ? "sebagian" : "semua");
   const audio = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -82,6 +86,17 @@ export function MurojaahPage() {
   };
 
   const finish = async (all: Record<string, Rating>) => {
+    setSaveError("");
+    try {
+      // hasil per ayat disimpan dulu (sumber tanda otomatis), lalu nilai tiap rentang ke jadwal murajaah
+      await api("/latihan", {
+        method: "POST",
+        body: JSON.stringify({ kind: "murajaah", results: Object.entries(all).map(([k, result]) => { const [s, n] = k.split(":"); return { surah_id: Number(s), ayah_number: Number(n), result }; }) }),
+      });
+    } catch {
+      setSaveError("Hasil belum tersimpan. Periksa koneksi lalu coba lagi.");
+      return;
+    }
     const done: { name: string; range: string; rating: Rating }[] = [];
     for (const b of blocks) {
       for (const it of b.items) {
@@ -105,6 +120,16 @@ export function MurojaahPage() {
     else setPos(pos + 1);
   };
 
+  const marksQ = useMarks(cur?.surah_id ?? 0);
+  const curMarked = (marksQ.data ?? []).some((m) => m.ayah_number === cur?.no);
+
+  if (saved && sambung) {
+    return (
+      <Page>
+        <SambungAyat onDone={() => nav("/")} />
+      </Page>
+    );
+  }
   if (saved) {
     const strong = saved.filter((d) => d.rating === "lancar").length;
     const when = (r: Rating) => (r === "lancar" ? "Ulang lagi sesuai jadwal Kuat" : r === "ragu" ? "Ulang lagi 7 hari (Cukup)" : "Ulang lagi besok");
@@ -118,6 +143,7 @@ export function MurojaahPage() {
           </Card>
         ))}
         <p className="text-center text-sm font-bold text-muted">Ini penilaianmu sendiri untuk latihan. Guru atau orang tua yang memutuskan kelulusan hafalan.</p>
+        <Btn onClick={() => setSambung(true)}>Main sambung ayat (bonus XP)</Btn>
         <Btn onClick={() => nav("/")}>Kembali ke beranda</Btn>
       </Page>
     );
@@ -150,6 +176,7 @@ export function MurojaahPage() {
             <p className="text-sm font-semibold text-muted">Memuat ayat…</p>
           )}
           {!peek && <p className="mt-2 text-sm font-bold text-outline">Lantunkan dari ingatan, lalu tekan Lihat ayat.</p>}
+          {curMarked && <p className="mt-1 text-sm font-extrabold text-gold-ink">★ Ayat ini pernah terasa sulit</p>}
         </section>
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={play} disabled={!ayah?.audio_url} className="flex min-h-[48px] items-center justify-center gap-2 rounded-pill bg-lav text-[15px] font-extrabold text-brand-dark disabled:opacity-50"><NavPlay size={18} />{playing ? "Hentikan" : "Putar audio"}</button>
@@ -165,6 +192,8 @@ export function MurojaahPage() {
             </div>
           </div>
         )}
+        {ayah && <MarkPanel surahId={cur.surah_id} ayahNo={cur.no} text={ayah.text_uthmani} />}
+        {saveError && <p role="alert" className="text-sm font-bold text-coral">{saveError}</p>}
         {pos > 0 && <button type="button" onClick={() => setPos(pos - 1)} className="self-start text-sm font-extrabold text-brand-dark">‹ Ayat sebelumnya</button>}
       </div>
     );

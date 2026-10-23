@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, Page } from "../components/ui/ui";
 import { QuranWords } from "../components/QuranWords";
+import { MarkPanel } from "../components/MarkPanel";
 import { TajweedLegend } from "../components/TajweedLegend";
 import { NavMic, NavPlay } from "../components/icons/NavIcons";
 import { StateScreen } from "../components/ui/StateScreen";
@@ -143,6 +144,8 @@ export function ZiyadahPage() {
             <p className="block"><QuranWords textUthmani={first.text_uthmani} textTajweed={first.text_tajweed} hidden={hideIdx} peek={peek} className="text-[2.9rem] leading-[2.5]" /></p>
             {hidden > 0 && <p className="mt-2 text-[15px] font-semibold text-muted">{hideIdx.size} dari {words.length} kata disembunyikan. Coba sebut semuanya!</p>}
           </Card>
+
+          <MarkPanel surahId={surahId} ayahNo={curNo} text={first.text_uthmani} />
 
           <TajweedLegend tone="dark" />
 
