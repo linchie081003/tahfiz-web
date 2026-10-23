@@ -92,7 +92,9 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
     try {
       const updated = await api<Submission>(`/setor/${s.id}/reprocess-precheck`, { method: "POST" });
       const ins = updated.ai_insights as Insights | null;
-      if (ins?.available) {
+      if (updated.ai_status === "queued") {
+        toast("Pra-cek masuk antrean. Anda tetap bisa menilai sekarang; hasilnya muncul saat selesai.", "success");
+      } else if (ins?.available) {
         toast(`Pra-cek selesai — kecocokan kata ~${ins.summaryPercent ?? 0}%.`, "success");
       } else {
         toast(`Pra-cek selesai tanpa transkripsi (${ins?.reason ?? "unknown"}).`, "error");
@@ -192,7 +194,17 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
         <span className="text-[10px] font-semibold text-outline/65">Retest manual · butuh STT + izin di Pengaturan</span>
       </div>
 
-      {insights && insights.available === false && (
+      {s.ai_status === "queued" && (
+        <div className="rounded-game border-2 border-line bg-brand-light/60 p-2 text-xs font-semibold text-outline">
+          <p>Pra-cek sedang diproses di antrean. Anda tidak perlu menunggu — nilai berdasarkan rekaman yang didengar.</p>
+        </div>
+      )}
+      {s.ai_status === "failed" && (
+        <div className="rounded-game border-2 border-line bg-cream p-2 text-xs font-semibold text-gold-ink">
+          <p>Pra-cek gagal setelah beberapa percobaan (gangguan sementara). Penilaian tetap bisa dilakukan; ketuk &quot;Jalankan pra-cek ulang&quot; untuk mencoba lagi.</p>
+        </div>
+      )}
+      {insights && insights.available === false && s.ai_status !== "failed" && (
         <div className="rounded-game border-2 border-line bg-brand-light/60 p-2 text-xs font-semibold text-outline">
           <p>{precheckHint(insights.reason)}</p>
         </div>

@@ -11,6 +11,7 @@ import { MurojaahPage } from "./pages/MurojaahPage";
 import { Sesi3Page } from "./pages/Sesi3Page";
 import { ParentDashboardPage } from "./pages/ParentDashboardPage";
 import { ParentQueuePage } from "./pages/ParentQueuePage";
+import { VerifikasiHafalanPage } from "./pages/VerifikasiHafalanPage";
 import { WeeklyReportPage } from "./pages/WeeklyReportPage";
 import { PetaPage } from "./pages/PetaPage";
 import { PetaTahsinPage } from "./pages/PetaTahsinPage";
@@ -109,6 +110,7 @@ export default function App() {
       <Route path="/lencana" element={<RequireAuth><LencanaPage /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
       <Route path="/parent" element={<RequireAuth><ParentDashboardPage /></RequireAuth>} />
+      <Route path="/parent/verifikasi" element={<RequireAuth><VerifikasiHafalanPage /></RequireAuth>} />
       <Route path="/parent/queue" element={<RequireAuth><ParentQueuePage /></RequireAuth>} />
       <Route path="/parent/anak/:id" element={<RequireAuth><OrtuAnakPage /></RequireAuth>} />
       <Route path="/parent/pengaturan" element={<RequireAuth><OrtuPengaturanPage /></RequireAuth>} />
