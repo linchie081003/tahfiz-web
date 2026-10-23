@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, Page } from "../components/ui/ui";
@@ -8,6 +8,7 @@ import { NavMic, NavPlay } from "../components/icons/NavIcons";
 import { StateScreen } from "../components/ui/StateScreen";
 import { api, type HomeData, type PetaData } from "../lib/api";
 import { loadQuranPrefs } from "../lib/quranPrefs";
+import { surahName } from "../lib/surahInfo";
 
 type Ayah = { ayah_number: number; text_uthmani: string; text_tajweed?: string | null; audio_url: string | null };
 const GOAL = 10;
@@ -15,7 +16,12 @@ const GOAL = 10;
 /** Hafalan baru: dengar, ulang, samarkan kata, baca tanpa melihat. Keputusan lanjut ada pada guru atau orang tua. */
 export function ZiyadahPage() {
   const nav = useNavigate();
+  const qc = useQueryClient();
   const prefs = loadQuranPrefs();
+  const rencana = useMutation({
+    mutationFn: (surah_id: number) => api("/peta/pilih", { method: "POST", body: JSON.stringify({ surah_id }) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["peta"] }),
+  });
   const home = useQuery({ queryKey: ["home"], queryFn: () => api<HomeData>("/home") });
   const peta = useQuery({ queryKey: ["peta"], queryFn: () => api<PetaData>("/peta/juz/30") });
   const surahId = peta.data?.active_surah_id ?? 0; // tidak menebak surat: setoran hanya untuk surat aktif di peta
@@ -44,6 +50,35 @@ export function ZiyadahPage() {
   const words = useMemo(() => (first?.text_uthmani ?? "").split(/\s+/).filter(Boolean), [first]);
   const hideIdx = useMemo(() => new Set(words.map((_, i) => i).filter((i) => i % 2 === 1).slice(0, hidden)), [words, hidden]);
 
+  const options = (peta.data?.nodes ?? []).filter((n) => n.selectable);
+  if (peta.isSuccess && !home.data?.menu_locks.ziyadah && !peta.data?.planned && options.length) {
+    const free = peta.data?.hafalan_order === "free";
+    return (
+      <div className="app-page flex min-h-dvh flex-col gap-4 px-4 pb-28 pt-3">
+        <header className="flex items-center gap-2">
+          <button type="button" aria-label="Kembali" onClick={() => nav("/")} className="-ml-2 flex h-11 w-11 items-center justify-center text-brand">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[26px] font-extrabold leading-tight text-outline">Rencana hafalan</h1>
+            <p className="text-sm font-semibold text-muted">{free ? "Pilih surat yang ingin kamu hafalkan." : "Surat berikutnya untuk kamu hafalkan."}</p>
+          </div>
+        </header>
+        <ul className="space-y-3">
+          {options.map((n) => (
+            <li key={n.surah_id}>
+              <Card tone="lav">
+                <p className="text-xl font-extrabold text-outline">{surahName(n.surah_id, n.name_id)}</p>
+                <p className="text-sm font-semibold text-muted">{n.ayah_count} ayat · {n.ayah_count <= 10 ? "surat pendek, latih ayat satu per satu lalu setor sekali" : "latih sesuai target harian"}</p>
+                <button type="button" disabled={rencana.isPending} onClick={() => rencana.mutate(n.surah_id)} className="mt-3 min-h-[52px] w-full rounded-pill bg-brand px-4 text-lg font-extrabold text-white disabled:opacity-60">Hafalkan surat ini</button>
+              </Card>
+            </li>
+          ))}
+        </ul>
+        {rencana.isError && <p role="alert" className="text-center font-bold text-red-700">Rencana belum tersimpan. Coba lagi.</p>}
+      </div>
+    );
+  }
   if (peta.isSuccess && !peta.data?.active_surah_id && !home.data?.menu_locks.ziyadah) {
     return <StateScreen title="Belum ada surat aktif" lead="Buka peta hafalan untuk melihat jalur dan surat yang sedang dipelajari." actions={[{ label: "Buka peta hafalan", onClick: () => nav("/peta/hafalan") }]} />;
   }

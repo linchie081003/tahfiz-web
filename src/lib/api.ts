@@ -81,6 +81,8 @@ export type PetaData = {
   unlock_hint: string | null;
   nodes: { surah_id: number; name_id: string; ayah_count: number; status: string; curriculum_order: number; selectable?: boolean }[];
   hafalan_order?: "sequential" | "free";
+  planned?: boolean;
+  suggested_surah_id?: number | null;
   plan?: { surah_id: number; name_id: string; ayah_count: number; ayah_start: number; ayah_end: number; mode: "seluruh_surat" | "target_harian"; done_ayahs: number } | null;
 };
 
