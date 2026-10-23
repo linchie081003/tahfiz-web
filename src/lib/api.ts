@@ -1,3 +1,5 @@
+import { apiErrorMessage } from "./apiError";
+
 export const API = import.meta.env.VITE_API_BASE ?? "http://localhost:8010";
 
 export function getToken() {
@@ -38,7 +40,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(err || res.statusText);
+    throw new Error(apiErrorMessage(res.status, err));
   }
   if (res.status === 204) return undefined as T;
   return res.json();

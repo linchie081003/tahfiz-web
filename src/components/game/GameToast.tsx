@@ -1,3 +1,4 @@
+import { apiErrorMessage } from "../../lib/apiError";
 import { createContext, useCallback, useContext, useState } from "react";
 
 export type ToastKind = "info" | "success" | "error";
@@ -47,7 +48,8 @@ export function useGameToast() {
 
 /** Ubah error apa pun menjadi pesan ramah (tanpa "Error: ..." mentah). */
 export function friendlyError(e: unknown): string {
-  const raw = e instanceof Error ? e.message : String(e);
-  const m = raw.match(/"detail"\s*:\s*"([^"]+)"/);
-  return m ? m[1] : raw.replace(/^Error:\s*/, "") || "Terjadi kesalahan, coba lagi.";
+  const raw = (e instanceof Error ? e.message : String(e)).replace(/^Error:\s*/, "");
+  // Pesan dari api() sudah ramah; bila masih berbentuk JSON mentah, ubah di sini.
+  if (raw.trim().startsWith("{") || raw.trim().startsWith("[")) return apiErrorMessage(0, raw);
+  return raw || "Terjadi kesalahan, coba lagi.";
 }
