@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, type HomeData } from "../lib/api";
-import { loadQuranPrefs } from "../lib/quranPrefs";
 import { surahKind, surahName } from "../lib/surahInfo";
 import { loadTilawah, useTilawahSync, pagesRead, recordAyah, toggleBookmark } from "../lib/tilawahProgress";
 import { NavPlay, NavStar } from "../components/icons/NavIcons";
@@ -14,7 +13,6 @@ type SurahMeta = { id: number; name_ar: string; name_id: string; ayah_count: num
 type Ayah = { ayah_number: number; text_uthmani: string; text_tajweed?: string | null; audio_url: string | null };
 export const LAST_SURAH_KEY = "hafiz_last_surah";
 const RATES = [1, 0.75, 1.25];
-const QARI: Record<string, string> = { husary_muallim: "Al-Husary, Mu'allim", husary: "Al-Husary, murattal", minshawi: "Al-Minshawi, murattal", minshawi_mujawwad: "Al-Minshawi, mujawwad" };
 const arabicDigits = (n: number) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)]);
 
 /** Tilawah: baca surat dengan bacaan qori; ayat ikut tersorot, tanpa penilaian. */
@@ -25,7 +23,6 @@ export function QuranSurahPage() {
   const [, bump] = useState(0);
   const surahId = Number(p);
   const valid = Number.isFinite(surahId) && surahId >= 1 && surahId <= 114;
-  const prefs = loadQuranPrefs();
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [follow, setFollow] = useState(true);
@@ -36,7 +33,7 @@ export function QuranSurahPage() {
   const isParent = session.data?.role === "parent" && !session.data?.member_id;
   const home = useQuery({ queryKey: ["home"], queryFn: () => api<HomeData>("/home"), enabled: session.isSuccess && !isParent });
   const meta = useQuery({ queryKey: ["quran", "surahs", "all"], queryFn: () => api<SurahMeta[]>("/quran/surahs"), enabled: valid });
-  const ayahs = useQuery({ queryKey: ["quran", "ayahs", surahId, prefs.reciterId], queryFn: () => api<Ayah[]>(`/quran/surahs/${surahId}/ayahs?reciter_id=${encodeURIComponent(prefs.reciterId)}`), enabled: valid });
+  const ayahs = useQuery({ queryKey: ["quran", "ayahs", surahId, "tilawah"], queryFn: () => api<Ayah[]>(`/quran/surahs/${surahId}/ayahs?purpose=tilawah`), enabled: valid });
   const surah = meta.data?.find((s) => s.id === surahId);
   const list = ayahs.data ?? [];
 
@@ -126,7 +123,7 @@ export function QuranSurahPage() {
             className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-brand disabled:opacity-50">
             {playing ? <span className="flex gap-1" aria-hidden="true"><i className="h-5 w-1.5 rounded bg-brand" /><i className="h-5 w-1.5 rounded bg-brand" /></span> : <NavPlay size={26} />}
           </button>
-          <div className="min-w-0 flex-1"><p className="font-extrabold">Ayat {list[idx]?.ayah_number ?? 1} dari {list.length || surah?.ayah_count || "…"}</p><p className="truncate text-sm font-semibold opacity-90">Qari: {QARI[prefs.reciterId] ?? prefs.reciterId.replace(/_/g, " ")}</p></div>
+          <div className="min-w-0 flex-1"><p className="font-extrabold">Ayat {list[idx]?.ayah_number ?? 1} dari {list.length || surah?.ayah_count || "…"}</p><p className="truncate text-sm font-semibold opacity-90">Qari: Mishary Rashid Alafasy</p></div>
           <button type="button" onClick={() => curAyah && toggleBookmark(surahId, curAyah)} disabled={!curAyah} aria-pressed={marked === curAyah && !!curAyah} aria-label={marked === curAyah ? "Lepas tanda ayat" : "Tandai ayat terakhir"}
             className={`flex min-h-[40px] items-center gap-1 rounded-pill px-3 font-extrabold ${marked === curAyah && curAyah ? "bg-gold text-gold-ink" : "bg-white text-brand"}`}>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z" fill={marked === curAyah && curAyah ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" /></svg>Tandai
