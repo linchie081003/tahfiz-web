@@ -194,7 +194,7 @@ export function GuruMuridPage() {
 }
 
 type Overview = { points: { point: number; name: string; mandatory: boolean; passed: boolean; best_score: number; approved_below_threshold: boolean }[]; gate_open: boolean; threshold: number };
-type Settings = { daily_ayahs: number; murajaah_strong_days: number; set_by: string; parallel_hafalan?: boolean };
+type Settings = { daily_ayahs: number; murajaah_strong_days: number; set_by: string; parallel_hafalan?: boolean; hafalan_order?: "sequential" | "free" };
 
 export function GuruMuridDetailPage() {
   const { id } = useParams();
@@ -257,6 +257,9 @@ export function GuruMuridDetailPage() {
         <Card tone="plain">
           <p className="mb-2 text-lg font-extrabold">Kecepatan hafalan</p>
           <Segmented value={st.data.daily_ayahs} onChange={(v) => save.mutate({ daily_ayahs: v })} options={[1, 2, 3, 5].map((n) => ({ id: n, label: `${n}`, hint: "ayat/hari" }))} />
+          <p className="mb-1 text-xs font-semibold text-muted">Surat pendek (sampai 10 ayat) disetor sekaligus; surat panjang sesuai target ini.</p>
+          <p className="mb-2 mt-4 text-lg font-extrabold">Urutan surat</p>
+          <Segmented value={st.data.hafalan_order ?? "sequential"} onChange={(v) => save.mutate({ hafalan_order: v } as Partial<Settings>)} options={[{ id: "sequential", label: "Berurutan" }, { id: "free", label: "Bebas loncat" }]} />
           <p className="mb-2 mt-4 text-lg font-extrabold">Murajaah “Kuat” kembali setelah</p>
           <Segmented value={st.data.murajaah_strong_days} onChange={(v) => save.mutate({ murajaah_strong_days: v })} options={[{ id: 7, label: "7 hari" }, { id: 14, label: "14 hari" }]} />
           <div className="mt-4 flex items-center gap-3">

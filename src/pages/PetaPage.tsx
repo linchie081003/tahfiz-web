@@ -1,5 +1,5 @@
 import { surahName } from "../lib/surahInfo";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { GameButton } from "../components/game/GameButton";
@@ -14,6 +14,11 @@ type SurahRow = { id: number; name_id: string; ayah_count: number; curriculum_or
 
 export function PetaPage() {
   const nav = useNavigate();
+  const qc = useQueryClient();
+  const pilih = useMutation({
+    mutationFn: (surah_id: number) => api("/peta/pilih", { method: "POST", body: JSON.stringify({ surah_id }) }),
+    onSuccess: async () => { await qc.invalidateQueries({ queryKey: ["peta"] }); nav("/ziyadah"); },
+  });
   const { data, refetch, isFetching: petaLoading } = useQuery({
     queryKey: ["peta"],
     queryFn: () => api<PetaData>("/peta/juz/30"),
@@ -40,6 +45,7 @@ export function PetaPage() {
       ayah_count: s.ayah_count,
       status: "active" as const,
       curriculum_order: s.curriculum_order,
+      selectable: false,
     }));
   }, [data, surahsJuz30.data]);
 
@@ -48,6 +54,7 @@ export function PetaPage() {
   if (!data) return <div className="p-6 font-bold text-outline">Memuat perjalanan…</div>;
 
   const mapNodes = data.nodes.length ? data.nodes : listItems;
+  const free = data.hafalan_order === "free";
 
   return (
     <div className="min-h-dvh px-4 pb-28 pt-1">
@@ -74,6 +81,7 @@ export function PetaPage() {
 
       <PetaPathMap nodes={mapNodes} onOpen={(id) => nav(`/quran/${id}`)} />
 
+      {free && <GameCard className="mx-3 mt-4 text-center text-sm font-semibold text-outline">Mode bebas: pilih surat mana saja dengan tombol Hafalkan.</GameCard>}
       {data.unlock_hint && (
         <GameCard className="mx-3 mt-4 text-center text-sm font-semibold text-outline">{data.unlock_hint}</GameCard>
       )}
@@ -109,9 +117,10 @@ export function PetaPage() {
                     <StatusBadge kind="journey" code="locked" size="sm" compact />
                   </div>
                 ) : (
+                  <div className="flex w-full items-center gap-2">
                   <button
                     type="button"
-                    className="flex w-full items-center gap-3 rounded-card border-2 border-line bg-white px-4 py-3 text-left shadow-game-sm active:translate-y-0.5"
+                    className="flex min-w-0 flex-1 items-center gap-3 rounded-card border-2 border-line bg-white px-4 py-3 text-left shadow-game-sm active:translate-y-0.5"
                     onClick={() => nav(`/quran/${n.surah_id}`)}
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-game border-2 border-line bg-white shadow-game-sm">
@@ -123,6 +132,10 @@ export function PetaPage() {
                     </div>
                     <StatusBadge kind="journey" code={n.status} size="sm" compact />
                   </button>
+                  {n.selectable && (
+                    <button type="button" disabled={pilih.isPending} onClick={() => pilih.mutate(n.surah_id)} className="shrink-0 rounded-pill bg-brand px-3 py-2 text-sm font-extrabold text-white disabled:opacity-60">Hafalkan</button>
+                  )}
+                  </div>
                 )}
               </li>
             );

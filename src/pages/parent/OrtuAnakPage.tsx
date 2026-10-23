@@ -7,7 +7,7 @@ import { Page, ScreenHead, Toggle } from "../../components/ui/ui";
 import { AGE_MODE_OPTIONS } from "../../lib/ageModeOptions";
 
 type Child = { id: string; name: string; age_mode?: string };
-type MS = { coverage: string; daily_ayahs: number; murajaah_strong_days: number; set_by: string; parallel_hafalan?: boolean; hafalan_track?: "juz30" | "mushaf" };
+type MS = { coverage: string; daily_ayahs: number; murajaah_strong_days: number; set_by: string; parallel_hafalan?: boolean; hafalan_track?: "juz30" | "mushaf"; hafalan_order?: "sequential" | "free" };
 type TeacherRes = { link: { status: string; teacher: { name?: string; verified?: boolean } } | null };
 const sel = "min-h-[52px] w-full rounded-pill border-[3px] border-line bg-white px-4 font-bold text-outline outline-none focus:border-brand disabled:opacity-60";
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
@@ -75,6 +75,12 @@ export function OrtuAnakPage() {
                 <L id="kec">Hafalan baru</L>
                 <select id="kec" className={sel} disabled={busy || locked} value={d.daily_ayahs} onChange={(e) => void put({ daily_ayahs: Number(e.target.value) })}>
                   {[1, 2, 3, 5].map((n) => <option key={n} value={n}>{n} ayat per hari{n === 1 ? " (bawaan)" : ""}</option>)}
+                </select>
+                <p className="text-sm font-semibold text-muted">Surat pendek (sampai 10 ayat) disetor sekaligus semua ayat. Surat yang lebih panjang disetor sesuai target di atas.</p>
+                <L id="urt">Urutan surat</L>
+                <select id="urt" className={sel} disabled={busy || locked} value={d.hafalan_order ?? "sequential"} onChange={(e) => void put({ hafalan_order: e.target.value as "sequential" | "free" })}>
+                  <option value="sequential">Berurutan (bawaan)</option>
+                  <option value="free">Bebas: anak boleh loncat ke surat lain</option>
                 </select>
                 <L id="jed">Jeda murajaah kuat</L>
                 <select id="jed" className={sel} disabled={busy || locked} value={d.murajaah_strong_days} onChange={(e) => void put({ murajaah_strong_days: Number(e.target.value) })}>
