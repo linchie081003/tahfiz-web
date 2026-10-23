@@ -52,7 +52,7 @@ export function MurojaahPage() {
   const Tree = ({ tone }: { tone: string }) => (
     <svg width="44" height="52" viewBox="0 0 44 52" aria-hidden="true"><rect x="20" y="30" width="4" height="20" rx="2" fill="#8A6A44" /><circle cx="22" cy="20" r="16" fill={tone} /><circle cx="17" cy="16" r="3.5" fill="#fff" opacity=".75" /><circle cx="27" cy="21" r="3" fill="#fff" opacity=".75" /></svg>
   );
-  const tiles = (peta.data?.nodes ?? []).filter((n) => n.status === "passed" || n.status === "in_progress" || dueNames.has(n.name_id));
+  const tiles = (peta.data?.nodes ?? []).filter((n) => n.status === "passed"); // hanya surat yang sudah hafal dan lulus
   return (
     <div className="app-shell space-y-3 px-5 pb-28 pt-4">
       <header className="flex items-center gap-3">
