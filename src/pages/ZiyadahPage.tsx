@@ -34,7 +34,7 @@ export function ZiyadahPage() {
   const hideIdx = useMemo(() => new Set(words.map((_, i) => i).filter((i) => i % 2 === 1).slice(0, hidden)), [words, hidden]);
 
   if (peta.isSuccess && !peta.data?.active_surah_id && !home.data?.menu_locks.ziyadah) {
-    return <StateScreen title="Belum ada surat aktif" lead="Buka peta hafalan untuk melihat jalur dan surat yang sedang dipelajari." actions={[{ label: "Buka peta hafalan", onClick: () => nav("/peta") }]} />;
+    return <StateScreen title="Belum ada surat aktif" lead="Buka peta hafalan untuk melihat jalur dan surat yang sedang dipelajari." actions={[{ label: "Buka peta hafalan", onClick: () => nav("/peta/hafalan") }]} />;
   }
   if (home.data?.menu_locks.ziyadah) {
     const waiting = home.data.tahsin_status === "pending_eval";
