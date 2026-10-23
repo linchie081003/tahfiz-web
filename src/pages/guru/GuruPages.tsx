@@ -136,6 +136,8 @@ export function GuruAntreanPage() {
   );
 }
 
+/** Bintang minimal di tiap penilaian agar boleh diluluskan (skala 1-5). */
+const MIN_STAR_PASS = 3;
 const RUBRIC = [["makhraj", "Makhraj / huruf"], ["tajwid", "Tajwid"], ["kelancaran", "Kelancaran"], ["hafalan", "Hafalan tanpa melihat"]];
 
 export function GuruEvaluasiPage() {
@@ -176,8 +178,9 @@ export function GuruEvaluasiPage() {
       </Card>
       <div className="grid grid-cols-2 gap-2">
         <Btn variant="outline" disabled={!x.can_hear || done.isPending} onClick={() => done.mutate("needs_retry")}>Ulangi</Btn>
-        <Btn variant="teal" disabled={!x.can_hear || done.isPending || !RUBRIC.every(([k]) => scores[k])} onClick={() => done.mutate("passed")}>Lulus</Btn>
+        <Btn variant="teal" disabled={!x.can_hear || done.isPending || !RUBRIC.every(([k]) => (scores[k] ?? 0) >= MIN_STAR_PASS)} onClick={() => done.mutate("passed")}>Lulus</Btn>
       </div>
+      {!RUBRIC.every(([k]) => (scores[k] ?? 0) >= MIN_STAR_PASS) && <p className="text-center text-sm font-semibold text-muted">Tombol Lulus aktif bila setiap penilaian minimal {MIN_STAR_PASS} bintang.</p>}
     </Page>
   );
 }

@@ -14,6 +14,8 @@ import { RiwayatPenilaian } from "../components/RiwayatPenilaian";
 import { NotifikasiPenilaian } from "../components/NotifikasiPenilaian";
 import { api, type Submission } from "../lib/api";
 
+/** Bintang minimal di tiap penilaian agar boleh diluluskan (skala 1-5). */
+const MIN_STAR_PASS = 3;
 const RUBRIC: { key: string; label: string }[] = [
   { key: "makhraj", label: "Makhraj / huruf" },
   { key: "tajwid", label: "Tajwid" },
@@ -82,6 +84,7 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
   const [precheckBusy, setPrecheckBusy] = useState(false);
   const insights = s.ai_insights as Insights | null;
   const allRated = RUBRIC.every((r) => (scores[r.key] ?? 0) > 0);
+  const canPass = RUBRIC.every((r) => (scores[r.key] ?? 0) >= MIN_STAR_PASS);
 
   const runPrecheck = async () => {
     setPrecheckBusy(true);
@@ -102,8 +105,8 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
   };
 
   const send = async (status: "passed" | "needs_retry") => {
-    if (status === "passed" && !allRated) {
-      toast("Beri bintang untuk keempat penilaian dulu.", "error");
+    if (status === "passed" && !canPass) {
+      toast(`Lulus butuh minimal ${MIN_STAR_PASS} bintang di setiap penilaian.`, "error");
       return;
     }
     setBusy(true);
@@ -214,11 +217,11 @@ function EvaluateCard({ s, onDone }: { s: Submission; onDone: () => void }) {
         <GameButton size="md" variant="gold" disabled={busy} onClick={() => void send("needs_retry")}>
           Ulangi
         </GameButton>
-        <GameButton size="md" disabled={busy} onClick={() => void send("passed")}>
+        <GameButton size="md" disabled={busy || !canPass} onClick={() => void send("passed")}>
           Lulus
         </GameButton>
       </div>
-      <p className="text-center text-xs font-semibold text-outline/70">Lulus membuka ayat berikutnya dan menambah bintang.</p>
+      <p className="text-center text-xs font-semibold text-outline/70">{canPass ? "Lulus membuka ayat berikutnya dan menambah bintang." : `Tombol Lulus aktif bila setiap penilaian minimal ${MIN_STAR_PASS} bintang.`}</p>
     </GameCard>
   );
 }
