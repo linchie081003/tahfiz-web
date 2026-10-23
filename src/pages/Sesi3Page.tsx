@@ -10,7 +10,7 @@ import { loadQuranPrefs } from "../lib/quranPrefs";
 
 type Item = { submission_id: string; surah_id: number; surah_name: string; ayah_number: number; state: "pending" | "passed" | "remedial"; marked: boolean };
 type Offer = { submission_id: string; surah_id: number; ayah_number: number; reason: string } | null;
-type Sesi3 = { active: boolean; sample: Item[]; offer: Offer };
+type Sesi3 = { active: boolean; disabled_reason?: string | null; sample: Item[]; offer: Offer };
 type Ayah = { ayah_number: number; text_uthmani: string; text_tajweed?: string | null; audio_url: string | null };
 type Rating = "lancar" | "ragu" | "lupa";
 const RATINGS: { id: Rating; label: string; cls: string }[] = [
@@ -125,7 +125,7 @@ export function Sesi3Page() {
     <Page>
       <ScreenHead back eyebrow="Sesi 3" title="Penguatan" sub="Perkuat beberapa ayat dari hafalan barumu" />
       {s3.isLoading && <p className="text-sm font-semibold text-muted">Memuat…</p>}
-      {s3.data && !s3.data.active && <Card tone="lav"><p className="text-base font-extrabold">Belum ada yang perlu diperkuat</p><p className="text-sm font-semibold text-muted">Sesi ini muncul setelah kamu menyetor hafalan baru.</p></Card>}
+      {s3.data && !s3.data.active && <Card tone="lav"><p className="text-base font-extrabold">{s3.data.disabled_reason ? "Sesi ini dimatikan orang tua hari ini" : "Belum ada yang perlu diperkuat"}</p><p className="text-sm font-semibold text-muted">{s3.data.disabled_reason ?? "Sesi ini muncul setelah kamu menyetor hafalan baru."}</p></Card>}
       {sample.length > 0 && (
         <section className="space-y-2.5 rounded-[28px] bg-brand p-4 text-white">
           <h2 className="text-lg font-extrabold">Ayat pilihan hari ini</h2>

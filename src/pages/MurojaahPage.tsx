@@ -11,7 +11,7 @@ import { loadQuranPrefs } from "../lib/quranPrefs";
 
 type SItem = { id: string; ayah_start: number; ayah_end: number };
 type Block = { surah_id: number; surah_name: string; ayah_start: number; ayah_end: number; items: SItem[] };
-type Sesi = { active: boolean; max_ayah: number; total_ayah: number; blocks: Block[] };
+type Sesi = { active: boolean; disabled_reason?: string | null; max_ayah: number; total_ayah: number; blocks: Block[] };
 type Ayah = { ayah_number: number; text_uthmani: string; text_tajweed?: string | null; audio_url: string | null };
 type Rating = "lancar" | "ragu" | "lupa";
 
@@ -209,7 +209,10 @@ export function MurojaahPage() {
         <button type="button" onClick={() => nav("/ziyadah")} className="flex h-11 flex-1 items-center justify-center rounded-pill text-[15px] font-extrabold text-brand-dark">Hafalan baru</button>
       </div>
       {sesi.isLoading && <p className="text-sm font-semibold text-muted">Memuat…</p>}
-      {sesi.data && !sesi.data.active && (
+      {sesi.data?.disabled_reason && (
+        <Card tone="lav"><p className="text-base font-extrabold">Sesi ini dimatikan orang tua hari ini</p><p className="text-sm font-semibold text-muted">{sesi.data.disabled_reason}</p></Card>
+      )}
+      {sesi.data && !sesi.data.active && !sesi.data.disabled_reason && (
         <Card tone="lav"><p className="text-base font-extrabold">Belum ada hafalan untuk diulang</p><p className="text-sm font-semibold text-muted">Murajaah muncul setelah ada ayat yang dinyatakan lulus oleh guru atau orang tua. Mulai dari Hafalan baru dulu ya.</p></Card>
       )}
       {sesi.data?.active && blocks.length === 0 && (
