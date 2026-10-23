@@ -57,6 +57,7 @@ export type HomeData = {
   mission_xp: number;
   mission_action: string;
   tahsin_status: string;
+  tahsin_wajib_lulus?: number | null;
   menu_locks: Record<string, string>;
   level_progress: number;
   parent_preview?: boolean;

@@ -21,6 +21,8 @@ function rows(home: HomeData): Row[] {
   const lock = (k: string) => home.menu_locks[k] || "";
   const items = home.mission_items ?? {};
   const afterTahsin = act === "ziyadah" || act === "home";
+  const wajib = home.tahsin_wajib_lulus ?? 3; // jumlah Pulau wajib (1-3) yang benar-benar lulus
+  const tahsinDone = tahsinOk && wajib >= 3;
   return [
     {
       key: "murojaah",
@@ -35,11 +37,11 @@ function rows(home: HomeData): Row[] {
     {
       key: "tahsin",
       title: "Tahsin",
-      sub: home.tahsin_status === "pending_eval" ? "Menunggu penilaian" : tahsinOk ? "Pulau 1–3 sudah lulus" : items.tahsin || "Latihan huruf dan harakat",
+      sub: home.tahsin_status === "pending_eval" ? "Menunggu penilaian" : tahsinDone ? "Pulau 1–3 sudah lulus" : wajib > 0 ? `${wajib} dari 3 Pulau wajib sudah lulus` : items.tahsin || "Latihan huruf dan harakat",
       path: "/tahsin",
       icon: <NavMic size={22} />,
-      state: act === "tahsin" ? "now" : tahsinOk ? "done" : "wait",
-      note: act === "tahsin" ? "Sekarang" : tahsinOk ? "Selesai" : "Nanti",
+      state: act === "tahsin" ? "now" : tahsinDone ? "done" : "wait",
+      note: act === "tahsin" ? "Sekarang" : tahsinDone ? "Selesai" : "Nanti",
       locked: false,
     },
     {
