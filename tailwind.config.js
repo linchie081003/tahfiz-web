@@ -39,7 +39,8 @@ export default {
         cta: "#4F46B5",
       },
       fontFamily: {
-        sans: ["Nunito", "system-ui", "sans-serif"],
+        sans: ["Nunito", "Amiri Quran", "system-ui", "sans-serif"],
+        quran: ["Amiri Quran", "Scheherazade New", "Traditional Arabic", "serif"],
       },
       borderRadius: {
         card: "24px",
