@@ -7,7 +7,6 @@ import { TajweedLegend } from "../components/TajweedLegend";
 import { NavMic, NavPlay } from "../components/icons/NavIcons";
 import { StateScreen } from "../components/ui/StateScreen";
 import { api, type HomeData, type PetaData } from "../lib/api";
-import { mergeAyahRange } from "../lib/ayahDisplay";
 import { loadQuranPrefs } from "../lib/quranPrefs";
 
 type Ayah = { ayah_number: number; text_uthmani: string; text_tajweed?: string | null; audio_url: string | null };
@@ -26,17 +25,21 @@ export function ZiyadahPage() {
   const start = plan?.ayah_start ?? 1;
   const end = plan?.ayah_end ?? start;
   const range = useMemo(() => (ayahs.data ?? []).filter((a) => a.ayah_number >= start && a.ayah_number <= end), [ayahs.data, start, end]);
-  const merged = useMemo(() => mergeAyahRange(ayahs.data ?? [], start, end), [ayahs.data, start, end]);
-  const first = range.length ? { text_uthmani: merged.textUthmani, text_tajweed: merged.textTajweed } : undefined;
-  const key = `hafiz_ulang_${surahId}_${start}_${end}`;
+  const [pos, setPos] = useState(0); // ayat yang sedang dilatih di dalam rentang; boleh maju tanpa setor
+  useEffect(() => setPos(0), [surahId, start]);
+  const cur = range[Math.min(pos, Math.max(range.length - 1, 0))];
+  const curNo = cur?.ayah_number ?? start;
+  const first = cur ? { text_uthmani: cur.text_uthmani, text_tajweed: cur.text_tajweed } : undefined;
+  const key = `hafiz_ulang_${surahId}_${curNo}`;
   const [count, setCount] = useState(() => { try { return Number(localStorage.getItem(key) ?? 0); } catch { return 0; } });
   useEffect(() => { try { setCount(Number(localStorage.getItem(key) ?? 0)); } catch { setCount(0); } }, [key]);
-  const [hidden, setHidden] = useState(0);
-  const [peek, setPeek] = useState(false);
-  const [listened, setListened] = useState(false);
-  const [playing, setPlaying] = useState(false);
   const audio = useRef<HTMLAudioElement | null>(null);
   const stopped = useRef(false);
+  const [hidden, setHidden] = useState(0);
+  const [peek, setPeek] = useState(false);
+  useEffect(() => { setHidden(0); setPeek(false); setListened(false); setPlaying(false); stopped.current = true; audio.current?.pause(); }, [curNo]);
+  const [listened, setListened] = useState(false);
+  const [playing, setPlaying] = useState(false);
   useEffect(() => () => { stopped.current = true; audio.current?.pause(); }, []);
   const words = useMemo(() => (first?.text_uthmani ?? "").split(/\s+/).filter(Boolean), [first]);
   const hideIdx = useMemo(() => new Set(words.map((_, i) => i).filter((i) => i % 2 === 1).slice(0, hidden)), [words, hidden]);
@@ -54,32 +57,28 @@ export function ZiyadahPage() {
       </StateScreen>
     );
   }
-  const q = new URLSearchParams({ context: "ziyadah", text: first?.text_uthmani ?? "", surah_id: String(surahId), ayah_start: String(start), ayah_end: String(end) });
+  const q = new URLSearchParams({ context: "ziyadah", text: first?.text_uthmani ?? "", surah_id: String(surahId), ayah_start: String(start), ayah_end: String(curNo) });
   const bump = () => { const n = Math.min(GOAL, count + 1); setCount(n); try { localStorage.setItem(key, String(n)); } catch { /* abaikan */ } };
-  const urls = range.map((a) => a.audio_url).filter((u): u is string => Boolean(u));
+  const urls = cur?.audio_url ? [cur.audio_url] : [];
   const listen = () => {
     if (!urls.length) return;
     const el = audio.current ?? (audio.current = new Audio());
     if (playing) { stopped.current = true; el.pause(); setPlaying(false); return; }
     stopped.current = false;
-    let i = 0;
-    const playNext = () => {
-      if (stopped.current || i >= urls.length) { setPlaying(false); return; }
-      el.src = urls[i++];
-      void el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
-    };
-    el.onended = playNext; // putar semua ayat dalam rentang secara berurutan
+    el.src = urls[0];
+    el.onended = () => setPlaying(false);
     el.onerror = () => setPlaying(false);
     setListened(true);
-    playNext();
+    void el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
   };
   const step = !listened ? 0 : count === 0 ? 1 : hidden === 0 ? 2 : 3;
   const STEPS = ["Dengar", "Ulang", "Samarkan", "Baca"];
   const ACTIONS = [listen, bump, () => setHidden((h) => Math.min(Math.floor(words.length / 2), h + 1)), () => nav(`/setor?${q}`)];
-  const total = ayahs.data?.length ?? 0;
   const finishes = plan ? end >= plan.ayah_count : false;
-  const many = end > start;
-  const goalText = plan?.mode === "seluruh_surat" ? (many ? "Surat pendek: hafalkan semua ayat sekaligus" : "Surat pendek") : `Target hari ini: ${end - start + 1} ayat`;
+  const total = ayahs.data?.length ?? 0;
+  const lastInRange = pos >= range.length - 1;
+  const submitLabel = curNo > start ? `Setor ayat ${start}–${curNo}` : "Baca tanpa melihat";
+  const goalText = plan?.mode === "seluruh_surat" ? `Surat pendek: latih ayat satu per satu, setor ayat ${start}–${end}` : `Target hari ini: ayat ${start}–${end}`;
   return (
     <div className="app-page flex min-h-dvh flex-col gap-4 px-4 pb-28 pt-3">
       <header className="flex items-center gap-2">
@@ -88,7 +87,7 @@ export function ZiyadahPage() {
         </button>
         <div className="min-w-0 flex-1">
           <h1 className="text-[26px] font-extrabold leading-tight text-outline">Hafalan baru</h1>
-          <p className="text-sm font-semibold text-muted">{peta.data?.active_surah_name ?? `Surat ${surahId}`}{first ? `, ${many ? `ayat ${start}–${end}` : `ayat ${start}`} dari ${total}` : ""}</p>
+          <p className="text-sm font-semibold text-muted">{peta.data?.active_surah_name ?? `Surat ${surahId}`}{first ? `, ayat ${curNo} dari ${total}` : ""}</p>
           {first && <p className="text-xs font-bold text-brand-dark">{goalText}</p>}
         </div>
       </header>
@@ -106,7 +105,7 @@ export function ZiyadahPage() {
       {first && (
         <>
           <Card tone="lav" className="min-h-[200px] text-center">
-            <p className="block"><QuranWords textUthmani={first.text_uthmani} textTajweed={first.text_tajweed} hidden={hideIdx} peek={peek} className={many ? "text-[2.2rem] leading-[2.4]" : "text-[2.9rem] leading-[2.5]"} /></p>
+            <p className="block"><QuranWords textUthmani={first.text_uthmani} textTajweed={first.text_tajweed} hidden={hideIdx} peek={peek} className="text-[2.9rem] leading-[2.5]" /></p>
             {hidden > 0 && <p className="mt-2 text-[15px] font-semibold text-muted">{hideIdx.size} dari {words.length} kata disembunyikan. Coba sebut semuanya!</p>}
           </Card>
 
@@ -129,8 +128,8 @@ export function ZiyadahPage() {
             </div>
 
             <div className="flex flex-col items-center gap-2">
-              <Link to={`/setor?${q}`} aria-label="Baca tanpa melihat" className="flex h-[140px] w-[140px] items-center justify-center rounded-full bg-brand text-white ring-[10px] ring-lav"><NavMic size={60} /></Link>
-              <span className="font-extrabold text-brand-dark">Baca tanpa melihat</span>
+              <Link to={`/setor?${q}`} aria-label={submitLabel} className="flex h-[140px] w-[140px] items-center justify-center rounded-full bg-brand text-white ring-[10px] ring-lav"><NavMic size={60} /></Link>
+              <span className="font-extrabold text-brand-dark">{submitLabel}</span>
             </div>
 
             <div className="flex w-20 flex-col items-center gap-1.5">
@@ -140,9 +139,16 @@ export function ZiyadahPage() {
             </div>
           </div>
 
+          {range.length > 1 && (
+            <div className="flex items-center gap-2" role="group" aria-label="Pindah ayat">
+              <button type="button" disabled={pos === 0} onClick={() => setPos((p) => Math.max(0, p - 1))} className="min-h-[48px] flex-1 rounded-pill bg-lav px-3 font-extrabold text-brand-dark disabled:opacity-40">‹ Ayat sebelumnya</button>
+              <button type="button" disabled={lastInRange} onClick={() => setPos((p) => Math.min(range.length - 1, p + 1))} className="min-h-[48px] flex-1 rounded-pill bg-brand px-3 font-extrabold text-white disabled:opacity-40">Ayat berikutnya ›</button>
+            </div>
+          )}
+
           <p className="mt-auto flex items-center gap-3 rounded-[24px] bg-lav px-4 py-3.5 font-extrabold text-brand-dark">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="3" /><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></svg>
-            {finishes ? "Setelah lulus, surat ini masuk murajaah" : `Guru atau orang tua yang memutuskan lanjut ke ayat ${end + 1}`}
+            {!lastInRange ? "Boleh lanjut ke ayat berikutnya tanpa setor. Setor kapan saja." : finishes ? "Setelah lulus, surat ini masuk murajaah" : `Guru atau orang tua yang memutuskan lanjut ke ayat ${end + 1}`}
           </p>
           {peta.data?.hafalan_order === "free" && <Link to="/peta/hafalan" className="text-center text-sm font-extrabold text-brand underline">Pilih surat lain</Link>}
         </>
