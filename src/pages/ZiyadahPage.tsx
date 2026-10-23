@@ -84,13 +84,12 @@ export function ZiyadahPage() {
     return <StateScreen title="Belum ada surat aktif" lead="Buka peta hafalan untuk melihat jalur dan surat yang sedang dipelajari." actions={[{ label: "Buka peta hafalan", onClick: () => nav("/peta/hafalan") }]} />;
   }
   if (home.data?.menu_locks.ziyadah) {
-    const waiting = home.data.tahsin_status === "pending_eval";
+    // Gerbang terbuka otomatis saat Pulau 1-3 lulus dinilai; setoran ujian saja belum cukup.
+    const lulus = home.data.tahsin_wajib_lulus ?? 0;
     return (
-      <StateScreen mood={waiting ? "happy" : "default"} title={waiting ? `Hebat, ${home.data.greeting_name}!` : "Hafalan baru belum terbuka"}
-        lead={waiting ? "Pulau 1, 2, dan 3 sudah kamu kerjakan." : home.data.menu_locks.ziyadah}
-        actions={[{ label: "Lanjut latihan tahsin", onClick: () => nav("/tahsin") }]}>
-        {waiting && <Card tone="lav"><p className="font-extrabold">Gerbang hafalan menunggu</p><p className="text-sm font-semibold text-muted">Minta Ayah atau Ibu mendengarkan bacaanmu, lalu membuka gerbangnya.</p></Card>}
-      </StateScreen>
+      <StateScreen title="Hafalan baru belum terbuka"
+        lead={lulus > 0 ? `${lulus} dari 3 Pulau wajib sudah lulus. Selesaikan Pulau 1, 2, dan 3 dulu.` : home.data.menu_locks.ziyadah}
+        actions={[{ label: "Lanjut latihan tahsin", onClick: () => nav("/tahsin") }]} />
     );
   }
   const q = new URLSearchParams({ context: "ziyadah", text: first?.text_uthmani ?? "", surah_id: String(surahId), ayah_start: String(start), ayah_end: String(curNo) });
