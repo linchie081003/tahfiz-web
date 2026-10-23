@@ -12,6 +12,32 @@ const GLYPH: Record<string, (c: string) => JSX.Element> = {
       <path d="M26 18v22" />
     </g>
   ),
+  hafalan: (c) => (
+    <g fill="none" stroke={c} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M26 38V22M26 22c-1-6-6-8-10-8 0 5 3 9 10 8zM26 26c1-6 6-8 10-8 0 5-3 9-10 8z" />
+      <path d="M19 40h14" />
+    </g>
+  ),
+  murojaah: (c) => (
+    <g fill="none" stroke={c} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M36 24a10 10 0 1 1-3-7M36 12v7h-7" />
+    </g>
+  ),
+  sambung: (c) => (
+    <g fill="none" stroke={c} strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 30l-3 3a5 5 0 0 1-7-7l5-5a5 5 0 0 1 7 0M30 22l3-3a5 5 0 0 1 7 7l-5 5a5 5 0 0 1-7 0M22 30l8-8" />
+    </g>
+  ),
+  tanda: (c) => (
+    <g fill="none" stroke={c} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 14v28M18 16h18l-4 7 4 7H18" />
+    </g>
+  ),
+  level: (c) => (
+    <g fill="none" stroke={c} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M26 40V16M16 26l10-10 10 10M17 41h18" />
+    </g>
+  ),
   streak: (c) => (
     <path d="M27 12c1 6 8 9 8 18a9 9 0 0 1-18 0c0-4 2-6 4-8 0 3 2 4 3 4-2-6 0-10 3-14z" fill={c} stroke={c} strokeWidth="2" strokeLinejoin="round" />
   ),
