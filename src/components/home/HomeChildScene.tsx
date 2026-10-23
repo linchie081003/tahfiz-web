@@ -117,7 +117,6 @@ function Banner({ home }: { home: HomeData }) {
 export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
   const nav = useNavigate();
   const logout = useLogout();
-  const pct = Math.min(100, Math.max(0, home.level_progress * 100));
   const list = rows(home);
   const done = list.filter((r) => r.state === "done").length;
   const next = ACTION_LABEL[home.mission_action];
@@ -128,18 +127,10 @@ export function HomeChildScene({ home }: { home: HomeData; ageMode: AgeMode }) {
   const lastName = resume ? `${surahName(resume.surah)}, ayat ${resume.ayah}` : "";
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal text-lg font-extrabold text-white" aria-label={`Level ${home.level}`}>
-          {home.level}
-        </span>
-        <div className="h-3.5 flex-1 overflow-hidden rounded-pill bg-lav" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} aria-label="Kemajuan level">
-          <div className="h-full rounded-pill bg-teal" style={{ width: `${pct}%` }} />
-        </div>
-        <button type="button" onClick={() => nav("/lencana")} className="flex items-center gap-1 text-lg font-extrabold text-outline" aria-label={`${home.xp} bintang, buka lencana`}>
-          <NavStar size={26} className="text-gold" />
-          {home.xp}
-        </button>
-      </div>
+      <button type="button" onClick={() => nav("/lencana")} className="flex w-full items-center justify-between rounded-pill bg-brand-light px-4 py-2 text-left font-extrabold text-brand-dark" aria-label={`Level ${home.level}, ${home.xp} XP, buka lencana`}>
+        <span className="flex items-center gap-2"><NavStar size={22} className="text-gold" />Level {home.level} · {home.xp} XP</span>
+        <span className="text-sm">Lencana ›</span>
+      </button>
 
       <Banner home={home} />
 

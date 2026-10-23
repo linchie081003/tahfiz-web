@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { api, type HomeData } from "../lib/api";
+import { api } from "../lib/api";
 import { NavPlay, NavStar } from "../components/icons/NavIcons";
 
 type Pt = { point: number; name: string; mandatory: boolean; passed: boolean; best_score: number; decided_by: string | null };
@@ -20,12 +20,10 @@ function Stars({ n, dim }: { n: number; dim?: boolean }) {
 export function PetaTahsinPage() {
   const nav = useNavigate();
   const ov = useQuery({ queryKey: ["tahsin-points", "self"], queryFn: () => api<Ov>("/tahsin/points") });
-  const home = useQuery({ queryKey: ["home"], queryFn: () => api<HomeData>("/home") });
   if (!ov.data) return <p className="p-8 text-center font-extrabold text-muted">Memuat…</p>;
   const { points, gate_open, all_passed } = ov.data;
   const gateBy = points.filter((p) => p.mandatory).some((p) => p.decided_by === "teacher") ? "guru" : "Ayah atau Ibu";
   const firstOpen = points.find((p) => !p.mandatory && !p.passed && p.best_score > 0)?.point;
-  const pct = Math.min(100, Math.max(0, (home.data?.level_progress ?? 0) * 100));
 
   return (
     <div className="pb-28">
@@ -33,9 +31,6 @@ export function PetaTahsinPage() {
         <button type="button" aria-label="Kembali" onClick={() => nav("/")} className="-ml-2 flex h-11 w-11 items-center justify-center text-brand">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
         </button>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal text-lg font-extrabold text-white">{home.data?.level ?? 1}</span>
-        <div className="h-3.5 flex-1 overflow-hidden rounded-pill bg-lav" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} aria-label="Kemajuan level"><div className="h-full rounded-pill bg-teal" style={{ width: `${pct}%` }} /></div>
-        <span className="flex items-center gap-1 text-lg font-extrabold"><NavStar size={26} className="text-gold" />{home.data?.xp ?? 0}</span>
       </div>
 
       <svg viewBox="0 0 390 150" className="mt-2 w-full" role="img" aria-label="Pulau di tengah laut">
