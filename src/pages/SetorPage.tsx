@@ -149,6 +149,8 @@ export function SetorPage() {
       const fd = new FormData();
       fd.append("context", context);
       fd.append("reference_text", referenceText);
+      const pointParam = params.get("point");
+      if (context === "tahsin" && pointParam) fd.append("tahsin_point", pointParam);
       if (surahId != null && !Number.isNaN(surahId)) {
         fd.append("surah_id", String(surahId));
         fd.append("ayah_start", String(ayahStart));
