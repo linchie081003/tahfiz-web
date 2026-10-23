@@ -6,7 +6,7 @@
 
 body {
   margin: 0;
-  font-family: Nunito, system-ui, sans-serif;
+  font-family: Nunito, "Amiri Quran", system-ui, sans-serif;
   color: #1f2a28;
   background: #ffffff;
 }
@@ -118,10 +118,14 @@ body {
   accent-color: #4f46b5;
 }
 
-/* Tulisan Arab sederhana untuk latihan huruf: Naskh yang jelas, jarak baris lega agar harakat tidak terpotong. */
-.font-arab {
-  font-family: "Noto Naskh Arabic", "Amiri Quran", "Scheherazade New", serif;
-  font-weight: 500;
-  line-height: 1.9;
+/* Satu gaya huruf Arab untuk seluruh aplikasi: sama dengan ayat di hafalan (Amiri Quran).
+   .font-arab (latihan huruf) dan .font-quran (nama surat, hasil, setoran) hanya alias. */
+.font-arab,
+.font-quran {
+  font-family: "Amiri Quran", "Scheherazade New", "Traditional Arabic", serif;
+  font-weight: 400;
+  line-height: 2;
+  word-spacing: 0.2em;
   text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" 1;
 }
